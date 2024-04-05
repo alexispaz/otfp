@@ -3,7 +3,7 @@ hosted in Cameron Abrams' [github](https://github.com/cameronabrams/otfp).
 
 # On the fly parameterization 
 
-OTFP computes free-energy profiles in MD simulations via temperature-acceleration. 
+OTFP computes free-energy surfaces (FES) in MD simulations via temperature-acceleration. 
  
 It is written in C and use [SWIG](http://www.swig.org) to provida a TCL
 interface to be used with [NAMD](www.ks.uiuc.edu/Research/namd) via TCLforce.
@@ -16,20 +16,27 @@ executables. It is also posible to compile using meson, e.g.:
     git clone https://github.com/alexispaz/otfp.git
     cd otfp
     meson setup build 
-    cd build 
-    meson compile -v 
-    meson install 
-    cd ..
+    cd build; meson compile -v; meson install; cd ..
 
 Default prefix is `/usr` but can be changed with `--prefix`, for instance:
 
     meson setup --prefix=$(realpath ./usr) build 
 
+To handle periodicity in FES, Intel Math Kernel Library is required. Intel
+oneAPI MKL (oneMKL) provides pkg-config metadata files that can be used by
+meson build system. Check them with:
+
+    pkg-config --list-all | grep mkl
+
+The setup will be something like
+
+    meson setup --prefix=$(realpath ./usr) -Dblas=mkl-dynamic-lp64-gomp -Dlapack=mkl-dynamic-lp64-gomp build 
+
 To run the examples, set the `CFACV_BASEDIR` environment variable to the OTFP
 prefix:
 
     cd examples/OTFP/
-    export CFACV_BASEDIR=/usr
+    export CFACV_BASEDIR=../../usr
     ./test.sh
 
 ## Citations

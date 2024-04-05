@@ -3,7 +3,7 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-namd=~/opt/src/NAMD_2.13_Source/Linux-x86_64-g++/namd2
+namd=namd2
 
 # # Run simulations
 $namd job0.namd 2>&1 | tee job0.log
