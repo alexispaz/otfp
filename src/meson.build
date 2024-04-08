@@ -16,8 +16,11 @@ swig_gen = generator(
 # Choose library with `meson configure -Dblas=openblas -Dlapack=openblas`
 blas_name = get_option('blas')
 lapack_name = get_option('lapack')
+dss_name = get_option('dss')
+  
 blas = dependency(blas_name)
 lapack = dependency(lapack_name)
+dss = dependency(dss_name, required : get_option('periodic'))
 
 install_headers('calcforces.tcl')
 install_headers('cfacv.tcl')
@@ -26,14 +29,14 @@ install_headers('cvs.tcl')
 install_headers('data.tcl')
 install_headers('restraints.tcl')
 
+# CFACV Shared Library
  
-
+cfacv_dep = [lapack, blas, m, tcl]
+ 
 cfacv_src = files(
   'measurements.c',
   'measurements.h',
-  'chapeau.c',
   'chapeau.h',
-  'chapeau_obj.h',
   'centers.c',
   'centers.h',
   'cfacv.c',
@@ -43,13 +46,29 @@ cfacv_src = files(
   'cvs.h',
   'cvs_obj.h',
   )
+ 
+# Using periodicity requires MKL DSS
+if get_option('periodic').enabled()
+  
+  if dss.found()
+    cfacv_dep += dss
+    # message('Using MKL ', mkl_name)
+  else
+    error('Intel MKL Direct Sparse Solver is required for periodicty in OTFP.')
+  endif
 
+  cfacv_src += files('chapeau_mkl_obj.h', 'chapeau_mkl.c')
+
+else
+  cfacv_src += files('chapeau_obj.h', 'chapeau.c')
+endif
+                 
 cfacv_src += swig_gen.process('cfacv.i')
 
 shared_library(
   'cfacv',
   cfacv_src,
-  dependencies: [lapack, blas, m, tcl],
+  dependencies: cfacv_dep,
   c_args : '-DVERSION="@0@"'.format(meson.project_version()),
   install: true,
   install_dir: 'lib/',

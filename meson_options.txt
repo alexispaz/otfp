@@ -1,4 +1,7 @@
 option('blas', type: 'string', value: 'blas',
-        description: 'option for BLAS library switching')
+        description: 'Choose BLAS library')
 option('lapack', type: 'string', value: 'lapack',
-        description: 'option for LAPACK library switching')
+        description: 'Choose LAPACK library')
+option('dss', type: 'string', value: 'mkl-dynamic-lp64-seq',
+        description: 'Choose flavor of MKL Direct Sparse Solver')
+option('periodic', type : 'feature', value : 'disabled') # Since 0.47.0
