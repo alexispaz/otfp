@@ -16,8 +16,10 @@ executables. It is also posible to compile using meson, e.g.:
     git clone https://github.com/alexispaz/otfp.git
     cd otfp
     meson setup build 
-    cd build; meson compile -v; meson install; cd ..
+    cd build
+    meson compile -v
 
+Then, to install `meson install` or to create a distribution `meson dist`.
 Default prefix is `/usr` but can be changed with `--prefix`, for instance:
 
     meson setup --prefix=$(realpath ./usr) build 

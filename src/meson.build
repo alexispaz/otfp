@@ -15,10 +15,12 @@ swig_gen = generator(
 # Check in PKG_CONFIG_PATH if proper .pc files are avaible.
 # Choose library with `meson configure -Dblas=openblas -Dlapack=openblas`
 blas_name = get_option('blas')
+lapacke_name = get_option('lapacke')
 lapack_name = get_option('lapack')
 dss_name = get_option('dss')
   
 blas = dependency(blas_name)
+lapacke = dependency(lapacke_name)
 lapack = dependency(lapack_name)
 dss = dependency(dss_name, required : get_option('periodic'))
 
@@ -31,7 +33,7 @@ install_headers('restraints.tcl')
 
 # CFACV Shared Library
  
-cfacv_dep = [lapack, blas, m, tcl]
+cfacv_dep = [lapacke, lapack, blas, m, tcl]
  
 cfacv_src = files(
   'measurements.c',
@@ -92,7 +94,7 @@ cvs_src += swig_gen.process('cvs.i')
 shared_library(
   'cvs',
   cvs_src,
-  dependencies: [lapack, blas, m, tcl],
+  dependencies: [lapacke, lapack, blas, m, tcl],
   c_args : '-DVERSION="@0@"'.format(meson.project_version()),
   install: true,
   install_dir: 'lib/',
@@ -120,7 +122,7 @@ chapsim_src = files(
 
 executable('chapsim', 
   chapsim_src, 
-  dependencies: [lapack, blas, m],
+  dependencies: [lapacke, lapack, blas, m],
   install: true,
 )
  
@@ -136,7 +138,7 @@ chapconv_src = files(
 
 executable('chapconv', 
   chapconv_src, 
-  dependencies: [lapack, blas, m],
+  dependencies: [lapacke, lapack, blas, m],
   install: true,
   )
 
@@ -151,7 +153,7 @@ chapadd_src = files(
 
 executable('chapadd', 
   chapadd_src, 
-  dependencies: [lapack, blas, m],
+  dependencies: [lapacke, lapack, blas, m],
   install: true,
   )
 
@@ -166,7 +168,7 @@ chapcrop_src = files(
 
 executable('chapcrop', 
   chapcrop_src, 
-  dependencies: [lapack, blas, m],
+  dependencies: [lapacke, lapack, blas, m],
   install: true,
   )
 
