@@ -2,7 +2,7 @@ option('blas', type: 'string', value: 'blas',
         description: 'Choose BLAS library')
 option('lapack', type: 'string', value: 'lapack',
         description: 'Choose LAPACK library')
-option('lapacke', type: 'string', value: 'lapacke',
+option('lapacke', type: 'string', value: '',
         description: 'Choose LAPACKE library')
 option('dss', type: 'string', value: 'mkl-dynamic-lp64-seq',
         description: 'Choose flavor of MKL Direct Sparse Solver')

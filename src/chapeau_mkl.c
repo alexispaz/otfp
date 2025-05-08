@@ -62,7 +62,7 @@ int chapeau_init ( chapeau * ch, int dm, double * rmin, double * rmax, int * N, 
                  
 
   // Initialize the handler
-  err=dss_create(ch->handle, MKL_DSS_ZERO_BASED_INDEXING);
+  err=dss_create(ch->handle, dss_zbi);
   if (err!=MKL_DSS_SUCCESS) { 
     fprintf(stderr,"OTFP: dss_create returns %0i.\n",err);
     exit(-1);
@@ -88,8 +88,8 @@ int chapeau_init ( chapeau * ch, int dm, double * rmin, double * rmax, int * N, 
   // Allocate the matrix
   ch->non0=i;
   ch->nRows=ch->m;
-  ch->rowIndex=malloc(ch->m+1,sizeof(int*));
-  ch->columns=malloc(i,sizeof(int*));
+  ch->rowIndex=malloc((ch->m+1)*sizeof(int*));
+  ch->columns=malloc(i*sizeof(int*));
   ch->A=calloc(i,sizeof(double*));
   ch->Afull=calloc(i,sizeof(double*));
 
@@ -132,7 +132,7 @@ int chapeau_init ( chapeau * ch, int dm, double * rmin, double * rmax, int * N, 
   ch->rowIndex[ch->m]=n;
      
   // Pass to handle
-  err=dss_define_structure(ch->handle, MKL_DSS_SYMMETRIC, ch->rowIndex,ch->nRows,ch->nRows, ch->columns, ch->non0);
+  err=dss_define_structure(ch->handle, dss_sym, ch->rowIndex,ch->nRows,ch->nRows, ch->columns, ch->non0);
   if (err!=MKL_DSS_SUCCESS) { 
     fprintf(stderr,"OTFP: dss_structure returns %0i.\n",err);
     exit(-1);
@@ -487,10 +487,10 @@ void chapeau_solve ( chapeau * ch ) {
   // an upper bound if there is not periodicity in all directions
   // but, that is fine, it shouldn't hurt to have larger arrays.
   i=ch->dm*nred;
-  bbar=malloc(nred,sizeof(double));
-  rbar=malloc(nred,sizeof(double));
+  bbar=malloc(nred*sizeof(double));
+  rbar=malloc(nred*sizeof(double));
   Abar=calloc(i,sizeof(double));
-  cbar=malloc(i,sizeof(double));
+  cbar=malloc(i*sizeof(double));
   
   // Fill with the structure info
   n=0;

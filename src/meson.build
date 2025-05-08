@@ -20,9 +20,16 @@ lapack_name = get_option('lapack')
 dss_name = get_option('dss')
   
 blas = dependency(blas_name)
-lapacke = dependency(lapacke_name)
 lapack = dependency(lapack_name)
 dss = dependency(dss_name, required : get_option('periodic'))
+
+# LAPACKE dependency only if provieder need it
+lapacke = dependency('', required: false)
+if lapacke_name == 'mkl_lapacke'
+  add_project_arguments('-DUSE_MKL', language: 'c')
+else
+  lapacke = dependency(lapacke_name, method: 'pkg-config', required: true)
+endif
 
 install_headers('calcforces.tcl')
 install_headers('cfacv.tcl')

@@ -1,7 +1,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <lapacke.h>
+#ifdef USE_MKL
+  #include <mkl_lapacke.h>
+#else
+  #include <lapacke.h>
+#endif
 #include "chapeau_obj.h"
 #include "chapeau.h"
 

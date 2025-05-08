@@ -4,7 +4,12 @@
  
 #include <stdio.h>
 #include <mkl.h>
-   
+#include <mkl_dss.h>
+
+
+int dss_zbi=MKL_DSS_ZERO_BASED_INDEXING;
+int dss_sym=MKL_DSS_SYMMETRIC;
+
 // Chapeau type definition:  This defines the pair potential as 
 // a linear expansion of chapeau functions ("peaks").  It also
 // contains the variables responsible for evolving the vector
@@ -66,7 +71,7 @@ typedef struct CHAPEAU {
   double norm; 
 
   //Sparse matrix A
-  MKL_DSS_HANDLE * handle;
+  _MKL_DSS_HANDLE_t * handle;
   MKL_INT nRows, non0;
   int * rowIndex;
   int * columns;
