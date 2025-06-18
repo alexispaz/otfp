@@ -32,7 +32,19 @@ typedef struct SMDOPTSTRUCT {
   double target;       // target value of steered variable
   smdUpdateFunc update; // function used to update steered variable
 } smdOptStruct;
-
+   
+// Adam options structure; will be owned by the restraint
+// structure
+typedef struct AdamOptStruct {
+  int t;  
+  double e;
+  double b1;
+  double b2;
+  double a;
+  double v;
+  double m;
+} adamOptStruct;
+ 
 
 // The Restraint structure
 enum {HARMONIC, HARMCUTO, NULL_RF};
@@ -54,14 +66,19 @@ typedef struct restraint {
                          // indicates which CV this restraint is
                          // applied to.
 
+  int evolve;        // Indicate when z must evolve. When tamd_evolve goes
+                     // from 0 to 1 z value is initialized
+
+  // TAMD data
   tamdOptStruct * tamdOpt; // pointer to the tamd options structure
   double tamd_noise;
   double tamd_restraint;
 
-  int evolve;        // Indicate when z must evolve. When tamd_evolve goes
-                     // from 0 to 1 z value is initialized
-
+  // SMD data
   smdOptStruct * smdOpt;   // pointer to the smd options structure
+
+  // SD data
+  adamOptStruct * adamOpt;   // pointer to the smd options structure
 
   int rfityp;                   // type of the restraining function
                                 // (Harmonic or Periodic)

@@ -157,6 +157,13 @@ proc rlist_setup { ncv } {
         if {![info exists restr($i.end)]} {error "CFACV) ERROR: SMD restraint need end"}
         restr_AddSmdOpt $restr($i.address) $restr($i.target) $restr($i.ini) $restr($i.end)
       }
+      ADAM {
+        if {![info exists restr($i.a)]} {error "CFACV) ERRROR: ADAM restraint need step size"}
+        if {![info exists restr($i.b1)]} {error "CFACV) ERROR: ADAM restraint need b1"}
+        if {![info exists restr($i.b2)]} {error "CFACV) ERROR: ADAM restraint need b2"}
+        if {![info exists restr($i.e)]} {error "CFACV) ERROR: ADAM restraint need e"}
+        restr_AddAdamOpt $restr($i.address) $restr($i.a) $restr($i.b1) $restr($i.b2) $restr($i.e)
+      }
       default {error "ERROR: $restr($i.type) is not a valid boundary type."} 
     } 
 

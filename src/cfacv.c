@@ -123,12 +123,15 @@ restraint * New_restraint (
   else for (i=0;i<nCV;i++) newr->cvc[i]=0;
 
   // evolve function
-  newr->tamd_noise=0.0;
-  newr->tamd_restraint=0.0;
   newr->tamdOpt=NULL;
   newr->smdOpt=NULL;
+  newr->adamOpt=NULL;
+
   newr->evolve=1;
   newr->evolveFunc = NULL;
+
+  newr->tamd_noise=0.0;
+  newr->tamd_restraint=0.0;
 
   // boundary function
   newr->min=zmin;
@@ -183,7 +186,7 @@ tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp) 
   tamd->noise = sqrt(2.0*kt*dt*tamd->ginv);
   return tamd;
 }
-
+                
 smdOptStruct * New_smdOptStruct ( double target, int t0, int t1 ) {
   smdOptStruct * smd=malloc(sizeof(smdOptStruct));
   smd->t0=t0;
@@ -193,7 +196,21 @@ smdOptStruct * New_smdOptStruct ( double target, int t0, int t1 ) {
   smd->target=target;
   return smd;
 }
+               
+adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e ) {
+  adamOptStruct * adam=malloc(sizeof(adamOptStruct));
+  
+  adam->a=a;
+  adam->b1=b1;
+  adam->b2=b2;
+  adam->e=e;
 
+  adam->t=0;
+  adam->v=0.;
+  adam->m=0.;
+  return adam;
+}
+        
 int smdOptInit ( smdOptStruct * smd, double initval) {
   double dist=0.0;
   if (!smd) return -1;
@@ -404,17 +421,49 @@ int pbc ( restraint * r ) {
 
 /* Brownian dynamics (TAMD)*/
 int cbd ( restraint * r, double f ) {
+  if (!r->evolve) return 0;
+
   tamdOptStruct * tamd=r->tamdOpt;
   double dd = tamd->ginv*tamd->dt*f;
   double rd = tamd->noise*gasdev();
 
-  if (!r->evolve) return 0;
   r->tamd_noise=rd;
   r->tamd_restraint=dd;
   r->z=r->z+dd+rd;
   return 0;
 }
+       
+/* Adam (adam)*/
+// Kingma, D.P., Ba, J., 2017. Adam: A Method for
+// Stochastic Optimization.
+// https://doi.org/10.48550/arXiv.1412.6980
+int adam ( restraint * r) {
+  if (!r->evolve) return 0;
 
+  adamOptStruct * adam=r->adamOpt;
+  double a = adam->a;
+  double e = adam->e;
+  double b1 = adam->b1;
+  double b2 = adam->b2;
+
+  // Increase counter
+  adam->t=adam->t+1
+
+  //Update biased first moment estimate
+  adam->m=b1*adam->m-(1-b1)*r->f;
+
+  //Update biased second raw moment estimate
+  adam->v=b2*adam->v+(1-b2)*r->f*r->f;
+
+  // Compute bias-corrections (merge into a)
+  adam->m=adam->m/(1-pow(b1,adam->t))
+  adam->v=adam->v/(1-pow(b2,adam->t))
+             
+  r->z=r->z-a*adam->m/(sqrt(adam->v)+e)
+
+  return 0;
+}
+     
 /* Constant Velocity (SMD)*/
 int uniformvelocity ( restraint * r, double f ) {
   if (!r->evolve) return 0;
@@ -691,7 +740,14 @@ int restr_UpdateTamdOpt ( restraint * r, double g, double kt, double dt ) {
   // rescalevels [expr sqrt(1.0*$NEWTEMP/$OLDTEMP)] no needed in cbd
   return 0;
 }
- 
+      
+int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e ) {
+  if (!r) return -1;
+  r->evolveFunc = adam;
+  r->adamOpt = New_adamOptStruct(a,b1,b2,e);
+  return 0;
+}
+      
 int restr_AddSmdOpt  ( restraint * r, double target, int t0, int t1 ) {
   if (!r) return -1;
   r->evolveFunc = uniformvelocity;
@@ -772,13 +828,8 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
     }
     
     if (first) {
-      if (r->tamdOpt) {
-        r->z=r->val;
-      }
-      if (r->smdOpt) {
-        r->z=r->val;
-        smdOptInit(r->smdOpt,r->val);
-      }
+      r->z=r->val;
+      if (r->smdOpt) smdOptInit(r->smdOpt,r->val);
     }
   }
 
@@ -919,6 +970,9 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
     if (r->smdOpt) {
       r->evolve=(int)(r->smdOpt->t0<=timestep)&&(r->smdOpt->t1>=timestep);
       r->evolveFunc(r,r->smdOpt->increment);
+    }
+    if (r->sdOpt) {
+      r->evolveFunc(r);
     }
   }
 
