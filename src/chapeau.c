@@ -784,7 +784,7 @@ void chapeau_solve_secure ( chapeau * ch ) {
   double * Abar;
   double * Ebar;
   double * Dbar;
-  double * nullbar;
+  double * nullbar = NULL;
   double * U;
   double * VT;
   double * bbar;

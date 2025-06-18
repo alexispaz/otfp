@@ -85,7 +85,7 @@ typedef struct restraint {
 
   
   // pointer to the evolution type 
-  int (*evolveFunc)(struct restraint * self, double f);
+  int (*evolveFunc)(struct restraint * self);
    
   // pointer to the restraining energy and force function
   //restrEnergyFunc energyFunc;   

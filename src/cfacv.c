@@ -420,10 +420,11 @@ int pbc ( restraint * r ) {
 // EVOLUTION OF RESTRIANS
 
 /* Brownian dynamics (TAMD)*/
-int cbd ( restraint * r, double f ) {
+int cbd ( restraint * r ) {
   if (!r->evolve) return 0;
 
   tamdOptStruct * tamd=r->tamdOpt;
+  double f = -r->f;
   double dd = tamd->ginv*tamd->dt*f;
   double rd = tamd->noise*gasdev();
 
@@ -447,7 +448,7 @@ int adam ( restraint * r) {
   double b2 = adam->b2;
 
   // Increase counter
-  adam->t=adam->t+1
+  adam->t=adam->t+1;
 
   //Update biased first moment estimate
   adam->m=b1*adam->m-(1-b1)*r->f;
@@ -456,17 +457,19 @@ int adam ( restraint * r) {
   adam->v=b2*adam->v+(1-b2)*r->f*r->f;
 
   // Compute bias-corrections (merge into a)
-  adam->m=adam->m/(1-pow(b1,adam->t))
-  adam->v=adam->v/(1-pow(b2,adam->t))
+  adam->m=adam->m/(1-pow(b1,adam->t));
+  adam->v=adam->v/(1-pow(b2,adam->t));
              
-  r->z=r->z-a*adam->m/(sqrt(adam->v)+e)
+  r->z=r->z-a*adam->m/(sqrt(adam->v)+e);
 
   return 0;
 }
      
 /* Constant Velocity (SMD)*/
-int uniformvelocity ( restraint * r, double f ) {
+int uniformvelocity ( restraint * r ) {
   if (!r->evolve) return 0;
+
+  double f=r->smdOpt->increment;
   r->z=r->z+f;
   return 0;
 }
@@ -964,14 +967,14 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
     r->boundFunc(r);
 
     // Evolution of TAMD restraints
-    if (r->tamdOpt) r->evolveFunc(r,-r->f);
+    if (r->tamdOpt) r->evolveFunc(r);
   
     // Evolution of SMD restraints
     if (r->smdOpt) {
       r->evolve=(int)(r->smdOpt->t0<=timestep)&&(r->smdOpt->t1>=timestep);
-      r->evolveFunc(r,r->smdOpt->increment);
+      r->evolveFunc(r);
     }
-    if (r->sdOpt) {
+    if (r->adamOpt) {
       r->evolveFunc(r);
     }
   }

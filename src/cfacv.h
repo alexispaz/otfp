@@ -38,8 +38,9 @@ extern void DataSpace_BinaryReportRestraints ( DataSpace * ds, int step, int out
 
 
 // Evolve Functions
-extern int cbd ( restraint * r, double f );
-extern int uniformvelocity ( restraint * r, double f );
+extern int cbd ( restraint * r );
+extern int uniformvelocity ( restraint * r );
+extern int adam ( restraint * r );
 
 
 // Boundaries Functions

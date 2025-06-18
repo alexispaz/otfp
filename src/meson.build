@@ -24,11 +24,11 @@ lapack = dependency(lapack_name)
 dss = dependency(dss_name, required : get_option('periodic'))
 
 # LAPACKE dependency only if provieder need it
-lapacke = dependency('', required: false)
 if lapacke_name == 'mkl_lapacke'
-  add_project_arguments('-DUSE_MKL', language: 'c')
+    add_project_arguments('-DUSE_MKL', language: 'c')
+    lapacke = dependency('mkl_lapacke', required: true)
 else
-  lapacke = dependency(lapacke_name, method: 'pkg-config', required: true)
+    lapacke = dependency(lapacke_name, method: 'pkg-config', required: true)
 endif
 
 install_headers('calcforces.tcl')
