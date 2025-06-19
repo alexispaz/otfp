@@ -6,4 +6,4 @@ option('lapacke', type: 'string', value: 'lapacke',
         description: 'Choose LAPACKE library')
 option('dss', type: 'string', value: 'mkl-dynamic-lp64-seq',
         description: 'Choose flavor of MKL Direct Sparse Solver')
-option('periodic', type : 'feature', value : 'disabled') # Since 0.47.0
+option('sparse', type : 'feature', value : 'disabled') # Since 0.47.0

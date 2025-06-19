@@ -1,7 +1,17 @@
+
+//TODO: This file is under construction. The aim is to implement sparse matrix
+//routines. When periodicity is used, an sparse matrix scheme should have
+//better eficiency.
+
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include "chapeau_mkl_obj.h"
+#ifdef USE_MKL
+  #include <mkl_lapacke.h>
+#else
+  #include <lapacke.h>
+#endif
+#include "chapeau_obj.h"
 #include "chapeau.h"
 
 #define SMALL 1.e-10
@@ -52,7 +62,6 @@ int chapeau_init ( chapeau * ch, int dm, double * rmin, double * rmax, int * N, 
     ch->m=ch->m*N[i];
   }
           
-
   // Allocating the vectors
   ch->lam=calloc(ch->m,sizeof(double));
   ch->hits=calloc(ch->m,sizeof(int));
@@ -466,7 +475,7 @@ void chapeau_loadlambda ( chapeau * ch, char * filename ) {
 }
 
 void chapeau_solve ( chapeau * ch ) {
-  int i,j,J,I,s,k,l;
+  int i,j,jj,ii,s,k,l;
   double lb;
   double * Abar;
   double * bbar;
@@ -482,6 +491,17 @@ void chapeau_solve ( chapeau * ch ) {
     if (ch->hits[i]) nred++;
     cols[i]=nred;
   }
+
+  // If the nred is small, singular matrix can occur easily
+  if (nred<10) {
+   // Avoiding to print this for REOTFP simulations
+   // fprintf(stderr,"Warning: No chapeau update, nred (%d) < nro diagonals (%d)\n",nred,ch->ku);
+   return;
+  }
+
+  fprintf(stdout,"OTFP) Inverting matrix A (%dx%d)\n",nred,nred);
+  fflush(stdout);
+
 
   // Allocating the size as ch->dm times nred. This can be
   // an upper bound if there is not periodicity in all directions
@@ -513,49 +533,39 @@ void chapeau_solve ( chapeau * ch ) {
     nred++;
   }
       
-  // If the nred is small, singular matrix can occur easily
-  if (nred<10) {
-   // Avoiding to print this for REOTFP simulations
-   // fprintf(stderr,"Warning: No chapeau update, nred (%d) < nro diagonals (%d)\n",nred,ch->ku);
-   return;
-  }
-
-  fprintf(stdout,"OTFP) Inverting matrix A (%dx%d)\n",nred,nred);
-  fflush(stdout);
-
 
 
   // Add the new and old statistic to the reduced matrix
-  J=0;
+  jj=0;
   for (j=0;j<ch->m;j++) {
 
     if (!ch->hits[j]) continue;
-    bbar[J]=-(ch->b[j]+ch->bfull[j]); //TODO: Trace back the origin of the minus. See accumulate procedures. 
+    bbar[jj]=-(ch->b[j]+ch->bfull[j]); //TODO: Trace back the origin of the minus. See accumulate procedures. 
     
     // Upper diagonals (and main diagonal) in the row
-    I=J;
+    ii=jj;
     for (i=j;i<=j+ch->ku;i++) {
       if (i>=ch->m) break;
       if (!ch->hits[i]) continue;
 
-      Abar[2*ch->ku+I-J+ldad*J]=ch->A[ch->ku+i-j][j]+ch->Afull[ch->ku+i-j][j];
-      I++;
+      Abar[2*ch->ku+ii-jj+ldad*jj]=ch->A[ch->ku+i-j][j]+ch->Afull[ch->ku+i-j][j];
+      ii++;
     }  
 
     // Lower diagonals in the row
-    I=J-1;
+    ii=jj-1;
     for (k=1;k<=ch->ku;k++) {
       i=j-k;
       if (i<0) break;
       if (!ch->hits[i]) continue;
 
-      Abar[2*ch->ku+I-J+ldad*J]=ch->A[ch->ku+i-j][j]+ch->Afull[ch->ku+i-j][j];
-      I--;
+      Abar[2*ch->ku+ii-jj+ldad*jj]=ch->A[ch->ku+i-j][j]+ch->Afull[ch->ku+i-j][j];
+      ii--;
     }
-    J++;
+    jj++;
   } 
 
-  if (nred!=J) {fprintf(stderr,"Bad matrix nred size: %d != %d\n",nred,J);exit(-1);}
+  if (nred!=jj) {fprintf(stderr,"Bad matrix nred size: %d != %d\n",nred,jj);exit(-1);}
 
   //// TODO: To call a Fortran routine from C we have to transpose the matrix.
   //// However, this is is no needed if Abar is symmetric, but I should change
@@ -565,11 +575,11 @@ void chapeau_solve ( chapeau * ch ) {
   //}                                               
 
   // find solution using LAPACK routine SGESV.
-  J=1;                       
+  jj=1;                       
   aux='N';
 
   // LU factorization of A.
-  dgbtrf_(&nred, &nred, &ch->ku, &ch->ku, Abar, &ldad, pivot, &s); 
+  s = LAPACKE_dgbtrf(LAPACK_COL_MAJOR, nred, nred, ch->ku, ch->ku, Abar, ldad, pivot); 
               
   if (s!=0) {
     fprintf(stdout,"Matrix nearly singular with flag: %d\n",s);
@@ -580,15 +590,15 @@ void chapeau_solve ( chapeau * ch ) {
     
     // chapeau_solve_secure(ch);
     s=s-1;
-    I=0;
+    ii=0;
     for (i=0;i<ch->m;i++) {
       if (!ch->hits[i]) continue;
-      if (I==s) {
-        fprintf(stdout,"Removing row %d\n",I);
+      if (ii==s) {
+        fprintf(stdout,"Removing row %d\n",ii);
         ch->hits[i]=0;
         break;
       }
-      I++;
+      ii++;
     }    
     fflush(stdout);
 
@@ -599,23 +609,23 @@ void chapeau_solve ( chapeau * ch ) {
   }
  
   // Find solution
-  dgbtrs_(&aux,&nred, &ch->ku, &ch->ku, &J, Abar, &ldad, pivot, bbar, &nred, &s);
+  s = LAPACKE_dgbtrs(LAPACK_COL_MAJOR, aux, nred, ch->ku, ch->ku, jj, Abar, ldad, pivot, bbar, nred);
   
   // update the vector of coefficients
-  I=0;
+  ii=0;
   for (i=0;i<ch->m;i++) {
     if (!ch->hits[i]) continue;
 
     // Insted of solving Ax=b, I rather solve (dr[0]*dr[0]*A)x/dr[0]=(dr[0]*b).
     // So, I have to remember multiply the solution by dr[0].
-    ch->lam[i]=bbar[I]*ch->dr[0];
+    ch->lam[i]=bbar[ii]*ch->dr[0];
 
-    bbar[I]=0;
+    bbar[ii]=0;
     
     //lo=gsl_vector_get(ch->lam,i);
     //gsl_vector_set(ch->lam,i,alpha*lo+(1-alpha)*lb);
 
-    I++;
+    ii++;
   } 
   
 
@@ -643,12 +653,12 @@ void chapeau_solve ( chapeau * ch ) {
 }
 
 void chapeau_solve_secure ( chapeau * ch ) {
-  int i,j,J,I,k,s;
+  int i,j,jj,ii,k,s;
   double lb;
   double * Abar;
   double * Ebar;
   double * Dbar;
-  double * nullbar;
+  double * nullbar = NULL;
   double * U;
   double * VT;
   double * bbar;
@@ -718,37 +728,37 @@ void chapeau_solve_secure ( chapeau * ch ) {
   // So it is better to loop in the other space!
   
   // Add the new and old statistic to the reduced matrix
-  J=0;
+  jj=0;
   for (j=0;j<ch->m;j++) {
 
     if (!ch->hits[j]) continue;
-    bbar[J]=-(ch->b[j]+ch->bfull[j]); //TODO: Trace back the origin of the minus. See accumulate procedures. 
+    bbar[jj]=-(ch->b[j]+ch->bfull[j]); //TODO: Trace back the origin of the minus. See accumulate procedures. 
     
     // Upper diagonals (and main diagonal) in the row
-    I=J;
+    ii=jj;
     for (i=j;i<=j+ch->ku;i++) {
       if (i>=ch->m) break;
       if (!ch->hits[i]) continue;
 
-      Abar[ch->ku+I-J+ch->ldad*J]=ch->A[ch->ku+i-j][j]+ch->Afull[ch->ku+i-j][j];
-      I++;
+      Abar[ch->ku+ii-jj+ch->ldad*jj]=ch->A[ch->ku+i-j][j]+ch->Afull[ch->ku+i-j][j];
+      ii++;
     }  
 
     // Lower diagonals in the row
-    I=J-1;
+    ii=jj-1;
     for (k=1;k<=ch->ku;k++) {
       i=j-k;
       if (i<0) break;
       if (!ch->hits[i]) continue;
 
-      Abar[ch->ku+I-J+ch->ldad*J]=ch->A[ch->ku+i-j][j]+ch->Afull[ch->ku+i-j][j];
-      I--;
+      Abar[ch->ku+ii-jj+ch->ldad*jj]=ch->A[ch->ku+i-j][j]+ch->Afull[ch->ku+i-j][j];
+      ii--;
     }
-    J++;
+    jj++;
   } 
      
-  //if (J!=I) {fprintf(stderr,"Matrix not square!!");exit(-1);}
-  if (nred!=J) {fprintf(stderr,"Bad matrix nred size: %d != %d\n",nred,J);exit(-1);}
+  //if (jj!=ii) {fprintf(stderr,"Matrix not square!!");exit(-1);}
+  if (nred!=jj) {fprintf(stderr,"Bad matrix nred size: %d != %d\n",nred,jj);exit(-1);}
 
   //// TODO: To call a Fortran routine from C we have to transpose the matrix.
   //// However, this is is no needed if Abar is symmetric, but I should change
@@ -758,22 +768,29 @@ void chapeau_solve_secure ( chapeau * ch ) {
   //}                                               
 
   // Reduction to bidiagonal form by orthogonal transformation A=U B VT.
-  I=0;                       
-  J=1;                       
+  ii=0;                       
+  jj=1;                       
   aux='B';
-  dgbbrd_(&aux, &nred, &nred, &I, &ch->ku, &ch->ku, Abar, &ch->ldad, Dbar, Ebar, 
-          U, &nred, VT, &nred, nullbar, &J, work, &s); 
+
+  // Afert lapack version 3.10 arugments related to LAPACK_FORTRAN_STRLEN_END
+  // are introduced adding 1 as last argument in lapack routines also might
+  // work but recomendation is to use lapacke interface for C codes.
+  // dgbbrd_(&aux, &nred, &nred, &ii, &ch->ku, &ch->ku, Abar, &ch->ldad, Dbar, Ebar, 
+  //         U, &nred, VT, &nred, nullbar, &jj, work, &s); 
+  s = LAPACKE_dgbbrd(LAPACK_COL_MAJOR, aux, nred, nred, ii, ch->ku, ch->ku, Abar, ch->ldad, Dbar, Ebar, 
+          U, nred, VT, nred, nullbar, jj); 
               
   if (s!=0) {fprintf(stderr,"dgbbrd: %d argument had illegal value\n",s);exit(-1);}
 
   // SVD of the bidiagonal form
   aux='U';
-  dbdsqr_(&aux,&nred, &nred, &nred, &I, Dbar, Ebar, VT, &nred, U, &nred, nullbar, &J, work, &s);
+  // dbdsqr_(&aux,&nred, &nred, &nred, &ii, Dbar, Ebar, VT, &nred, U, &nred, nullbar, &jj, work, &s);
+  s = LAPACKE_dbdsqr(LAPACK_COL_MAJOR, aux,nred, nred, nred, ii, Dbar, Ebar, VT, nred, U, nred, nullbar, jj);
   if (s!=0) {fprintf(stderr,"dbdsqr: error with flag %d\n",s);exit(-1);}
 
 
   // update the vector of coefficients
-  I=0;
+  ii=0;
   for (i=0;i<ch->m;i++) {
 
     if (!ch->hits[i]) continue;
@@ -790,15 +807,15 @@ void chapeau_solve_secure ( chapeau * ch ) {
         // El elemento Ik de V D^I U^T es
         //   V[i][j]*1./Dbar[j]*UT[j][k] 
 
-        for (k=0;k<nred;k++)  lb+=VT[j+nred*I]*U[k+nred*j]*bbar[k]/Dbar[j];
-        // for (k=0;k<nred;k++)  lb+=VT[I+nred*j]*U[j+nred*k]*bbar[k]/Dbar[j];
+        for (k=0;k<nred;k++)  lb+=VT[j+nred*ii]*U[k+nred*j]*bbar[k]/Dbar[j];
+        // for (k=0;k<nred;k++)  lb+=VT[ii+nred*j]*U[j+nred*k]*bbar[k]/Dbar[j];
 
       }
     }
 
-    if (lb!=lb) {fprintf(stderr,"PARANOIA) Tripped at I=%d i=%d: %.5f?\n",I,i,lb);exit(-1);}
+    if (lb!=lb) {fprintf(stderr,"PARANOIA) Tripped at ii=%d i=%d: %.5f?\n",ii,i,lb);exit(-1);}
     ch->lam[i]=lb*ch->dr[0];
-    I++;
+    ii++;
 
   } 
 
@@ -1433,7 +1450,7 @@ void chapeau_setserialized ( chapeau *ch, char * str ) {
 
 
  int accumulate_1D( chapeau * ch, double bias ) { 
-  int m,mm;
+  int m;
   double boost;
   
   // Following the paper E definition A and b should be
@@ -1789,10 +1806,8 @@ int accumulate_2D( chapeau * ch, double bias ) {
         // ch->A[ch->ku+(mk-nj)][nj] -= boost;    // This is A[nk][nj]
         // ch->A[ch->ku+(nj-mk)][mk] -= boost;    // This is A[nj][nk]
       }
-      }
-    } 
+    }
   }
- 
   return 0;
 }
  

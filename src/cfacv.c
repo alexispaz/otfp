@@ -447,20 +447,35 @@ int adam ( restraint * r) {
   double b1 = adam->b1;
   double b2 = adam->b2;
 
-  // Increase counter
-  adam->t=adam->t+1;
-
   //Update biased first moment estimate
   adam->m=b1*adam->m-(1-b1)*r->f;
 
   //Update biased second raw moment estimate
   adam->v=b2*adam->v+(1-b2)*r->f*r->f;
 
-  // Compute bias-corrections (merge into a)
-  adam->m=adam->m/(1-pow(b1,adam->t));
-  adam->v=adam->v/(1-pow(b2,adam->t));
-             
-  r->z=r->z-a*adam->m/(sqrt(adam->v)+e);
+  
+  // Compute bias-corrections. Avoid if possible, considering that for long t,
+  // correction tends to one.
+  if(adam->t >= 0) {
+      adam->t = adam->t + 1;
+
+      // Calculate the maximum of b1^t and b2^t
+      double b1_pow_t = pow(b1, adam->t);
+      double b2_pow_t = pow(b2, adam->t);
+      double max_b_pow = (b1_pow_t > b2_pow_t) ? b1_pow_t : b2_pow_t;
+
+      // Only apply corrections if we're still above tolerance
+      if(max_b_pow < e) {
+          adam->t = -1;
+      } else {
+          adam->m = adam->m / (1. - b1_pow_t);
+          adam->v = adam->v / (1. - b2_pow_t);
+      }
+  }
+            
+  a=a*adam->m/(sqrt(adam->v)+e);
+  r->z=r->z-a;
+  fprintf(stderr,"ADAM DEBUG: %.5lf %.5lf\n",r->z,a);
 
   return 0;
 }

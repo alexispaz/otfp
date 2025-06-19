@@ -21,7 +21,7 @@ dss_name = get_option('dss')
   
 blas = dependency(blas_name)
 lapack = dependency(lapack_name)
-dss = dependency(dss_name, required : get_option('periodic'))
+dss = dependency(dss_name, required : get_option('sparse'))
 
 # LAPACKE dependency only if provieder need it
 if lapacke_name == 'mkl_lapacke'
@@ -56,20 +56,23 @@ cfacv_src = files(
   'cvs_obj.h',
   )
  
-# Using periodicity requires MKL DSS
-if get_option('periodic').enabled()
+# Using sparse matrix requires MKL DSS
+cfacv_src += files('chapeau_obj.h')
+if get_option('sparse').enabled()
   
   if dss.found()
     cfacv_dep += dss
     # message('Using MKL ', mkl_name)
+    add_project_arguments('-DUSE_MKL', language: 'c')
   else
-    error('Intel MKL Direct Sparse Solver is required for periodicty in OTFP.')
+    error('Intel MKL Direct Sparse Solver is required.')
   endif
 
-  cfacv_src += files('chapeau_mkl_obj.h', 'chapeau_mkl.c')
+  cfacv_src += files('chapeau_sparse.c')
+  error('Direct Sparse Solver implementation is under construction.')
 
 else
-  cfacv_src += files('chapeau_obj.h', 'chapeau.c')
+  cfacv_src += files('chapeau.c')
 endif
                  
 cfacv_src += swig_gen.process('cfacv.i')

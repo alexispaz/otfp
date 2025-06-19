@@ -14,10 +14,12 @@
 int chapeau_init ( chapeau * ch, int dm, double * rmin, double * rmax, int * N, int * periodic) {
   int i;
 
-  if (periodic[0]||periodic[1]) {
-    fprintf(stderr,"OTFP: Intel MKL Direct Sparse Solver is required for periodicty.\n");
-    exit(-1);
-  }
+  // IF NO DSS and (periodic[0]||periodic[1]) {
+  //   fprintf(stderr,"Warning OTFP: Intel MKL Direct Sparse Solver is better for periodicty.\n");
+  // }
+  // IF DSS and !(periodic[0]||periodic[1]) {
+  //   fprintf(stderr,"OTFP: No periodicity implies a banded matrix. Consider using lapack for better performance.\n");
+  // }  
   
   //TODO: check size of argument vectors and write the errors
   
@@ -581,7 +583,7 @@ void chapeau_solve ( chapeau * ch ) {
   // Only evolve the places with ch->hits[i]=1
   nred=0;
   for (i=0;i<ch->m;i++)  if (ch->hits[i]) nred++;
-      
+
   // If the nred is small, singular matrix can occur easily
   if (nred<ch->ku+1) {
    // Avoiding to print this for REOTFP simulations

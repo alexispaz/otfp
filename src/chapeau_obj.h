@@ -3,7 +3,14 @@
 #define _CHAPEAU_H_
  
 #include <stdio.h>
-   
+
+#ifdef USE_MKL
+#include <mkl.h>
+#include <mkl_dss.h>
+int dss_zbi=MKL_DSS_ZERO_BASED_INDEXING;
+int dss_sym=MKL_DSS_SYMMETRIC;
+#endif
+
 // Chapeau type definition:  This defines the pair potential as 
 // a linear expansion of chapeau functions ("peaks").  It also
 // contains the variables responsible for evolving the vector
@@ -64,8 +71,17 @@ typedef struct CHAPEAU {
   // to a FES that does not have a huge additive constant.... ).
   double norm; 
 
+#ifdef USE_MKL
+  //Take advantage of sparse matrix handlers
+  _MKL_DSS_HANDLE_t * handle;
+  MKL_INT nRows, non0;
+  int * rowIndex;
+  int * columns;
+  double * A;
+#else
   //matrix A will have dimensions (dm-1)*3*(ch->N[0]-1)+1 x m
   double ** A;
+#endif
 
   // If this replica is not the center replica that add all the other
   // contributions, this variables accumulates the full statistics (including
@@ -73,8 +89,12 @@ typedef struct CHAPEAU {
   // replica is the center replica, ot non replica scheme is used, this
   // variables are always empty.
   double * bfull;
+#ifdef USE_MKL
+  double * Afull;
+#else
   double ** Afull;
-   
+#endif
+
   //pointer to procedure
   int (*accumulate)(struct CHAPEAU * self, double bias);
                 
