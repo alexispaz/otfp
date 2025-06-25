@@ -3,6 +3,8 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+export CFACV_BASEDIR="../../usr"
+
 namd=namd2
 
 # # Run simulations

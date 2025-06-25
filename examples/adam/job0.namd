@@ -12,7 +12,7 @@ seed                $seed
 
 # The molecules
 structure           ../systems/alad.psf
-coordinates         ../systems/alad.pdb
+coordinates         high.pdb
 
 firsttimestep       0
 timestep            2.0
@@ -79,4 +79,4 @@ outputTiming        50000
 source OTFP.namd
 
 # variables needed for the tclforcesscript
-run   10000000 ;#  1ns
+run    500000 ;#  1ns

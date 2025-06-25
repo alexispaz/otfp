@@ -22,9 +22,13 @@ executables. It is also posible to compile using meson, e.g.:
 Then, to install `meson install` or to create a distribution `meson dist`.
 Default prefix is `/usr` but can be changed with `--prefix`, for instance:
 
-    meson setup --prefix=$(realpath ./usr) build 
+    meson setup --prefix=$(realpath ./usr) build
 
-To handle periodicity in FES, Intel Math Kernel Library is required. Intel
+In summary, here a single line example to configure, compile, and install:
+
+    rm -fr build/; meson setup --prefix=$(realpath ./usr) build; cd build; meson compile -v; meson install; cd ..
+
+To improve eficiency in solving periodicity in FES, Direct Sparse Solvers of Intel Math Kernel Library can be use. Intel
 oneAPI MKL (oneMKL) provides pkg-config metadata files that can be used by
 meson build system. Check them with:
 

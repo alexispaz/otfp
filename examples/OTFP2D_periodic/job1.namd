@@ -11,8 +11,8 @@ seed                $seed
  
 
 # The molecules
-structure           ../systems/ala2.psf
-coordinates         ../systems/ala2.pdb
+structure           ../systems/alad.psf
+coordinates         ../systems/alad.pdb
 binCoordinates      job0.restart.coor
 binVelocities       job0.restart.vel
 extendedsystem      job0.restart.xsc
@@ -25,7 +25,7 @@ rigidBonds          all
 # Potentials and parameters
 paraTypeCharmm      on
 parameters          ../systems/par_all22_prot.prm
-parameters          ../systems/toppar_water_ions_namd.str
+parameters          ../systems/par_all36_prot.prm
 exclude             scaled1-4
 1-4scaling          1.0 
 

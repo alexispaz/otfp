@@ -197,10 +197,11 @@ smdOptStruct * New_smdOptStruct ( double target, int t0, int t1 ) {
   return smd;
 }
                
-adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e ) {
+adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e, double decay ) {
   adamOptStruct * adam=malloc(sizeof(adamOptStruct));
   
   adam->a=a;
+  adam->decay=decay;
   adam->b1=b1;
   adam->b2=b2;
   adam->e=e;
@@ -442,40 +443,50 @@ int adam ( restraint * r) {
   if (!r->evolve) return 0;
 
   adamOptStruct * adam=r->adamOpt;
-  double a = adam->a;
   double e = adam->e;
   double b1 = adam->b1;
   double b2 = adam->b2;
+  double dr;
 
   //Update biased first moment estimate
-  adam->m=b1*adam->m-(1-b1)*r->f;
+  adam->m=b1*adam->m-(1.-b1)*r->f;
 
   //Update biased second raw moment estimate
-  adam->v=b2*adam->v+(1-b2)*r->f*r->f;
+  adam->v=b2*adam->v+(1.-b2)*r->f*r->f;
 
-  
   // Compute bias-corrections. Avoid if possible, considering that for long t,
   // correction tends to one.
+
   if(adam->t >= 0) {
       adam->t = adam->t + 1;
 
       // Calculate the maximum of b1^t and b2^t
-      double b1_pow_t = pow(b1, adam->t);
-      double b2_pow_t = pow(b2, adam->t);
-      double max_b_pow = (b1_pow_t > b2_pow_t) ? b1_pow_t : b2_pow_t;
+      b1 = pow(b1, adam->t);
+      b2 = pow(b2, adam->t);
+      double m;
+      double v;
 
-      // Only apply corrections if we're still above tolerance
-      if(max_b_pow < e) {
-          adam->t = -1;
-      } else {
-          adam->m = adam->m / (1. - b1_pow_t);
-          adam->v = adam->v / (1. - b2_pow_t);
-      }
+      // Bias corrections
+      m = adam->m / (1. - b1);
+      v = adam->v / (1. - b2);
+      
+      // b2 is always bigger than b1
+      if(b2 < e) adam->t = -1;
+
+      dr=adam->a*m/(sqrt(v)+e);
+  } else {
+
+      // Adding a learning rate decay
+      adam->a = adam->a/(1. - adam->decay * adam->t);
+      adam->t = adam->t - 1;
+
+      dr=adam->a*adam->m/(sqrt(adam->v)+e);
   }
             
-  a=a*adam->m/(sqrt(adam->v)+e);
-  r->z=r->z-a;
-  fprintf(stderr,"ADAM DEBUG: %.5lf %.5lf\n",r->z,a);
+  r->z=r->z-dr;
+  // TODO: if(adam->a<e) exit(0);
+
+  // fprintf(stderr,"ADAM: %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n",r->cvc[0],r->z,adam->m,adam->v,-r->f,r->f*r->f,adam->a);
 
   return 0;
 }
@@ -759,10 +770,10 @@ int restr_UpdateTamdOpt ( restraint * r, double g, double kt, double dt ) {
   return 0;
 }
       
-int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e ) {
+int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e, double decay) {
   if (!r) return -1;
   r->evolveFunc = adam;
-  r->adamOpt = New_adamOptStruct(a,b1,b2,e);
+  r->adamOpt = New_adamOptStruct(a,b1,b2,e,decay);
   return 0;
 }
       
