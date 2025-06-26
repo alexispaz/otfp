@@ -74,7 +74,10 @@ proc Tcl_UpdateDataSpace { ds lC groups first timestep bias } {
     # We can now write into its space the (x,y,z) restraint forces.
 
     # Compute restraining forces
-    DataSpace_RestrainingForces $ds $first $timestep $bias   
+    set rcode [DataSpace_RestrainingForces $ds $first $timestep $bias]
+    if {$rcode == 1} {
+       abort "Terminating due to internal OTFP signal"
+    }
     MyParanoiaCheck $ds "tripped after computing restraining forces"
 
     # Transmit forces back to groups

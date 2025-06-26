@@ -484,7 +484,7 @@ int adam ( restraint * r) {
   }
             
   r->z=r->z-dr;
-  // TODO: if(adam->a<e) exit(0);
+  if(adam->a<e) return 1;
 
   // fprintf(stderr,"ADAM: %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n",r->cvc[0],r->z,adam->m,adam->v,-r->f,r->f*r->f,adam->a);
 
@@ -822,6 +822,7 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
   int i,j,jj;
   double * cvc;
   int d=0;
+  int rabort;
   int K=ds->K;
   cv * cv;
   restraint * r;
@@ -986,6 +987,7 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
   }
    
   // Evolving auxilary variables
+  rabort=0;
   for (i=0;i<K;i++) {
     r=ds->restr[i];
 
@@ -1001,9 +1003,19 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
       r->evolveFunc(r);
     }
     if (r->adamOpt) {
-      r->evolveFunc(r);
+      j=r->evolveFunc(r);
+      if(j==1) {
+        ds_saverestrains(ds,ds->filename);
+        r->evolve=0;
+        rabort=rabort+1;
+      }
     }
   }
+
+  // Abort simulation when all restraint want it
+  // this is usefull for things like adam.
+  // To skip, add a dummy restraint without adam.
+  if(rabort==K) return 1;
 
   //Save restr trajectory for future restart
   if(K>0) {
