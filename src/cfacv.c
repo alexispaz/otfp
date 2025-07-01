@@ -197,20 +197,25 @@ smdOptStruct * New_smdOptStruct ( double target, int t0, int t1 ) {
   return smd;
 }
                
-adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e, double decay, double kkT, double mvar, double vvar) {
+adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e, double decay, double kkT, double mvar, double vvar, double tmin) {
   adamOptStruct * adam=malloc(sizeof(adamOptStruct));
   
   adam->a=a;
   adam->decay=decay;
+
   adam->mvar=kkT*mvar;
   adam->vvar=kkT*kkT*vvar;
   adam->vmed=kkT;
   adam->zvar=a*a*mvar;
+
   adam->b1=b1;
   adam->b2=b2;
   adam->e=e;
 
   adam->t=1;
+  adam->tmin=tmin;
+  adam->stage=0;
+
   adam->v=0.;
   adam->m=0.;
   return adam;
@@ -452,6 +457,9 @@ int adam ( restraint * r) {
   double b2 = adam->b2;
   double dz;
 
+  // timestep
+  adam->t = adam->t + 1;
+      
   //Update biased first moment estimate
   adam->m=b1*adam->m+(1.-b1)*r->f;
 
@@ -461,7 +469,7 @@ int adam ( restraint * r) {
   // Compute bias-corrections. Avoid if possible, considering that for long t,
   // correction tends to one.
 
-  if(adam->t > 0) {
+  if(adam->stage == 0) {
       // Calculate the maximum of b1^t and b2^t
       b1 = pow(b1, adam->t);
       b2 = pow(b2, adam->t);
@@ -473,54 +481,68 @@ int adam ( restraint * r) {
       v = adam->v / (1. - b2);
       
       dz=adam->a*m/(sqrt(v)+e);
-      adam->t = adam->t + 1;
 
       // b2 is always bigger than b1
-      if(b2 < e) adam->t = 0;
+      if(b2 < e) {
+        fprintf(stdout,"ADAM) moving to stage 1 at step %i: ensure tmin=%i steps\n", adam->t,adam->tmin);
+        adam->stage = 1;
+      }
 
-  } else {
+  } else if (adam->stage == 1){
 
       dz=adam->a*adam->m/(sqrt(adam->v)+e);
 
+      if (adam->t>adam->tmin) {
+        fprintf(stdout,"ADAM) moving to stage 2 at step %i: start termination check\n",adam->t);
+        adam->stage = 2;
+      }
+       
+  } else if (adam->stage == 2){
+
+      dz=adam->a*adam->m/(sqrt(adam->v)+e);
 
       // Teste for Termination.
       // Termination implies to start the learning rate decay.
-      if (adam->t == 0){
-        // In the minima, is probable that fluctuations are due to noise, and not a slope.
-        // Assuming the minima behave as a SHO of constant k: 
-        //    Var(g) = E(g^2)-E(g)^2 = k*k_BT - 0 = k*k_BT
-        // On the other hand, as in eq 1 of Kingma2017:
-        //    m=(1-b_1)\sum_i=1^t b_1^(t-i)g_i
-        // Since g_i are independent, variance are the sum of variance:
-        //   Var(m)=(1-b_1)^2\sum_i=1^t b_1^{2(t-i)}Var(g_i)
-        //         =(1-b_1)^2 k*k_BT \sum_i=1^t b_1^{2(t-i)}
-        // Using the geometrical serie
-        //         =(1-b_1)^2 k*k_BT (1-b_1^{2t})/(1-b_1^2)
-        // Taking b_1^{2t}->0 for long t
-        //         = k*k_BT (1-b_1)/(1+b_1)
-        // I use those equations to build one of the termination criteria. 
-         if (adam->m*adam->m < adam->mvar) {
-           
-           // Do the same with v
-           double aux=adam->v-adam->vmed;
-           if (aux*aux < adam->vvar) {
-           
-             // Do the same with z
-             if (dz*dz < adam->zvar) {
-               adam->t = - 1;
-             }
-           }
+      // In the minima, is probable that fluctuations are due to noise, and not a slope.
+      // Assuming the minima behave as a SHO of constant k: 
+      //    Var(g) = E(g^2)-E(g)^2 = k*k_BT - 0 = k*k_BT
+      // On the other hand, as in eq 1 of Kingma2017:
+      //    m=(1-b_1)\sum_i=1^t b_1^(t-i)g_i
+      // Since g_i are independent, variance are the sum of variance:
+      //   Var(m)=(1-b_1)^2\sum_i=1^t b_1^{2(t-i)}Var(g_i)
+      //         =(1-b_1)^2 k*k_BT \sum_i=1^t b_1^{2(t-i)}
+      // Using the geometrical serie
+      //         =(1-b_1)^2 k*k_BT (1-b_1^{2t})/(1-b_1^2)
+      // Taking b_1^{2t}->0 for long t
+      //         = k*k_BT (1-b_1)/(1+b_1)
+      // I use those equations to build one of the termination criteria. 
+      if (adam->m*adam->m < adam->mvar) {
+         
+         // Do the same with v
+         double aux=adam->v-adam->vmed;
+         if (aux*aux < adam->vvar) {
+         
+            // Do the same with z
+            if (dz*dz < adam->zvar) {
+              fprintf(stdout,"ADAM) moving to stage 3 at step %i: start decay learning rate\n",adam->t);
+              adam->stage = 3;
+              adam->t = 1;
+            }
          }
-      } else {
-        // Adding a learning rate decay
-        adam->a = adam->a/(1. - adam->decay * adam->t);
-        adam->t = adam->t - 1;
       }
 
+  } else {
+    // Adding a learning rate decay
+    adam->a = adam->a/(1. + adam->decay * adam->t);
+    adam->t = adam->t + 1;
+    if(adam->a<e) {
+      fprintf(stdout,"ADAM) terminating adam restrain after %i decay steps\n",adam->t);
+      return 1;
+    }
   }
+
             
   r->z=r->z-dz;
-  if(adam->a<e) return 1;
 
   return 0;
 }
@@ -804,11 +826,11 @@ int restr_UpdateTamdOpt ( restraint * r, double g, double kt, double dt ) {
   return 0;
 }
       
-int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e, double decay, double kT) {
+int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e, double decay, double kT, double tmin) {
   if (!r) return -1;
   r->evolveFunc = adam;
   double aux=r->k*kT;
-  r->adamOpt = New_adamOptStruct(a,b1,b2,e,decay,aux,(1.-b1)/(1.+b1),(1.-b2)/(1.+b2));
+  r->adamOpt = New_adamOptStruct(a,b1,b2,e,decay,aux,(1.-b1)/(1.+b1),(1.-b2)/(1.+b2), tmin);
   return 0;
 }
       

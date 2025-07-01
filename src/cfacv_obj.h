@@ -37,6 +37,8 @@ typedef struct SMDOPTSTRUCT {
 // structure
 typedef struct AdamOptStruct {
   int t;  
+  int tmin;
+  int stage;
   double e;
   double b1;
   double b2;
