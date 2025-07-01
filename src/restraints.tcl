@@ -158,12 +158,13 @@ proc rlist_setup { ncv } {
         restr_AddSmdOpt $restr($i.address) $restr($i.target) $restr($i.ini) $restr($i.end)
       }
       ADAM {
-        if {![info exists restr($i.a)]} {error "CFACV) ERRROR: ADAM restraint need step size"}
+        if {![info exists restr($i.a)]} {error "CFACV) ERROR: ADAM restraint need step size"}
         if {![info exists restr($i.b1)]} {error "CFACV) ERROR: ADAM restraint need b1"}
         if {![info exists restr($i.b2)]} {error "CFACV) ERROR: ADAM restraint need b2"}
         if {![info exists restr($i.e)]} {error "CFACV) ERROR: ADAM restraint need e"}
+        if {![info exists temperature]} {set kT 0} else {set kT [expr 0.00198723310870534*$temperature]}
         if {![info exists restr($i.decay)]} {set restr($i.decay) 0.}
-        restr_AddAdamOpt $restr($i.address) $restr($i.a) $restr($i.b1) $restr($i.b2) $restr($i.e) $restr($i.decay)
+        restr_AddAdamOpt $restr($i.address) $restr($i.a) $restr($i.b1) $restr($i.b2) $restr($i.e) $restr($i.decay) $kT
       }
       default {error "ERROR: $restr($i.type) is not a valid boundary type."} 
     } 

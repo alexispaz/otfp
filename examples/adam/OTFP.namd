@@ -66,9 +66,9 @@ set restr(1.cv)       1
 set restr(1.k)         800
 set restr(1.type)     adam
  set restr(1.a)       0.002
- set restr(1.decay)   1e-6
- set restr(1.b1)      0.90
- set restr(1.b2)      0.99
+ set restr(1.decay)   1.e-6
+ set restr(1.b1)      0.900
+ set restr(1.b2)      0.999
  set restr(1.e)       1.e-6
 set restr(1.bound)    periodic
  set restr(1.max)     [expr acos(-1.)]
@@ -80,9 +80,9 @@ set restr(2.cv)       2
 set restr(2.k)         800
 set restr(2.type)     adam
  set restr(2.a)       0.002
- set restr(2.decay)   1e-6
- set restr(2.b1)      0.90
- set restr(2.b2)      0.99
+ set restr(2.decay)   1.e-6
+ set restr(2.b1)      0.900
+ set restr(2.b2)      0.999
  set restr(2.e)       1.e-6
 set restr(2.bound)    periodic
  set restr(2.max)     [expr acos(-1.)]

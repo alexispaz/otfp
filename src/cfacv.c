@@ -176,14 +176,14 @@ restraint * New_restraint (
   return newr;
 }
 
-tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp) {
+tamdOptStruct * New_tamdOptStruct ( double g, double kT, double dt, int riftyp) {
   tamdOptStruct * tamd=malloc(sizeof(tamdOptStruct));
-  tamd->kT=kt;
+  tamd->kT=kT;
   tamd->gamma=g;
   tamd->dt=dt;
   if (g>0.0) tamd->ginv=1.0/g;
   else tamd->ginv=0.0;
-  tamd->noise = sqrt(2.0*kt*dt*tamd->ginv);
+  tamd->noise = sqrt(2.0*kT*dt*tamd->ginv);
   return tamd;
 }
                 
@@ -197,16 +197,20 @@ smdOptStruct * New_smdOptStruct ( double target, int t0, int t1 ) {
   return smd;
 }
                
-adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e, double decay ) {
+adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e, double decay, double kkT, double mvar, double vvar) {
   adamOptStruct * adam=malloc(sizeof(adamOptStruct));
   
   adam->a=a;
   adam->decay=decay;
+  adam->mvar=kkT*mvar;
+  adam->vvar=kkT*kkT*vvar;
+  adam->vmed=kkT;
+  adam->zvar=a*a*mvar;
   adam->b1=b1;
   adam->b2=b2;
   adam->e=e;
 
-  adam->t=0;
+  adam->t=1;
   adam->v=0.;
   adam->m=0.;
   return adam;
@@ -440,16 +444,16 @@ int cbd ( restraint * r ) {
 // Stochastic Optimization.
 // https://doi.org/10.48550/arXiv.1412.6980
 int adam ( restraint * r) {
-  if (!r->evolve) return 0;
+  if (!r->evolve) return 1;
 
   adamOptStruct * adam=r->adamOpt;
   double e = adam->e;
   double b1 = adam->b1;
   double b2 = adam->b2;
-  double dr;
+  double dz;
 
   //Update biased first moment estimate
-  adam->m=b1*adam->m-(1.-b1)*r->f;
+  adam->m=b1*adam->m+(1.-b1)*r->f;
 
   //Update biased second raw moment estimate
   adam->v=b2*adam->v+(1.-b2)*r->f*r->f;
@@ -457,9 +461,7 @@ int adam ( restraint * r) {
   // Compute bias-corrections. Avoid if possible, considering that for long t,
   // correction tends to one.
 
-  if(adam->t >= 0) {
-      adam->t = adam->t + 1;
-
+  if(adam->t > 0) {
       // Calculate the maximum of b1^t and b2^t
       b1 = pow(b1, adam->t);
       b2 = pow(b2, adam->t);
@@ -470,23 +472,55 @@ int adam ( restraint * r) {
       m = adam->m / (1. - b1);
       v = adam->v / (1. - b2);
       
-      // b2 is always bigger than b1
-      if(b2 < e) adam->t = -1;
+      dz=adam->a*m/(sqrt(v)+e);
+      adam->t = adam->t + 1;
 
-      dr=adam->a*m/(sqrt(v)+e);
+      // b2 is always bigger than b1
+      if(b2 < e) adam->t = 0;
+
   } else {
 
-      // Adding a learning rate decay
-      adam->a = adam->a/(1. - adam->decay * adam->t);
-      adam->t = adam->t - 1;
+      dz=adam->a*adam->m/(sqrt(adam->v)+e);
 
-      dr=adam->a*adam->m/(sqrt(adam->v)+e);
+
+      // Teste for Termination.
+      // Termination implies to start the learning rate decay.
+      if (adam->t == 0){
+        // In the minima, is probable that fluctuations are due to noise, and not a slope.
+        // Assuming the minima behave as a SHO of constant k: 
+        //    Var(g) = E(g^2)-E(g)^2 = k*k_BT - 0 = k*k_BT
+        // On the other hand, as in eq 1 of Kingma2017:
+        //    m=(1-b_1)\sum_i=1^t b_1^(t-i)g_i
+        // Since g_i are independent, variance are the sum of variance:
+        //   Var(m)=(1-b_1)^2\sum_i=1^t b_1^{2(t-i)}Var(g_i)
+        //         =(1-b_1)^2 k*k_BT \sum_i=1^t b_1^{2(t-i)}
+        // Using the geometrical serie
+        //         =(1-b_1)^2 k*k_BT (1-b_1^{2t})/(1-b_1^2)
+        // Taking b_1^{2t}->0 for long t
+        //         = k*k_BT (1-b_1)/(1+b_1)
+        // I use those equations to build one of the termination criteria. 
+         if (adam->m*adam->m < adam->mvar) {
+           
+           // Do the same with v
+           double aux=adam->v-adam->vmed;
+           if (aux*aux < adam->vvar) {
+           
+             // Do the same with z
+             if (dz*dz < adam->zvar) {
+               adam->t = - 1;
+             }
+           }
+         }
+      } else {
+        // Adding a learning rate decay
+        adam->a = adam->a/(1. - adam->decay * adam->t);
+        adam->t = adam->t - 1;
+      }
+
   }
             
-  r->z=r->z-dr;
+  r->z=r->z-dz;
   if(adam->a<e) return 1;
-
-  // fprintf(stderr,"ADAM: %.5e %.5e %.5e %.5e %.5e %.5e %.5e\n",r->cvc[0],r->z,adam->m,adam->v,-r->f,r->f*r->f,adam->a);
 
   return 0;
 }
@@ -770,10 +804,11 @@ int restr_UpdateTamdOpt ( restraint * r, double g, double kt, double dt ) {
   return 0;
 }
       
-int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e, double decay) {
+int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e, double decay, double kT) {
   if (!r) return -1;
   r->evolveFunc = adam;
-  r->adamOpt = New_adamOptStruct(a,b1,b2,e,decay);
+  double aux=r->k*kT;
+  r->adamOpt = New_adamOptStruct(a,b1,b2,e,decay,aux,(1.-b1)/(1.+b1),(1.-b2)/(1.+b2));
   return 0;
 }
       

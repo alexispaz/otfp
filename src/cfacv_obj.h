@@ -44,6 +44,10 @@ typedef struct AdamOptStruct {
   double decay;
   double v;
   double m;
+  double mvar;
+  double vvar;
+  double vmed;
+  double zvar;
 } adamOptStruct;
  
 

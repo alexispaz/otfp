@@ -2,7 +2,7 @@ extern void cfacvBanner ( void );
 
 extern tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);
 extern smdOptStruct * New_smdOptStruct ( double target, int t0, int t1);
-extern adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e , double decay );
+extern adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e , double decay, double kkT, double mvar, double vvar);
 
 extern restraint * New_restraint ( double k, double z, int nCV, double * cvc, char * rftypstr, double zmin, double zmax, char * boundstr, double boundk, char * outfile, int outputFreq);
     
@@ -24,7 +24,7 @@ extern restraint * DataSpace_AddRestr  ( DataSpace * ds, double k, double targ, 
 extern int restr_UpdateTamdOpt ( restraint * r, double g, double kt, double dt );
 extern int restr_AddTamdOpt ( restraint * r, double g, double kt, double dt, int chid  , int chdm );
 extern int restr_AddSmdOpt  ( restraint * r, double target, int t0, int t1 );
-extern int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e , double decay );
+extern int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e , double decay, double kT);
 extern void restr_output  ( restraint * r );
 extern double DataSpace_ComputeCVs ( DataSpace * ds);
 extern int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, double bias);
