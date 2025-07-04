@@ -534,7 +534,9 @@ int adam ( restraint * r) {
   } else {
     // Adding a learning rate decay
     adam->a = adam->a/(1. + adam->decay * adam->t);
-    adam->t = adam->t + 1;
+      
+    dz=adam->a*adam->m/(sqrt(adam->v)+e);
+
     if(adam->a<e) {
       fprintf(stdout,"ADAM) terminating adam restrain after %i decay steps\n",adam->t);
       return 1;

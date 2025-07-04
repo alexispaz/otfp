@@ -71,9 +71,9 @@ langevinDamping     50.
  
 # Output
 outputName          ${oname}
-outputEnergies      10000
-restartfreq         10000
-dcdfreq             10000
+outputEnergies      10
+restartfreq         10
+dcdfreq             10
 outputTiming        50000
 
 source OTFP.namd
