@@ -125,7 +125,7 @@ proc cvs_setup { pdbarray } {
         set_zsd_ring [lindex $cv($i.type) 1] [lindex $cv($i.type) 2] [lindex $cv($i.type) 3]  [lindex $cv($i.type) 4] [lindex $cv($i.type) 5]
       }
       RMSD {
-        set_zsd_ring $i [lindex $cv($i.type) 1]
+        error "UNDER CONSTRUCTION"
       }
       CHARMMD {
         ListToArray_Data [cv_access_ref $cv($i.address) 0] [list $cv($i.n) $cv($i.k) $cv($i.d)]

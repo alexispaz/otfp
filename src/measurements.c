@@ -1,9 +1,5 @@
 #include "measurements.h"
 
-//#ifndef _PARANOIA_
-//#define _PARANOIA_ 1
-//#endif
-
 void pt ( double * angles, double * hx, double * hy, double * hz, double * ox, double * oy, double * oz, int n) {
   int i;
   double p0[3], p1[3], p2[3], p3[3];
@@ -205,17 +201,6 @@ double my_getdihed ( double p1[3], double p2[3], double p3[3], double p4[3],
   phi=acos(cos_phi);
   if (sin_phi<0) phi*=-1;
   
-#ifdef _PARANOIA_
-  if (_PARANOIA_) {
-    if (phi!=phi) {
-      fprintf(stderr,"CFACV/C/PARANOIA) Tripped in my_getdihed: phi %.5f\n",phi);
-      fprintf(stderr,"CFACV/C/PARANOIA) cos_phi %.5f\n",cos_phi);
-      fprintf(stderr,"Program exits.\n");
-      exit(-1);
-    }
-  }
-#endif
-
   //  printf("COS) cos_phi % 10.4f phi % 10.4f = % 10.4f deg\n",cos_phi,phi,180/M_PI*phi);
 
   myscale(1.0/c23,C23);

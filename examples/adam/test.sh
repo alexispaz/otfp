@@ -5,7 +5,7 @@ set -o pipefail
 
 export CFACV_BASEDIR="../../usr"
 
-namd=namd2
+namd=namd3
 
 # # Run simulations
 $namd job0.namd 2>&1 | tee job0.log

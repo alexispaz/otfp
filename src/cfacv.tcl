@@ -64,12 +64,10 @@ proc Tcl_UpdateDataSpace { ds lC groups first timestep bias } {
       ListToArray_Data [DataSpace_centerPos $ds $i] $p($g)
       incr i
     }
-    MyParanoiaCheck $ds "tripped after moving data to dataspace"
 
     # Compute CV's within dataspace
     set localbias [DataSpace_ComputeCVs $ds]
     set bias [expr $localbias+$bias]
-    MyParanoiaCheck $ds "tripped after computing CV's"
     # At this point, the (x,y,z) position data is no longer needed.
     # We can now write into its space the (x,y,z) restraint forces.
 
@@ -78,7 +76,6 @@ proc Tcl_UpdateDataSpace { ds lC groups first timestep bias } {
     if {$rcode == 1} {
        abort "Terminating due to internal OTFP signal"
     }
-    MyParanoiaCheck $ds "tripped after computing restraining forces"
 
     # Transmit forces back to groups
     set i 0
@@ -101,25 +98,6 @@ proc Tcl_ObserveDataSpace { ds cntrSel frame } {
 	incr i
     }
     DataSpace_ComputeCVs $ds
-}
-
-# This routine uses the DataSpace_checkdata function
-# to detect any "infs" or "nans" in the position data
-# and dies with output if any are detected.
-# Note this is a stub if a variable name PARANOIA
-# is *not* defined in either the NAMD config file
-# or the cfacv_tclforces script.
-proc MyParanoiaCheck {ds msg} {
-    global PARANOIA
-    if {[info exists PARANOIA]} {
-	if {$PARANOIA} {
-	    if {[DataSpace_checkdata $ds]} {
-		print "CFACV/PARANOIA) $msg"
-		DataSpace_dump $ds
-		exit
-	    }
-	}
-    }
 }
 
 
@@ -158,51 +136,33 @@ rlist_setup $cv(num)
 
 # Add chapeau to the dataspace structure 
 # TODO: improve chapeau global variable
-if {[info exists CFACV_doAnalyticalCalc]} {
-  if {$CFACV_doAnalyticalCalc == 1} {
-    if {![info exists USETAMDFORCES]} {set USETAMDFORCES 0}
-
+if [info exists FES] {
+  
+    # Needed
+    if {![info exists FES(max)]}    {error "Need FES(max)"}
+    if {![info exists FES(min)]}    {error "Need FES(min)"} 
+    if {![info exists FES(knots)]}  {error "Need FES(knots)"} 
     if {$restr(num) == 0} {error "No restraints to set a dataspace chapeau"}
-    
+   
+    # Defaults
+    if {![info exists FES(dm)]} {set FES(dm) 1}
+    if {![info exists FES(period)]} {
+      for {set i 0} {$i < $FES(dm)} {incr i} {lappend FES(period) 0}
+    }
+    if {![info exists USETAMDFORCES]} {set USETAMDFORCES 0}  
+
     # Replica exechange mode: 
     if {![info exists NUMREP]} {set NUMREP 1}
     # TODO: NUMREP podria ser un numero de chapeaus distintos (estilo el
     # problema sodio cloro) a obtener en una simulacion. En ese caso
     # corregir.
 
-    # Default modes
-    if {![info exists DIMEN]} {set DIMEN 1}
-    if {![info exists PERIODIC]} {
-      for {set i 0} {$i < $DIMEN} {incr i} {lappend PERIODIC 0}
-    }
-
+ 
     # Saving for allocate chapeau functions
-    chapeau_setup $NUMREP $ds $DIMEN $SPLINEMIN $NKNOTS $CUTOFF $PERIODIC $BEGINEVOLVEPARAMETERS  $BEGINSOLVELAM $USETAMDFORCES $BINREPORTPARAMFILE $BINREPORTPARAMFREQ $BINOUTPUTLEVEL $LAMUPDATEINTERVAL
-  } else {
-    if {[info exists CUTOFF]} {error "Chapeau are not initialized"}
-    if {[info exists DIMEN]} {error "Chapeau are not initialized"}
-    if {[info exists SPLINEMIN]} {error "Chapeau are not initialized"}
-    if {[info exists NKNOTS]} {error "Chapeau are not initialized"}
-    if {[info exists PERIODIC]} {error "Chapeau are not initialized"}
-  }
-} else {
-  if {[info exists CUTOFF]} {error "Chapeau are not initialized"}
-  if {[info exists DIMEN]} {error "Chapeau are not initialized"}
-  if {[info exists SPLINEMIN]} {error "Chapeau are not initialized"}
-  if {[info exists NKNOTS]} {error "Chapeau are not initialized"}
-  if {[info exists PERIODIC]} {error "Chapeau are not initialized"}
-} 
-
-# Some default values regarding output
-if {![info exists TAMDof]}          {set TAMDof 1 }
-if {![info exists TAMDbinof]}       {set TAMDbinof 1 }
-if {![info exists TAMDoutputlevel]} {set TAMDoutputlevel 3}
-
-set TAMDbinOutputFileFP 0
-if {[info exists TAMDbinOutputFile]} {
-    set TAMDbinOutputFileFP [my_binfopen $TAMDbinOutputFile "w" $TAMDoutputlevel $ds]
-    print"CFACV) Binary TAMD output to $TAMDbinOutputFile"
+    chapeau_setup $NUMREP $ds $FES(dm) $FES(min) $FES(knots) $FES(max) $FES(period) $FES(start) $FES(solve.start) $USETAMDFORCES $FES(outfile) $FES(outfreq) $FES(outlvl) $FES(solve.freq)
 }
 
+# Some default values regarding output
+if {![info exists TAMDoutputlevel]} {set TAMDoutputlevel 3}
 
 

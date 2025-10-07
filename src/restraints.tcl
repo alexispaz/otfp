@@ -52,18 +52,30 @@ proc rlist_setup { ncv } {
   global ds
   global restr
   global temperature
-  global TAMDverbose
 
   for {set i 1} {$i<=$restr(num)} {incr i} {
+ 
+    # Number of CVs involved in this restraint
+    set n [llength $restr($i.cv)]
 
-    # Set cvc
-    set restr($i.cvc) {}
-    for {set j 0} { $j < $ncv} {incr j} {lappend restr($i.cvc) 0}
-    foreach cvindex [lsort -unique $restr($i.cv)] {
-      set j [expr $cvindex-1]
-      set restr($i.cvc) [lreplace $restr($i.cvc) $j $j 1]
+    # If no coefficients are given, asume equal weights.
+    if {![info exists restr($i.cvc)]} {
+      set weight [expr 1./$n]
+      set restr($i.cvc) {}
+      for {set j 0} { $j < $n} {incr j} {lappend restr($i.cvc) $weight}
     }
-
+               
+    # Setting the CVs weight of this restraint in an array of all CVs  as
+    # expected by C code. 
+    set cvc {}
+    for {set j 0} { $j < $ncv} {incr j} {lappend cvc 0}
+    for {set j 0} { $j < $n} {incr j} {
+      set cvindex [lindex $restr($i.cv)  $j]
+      set weight  [lindex $restr($i.cvc) $j]
+      set k [expr $cvindex-1]
+      set cvc [lreplace $cvc $k $k $weight]
+    }         
+    set pcvc [ListToArray $cvc]
 
     # Defaults and consistency in function
     if {![info exists restr($i.func)]} {set restr($i.func) HARMONIC}
@@ -118,7 +130,6 @@ proc rlist_setup { ncv } {
     }
 
     # Allocating ds->restr[i] in the C code.
-    set pcvc [ListToArray $restr($i.cvc)]
     set inicial 0 ; # obsolet when r->z=r->val is placed at first iteration (see cfacv.c)
     set restr($i.address) [DataSpace_AddRestr $ds $restr($i.k) $inicial $ncv $pcvc $restr($i.func) $restr($i.min) $restr($i.max) $restr($i.bound) $restr($i.boundk) $restr($i.outfile) $restr($i.outfreq)]
      
@@ -169,11 +180,8 @@ proc rlist_setup { ncv } {
       }
       default {error "ERROR: $restr($i.type) is not a valid boundary type."} 
     } 
-
   }
 
-  if {[info exists TAMDverbose]} {foreach ri [array get restr] {print "CFACV) $ri"}}
-  
 }
 
 
@@ -183,14 +191,9 @@ proc my_getcellsize { XSCFILE } {
     } else {
       error "CFACV) ERROR: no xsc file for box info."
     }
-    #print "CFACV) DEBUG my_getcellsize opening $XSCFILE"
     set fp [open $XSCFILE "r"]
     set dat [read -nonewline $fp]
-    #print "CFACV) DEBUG my_getcellsize dat:"
-    #print "$dat"
     set lines [split $dat \n]
-    #print "CFACV) DEBUG my_getcellsize lines:"
-    #print "$lines"
     set lastline [lindex $lines end]
     lappend L [lindex $lastline 1]
     lappend L [lindex $lastline 5]

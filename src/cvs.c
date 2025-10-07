@@ -71,6 +71,11 @@ cv * cv_init ( char * typ, int nC, int * ind,
 
   c->nC=nC;
   c->val=0.0;
+
+  // TODO: amd deberia ser un restraint..
+  // ya que es un algoritmo mas que una CV
+  // Ahora entra por la ventana con el boundary...
+  // BTW el boundary debería ser tambien un restraint
   c->amd=0;
 
   c->ind=calloc(nC,sizeof(int));
@@ -726,16 +731,6 @@ int calccv_charmmd ( cv * c, double ** R ) {
 int calccv_dihed ( cv * c, double ** R ) {
   c->val=my_getdihed(R[c->ind[0]],R[c->ind[1]],R[c->ind[2]],R[c->ind[3]],
   		                 c->gr[0],    c->gr[1],    c->gr[2],    c->gr[3]);
-#ifdef _PARANOIA_
-	if (_PARANOIA_) {
-	  if (c->val!=c->val) {
-	    fprintf(stderr,"CVS/C/PARANOIA) Tripped at dihed cvi->val %.5f\n",cvi->val);
-	    fprintf(stderr,"Program exits.\n");
-	    fflush(stderr);
-	    exit(-1);
-	  }
-	}
-#endif
   return 0;
 }
 

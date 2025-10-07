@@ -37,6 +37,7 @@ install_headers('chapeau.tcl')
 install_headers('cvs.tcl')
 install_headers('data.tcl')
 install_headers('restraints.tcl')
+install_headers('mock.tcl')
 
 # CFACV Shared Library
  

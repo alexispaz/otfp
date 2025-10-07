@@ -1,84 +1,77 @@
 #!/bin/tclsh
 
-tclforces             on
+# Set OTFP path
 if {![info exists CFACV_BASEDIR]} {set CFACV_BASEDIR $::env(CFACV_BASEDIR)}
 tclforcesscript       $CFACV_BASEDIR/include/calcforces.tcl
+            
+# OTFP use NAMD tclforces system
+tclforces             on
 
-# Periodic Boundary Conditions
-set XSCFILE         off
+# Definition of group/center IDs (1-based) from PDB beta position
+set labelPDB          label.pdb
 
-# CVs and group definition
-set labelPDB          label.pdb ;# PDB file with group ID (1-based) in beta position
+# Control FES recovery 
+set FES(dm)                2
+set FES(max)              {5.3 10}
+set FES(min)              {2.5 2}
+set FES(knots)            {101 101}
+set FES(start)              10000 ;# Initial steps without accumulate FES statistics
+set FES(solve.freq)        500000 ;# Frequency of solving FES
+set FES(solve.start)            0 ;# Initial steps without solving FES
+set FES(outfile)           ${oname}
+set FES(outfreq)           500000
+set FES(outlvl)            3
 
-# Verbosidad
-# set DEBUG                0
-# set PARANOIA             0
-set TAMDverbose            1
-
-# for DataSpace_ReportRestraints
-set TAMDoutputlevel        15     ;# Z-Th-FD-ND (e.g. 5 => 0101 => Th and ND)
-set TAMDof                 200000 ;# frequency
-# set TAMDbinOutputFile       asd.bin
-# set TAMDbinof               100 ;# frequency
-
-# for chapeau_output
-set BINREPORTPARAMFREQ     200000
-set BINREPORTPARAMFILE     ${oname} ;#ds->ch->ofp
-set BINOUTPUTLEVEL         3        ;#lambda-hits (e.g. 3 => 11 => both)
-
-# About grid
-set DIMEN               2
-set CUTOFF              {5.3 10}
-set SPLINEMIN           {2.5 2}
-set NKNOTS              {151 151}
-#dr=$CUTOFF-$SPLINEMIN/(NKNOTS-1)
-
-# Offset and interval for improve lambda parameters
-set CFACV_doAnalyticalCalc  1  ;# 1 optmize the analytical parameterization
-set USETAMDFORCES           1  ;# 1 use TAMD forces, 0 use gradient of G
-
-set BEGINEVOLVEPARAMETERS        0  ;# Number of steps without evolution at the start
-set LAMUPDATEINTERVAL       200000
-set BEGINSOLVELAM                0 
-
+if $test {
+  set FES(start)               0
+  set FES(solve.freq)       2500
+  set FES(outfreq)          2500
+}
+ 
+# Control parametrization solver
+set USETAMDFORCES           1     ;# 1 use TAMD forces, 0 use gradient of G
 
 # Collective Variables
-set cv(num) 1
-set cv(1.type)     BOND
-set cv(1.centers)  {1 2}
-
 set cv(num) 2
+
+set cv(1.type)     BOND
+ set cv(1.centers)  {1 2}
+set cv(1.outfile)  "${oname}.cv1"
+ set cv(1.outfreq) 500
+
 set cv(2.type)     BOND
 set cv(2.centers)  {3 4}
- 
+set cv(2.outfile)  "${oname}.cv2"
+ set cv(2.outfreq) 500
+
 # Restraints
 set restr(num)        2
 
 set restr(1.cv)       1              ; # The cv or cvs associated
 set restr(1.chid)     0
 set restr(1.chdm)     0
-set restr(1.k)        1500           ; # spring constant
+set restr(1.k)        1000           ; # spring constant
 set restr(1.type)     tamd           ; # spring constant
- set restr(1.g)       1500
- set restr(1.temp)    1000           ; # number between 0 and beta (min and max bias)
- set restr(1.dt)      0.001
+ set restr(1.g)        500
+ set restr(1.temp)    3000           ; # number between 0 and beta (min and max bias)
+ set restr(1.dt)      0.002
  set restr(1.min)      1.5
  set restr(1.max)      4.5
-set restr(1.outfile)  "C.dat"
- set restr(1.outfreq) 5000
+set restr(1.outfile)  "${oname}.r1"
+ set restr(1.outfreq) 500
 
 set restr(2.cv)       2
 set restr(2.chid)     0
 set restr(2.chdm)     1
-set restr(2.k)        1500
+set restr(2.k)        1000
 set restr(2.type)     tamd
- set restr(2.g)       1500
+ set restr(2.g)        500
  set restr(2.temp)    1000
- set restr(2.dt)      0.001
+ set restr(2.dt)      0.002
  set restr(2.min)      1.5
  set restr(2.max)       7.
-set restr(2.outfile)  "H.dat"
- set restr(2.outfreq) 5000
+set restr(2.outfile)  "${oname}.r2"
+ set restr(2.outfreq) 500
 
 
 # Initialize OTFP program

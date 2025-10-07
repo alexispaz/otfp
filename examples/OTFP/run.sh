@@ -3,16 +3,24 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
+# Runs the full example to generate meaningful results.
+sed -i 's/set test true/set test false/g' job0.namd
+sed -i 's/set test true/set test false/g' job1.namd
+
 # Run simulations
-namd2 job0.namd 2>&1 | tee job0.log
-namd2 job1.namd 2>&1 | tee job1.log
+namd3 job0.namd 2>&1 | tee job0.log
+namd3 job1.namd 2>&1 | tee job1.log
+
+# Go back
+sed -i 's/set test false/set test true/g' job0.namd
+sed -i 's/set test false/set test true/g' job1.namd
 
 for file in $(ls *bsp); do
 
   f=${file%.*}
 
   # Decoding the FES
-  catbinsp -f $file -ol 1 \
+  ../../src/catbinsp -f $file -ol 1 \
     | awk 'BEGIN{a=""} (NR>1&&$2!=a){a=$2;$1="";$2="";print $0}'\
     > ${f}.LAMBDA
 

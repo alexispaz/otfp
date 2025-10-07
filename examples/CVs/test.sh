@@ -4,8 +4,8 @@ set -o errexit
 set -o pipefail
 
 # Run simulations
-namd2 rmsd.namd 2>&1 | tee rmsd.log
-namd2 line.namd 2>&1 | tee line.log
+namd3 rmsd.namd 2>&1 | tee rmsd.log
+namd3 line.namd 2>&1 | tee line.log
 
 # for file in $(ls *bsp); do
 for file in line_ch0.bsp; do

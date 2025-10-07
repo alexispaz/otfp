@@ -10,17 +10,6 @@ set XSCFILE         off
 # CVs and group definition
 set labelPDB          label.pdb ;# PDB file with group ID (1-based) in beta position
 
-# Verbosidad
-# set DEBUG                0
-# set PARANOIA             0
-set TAMDverbose            1
-
-# for DataSpace_ReportRestraints
-set TAMDoutputlevel        15   ;# Z-Th-FD-ND (e.g. 5 => 0101 => Th and ND)
-set TAMDof                 $data_each ;# frequency 
-# set TAMDbinOutputFile       asd.bin
-# set TAMDbinof               100 ;# frequency
-
 # for chapeau_output
 set BINREPORTPARAMFREQ     $data_each ;#ds->ch->outputFreq
 set BINREPORTPARAMFILE     [format $job_output_root $replica_id]

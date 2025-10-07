@@ -1,25 +1,14 @@
 #!/bin/tclsh
 
 tclforces             on
-set CFACV_BASEDIR     ../../src
-tclforcesscript       $CFACV_BASEDIR/calcforces.tcl
+if {![info exists CFACV_BASEDIR]} {set CFACV_BASEDIR $::env(CFACV_BASEDIR)}
+tclforcesscript       $CFACV_BASEDIR/include/calcforces.tcl
 
 # Periodic Boundary Conditions
 set XSCFILE         off
 
 # CVs and group definition
 set labelPDB          buta_gauche.pdb ;# PDB file with group ID (1-based) in beta position
-
-# Verbosidad
-# set DEBUG                0
-# set PARANOIA             0
-set TAMDverbose            1
-
-# for DataSpace_ReportRestraints
-set TAMDoutputlevel        15   ;# Z-Th-FD-ND (e.g. 5 => 0101 => Th and ND)
-set TAMDof                 5000 ;# frequency 
-# set TAMDbinOutputFile       asd.bin
-# set TAMDbinof               100 ;# frequency
 
 # for chapeau_output
 set BINREPORTPARAMFREQ     1000
@@ -65,5 +54,5 @@ set restr(1.outfile)  "rmsd.dat"
  set restr(1.outfreq) 1000
 
 # Initialize OTFP program
-source $CFACV_BASEDIR/cfacv.tcl
+source $CFACV_BASEDIR/include/cfacv.tcl
 

@@ -1,25 +1,26 @@
 #!/bin/tclsh
- 
-# Restart OTFP: There is two modes to restart otfp, chose one:
-set restart_otfp cfacv_loadstate
-# set restart_chapeau chapeau_loadlambda
-                        
+
+# Run in test mode?
+# - true:  Runs a short, functional test for rapid debugging.
+# - false: Runs the full example to generate meaningful results.
+set test true
+
+# Global variables
 set oname           job1
 set temperature     298
-set seed            923458
+set seed            1236547
+                          
+#There is two modes to restart OTFP, chose one:
+set restart_otfp cfacv_loadstate
+# set restart_chapeau chapeau_loadlambda
+             
+# NAMD seed
 seed                $seed
  
-
-# The molecules
+# System 
 structure           ../systems/buta.psf
 coordinates         ../systems/buta.pdb
 binCoordinates      job0.restart.coor
-binVelocities       job0.restart.vel
-# extendedsystem      job0.restart.xsc
-
-firsttimestep       20000000 ;# 20ns
-timestep            1.0
-rigidBonds          none
 
 # Potentials and parameters
 paraTypeCharmm      on
@@ -40,9 +41,18 @@ stepspercycle       10    ;#Pasos para el calculo de la lista de Verlet
 # Multiple time steps
 nonbondedFreq       1
 fullElectFrequency  2
+          
+# The motion
+if $test {
+  firsttimestep       5000
+} else {
+  firsttimestep       500000
+}
+timestep            1.0
+rigidBonds          none
 
 # Ensemble NVT
-# temperature         $temperature
+temperature         $temperature
 langevin            on;             # do langevin dynamics
 langevinTemp        $temperature;   # bath temperature
 langevinHydrogen    no
@@ -50,12 +60,20 @@ langevinDamping     50.
 
 # Output
 outputName          ${oname}
-outputEnergies      200000
-restartfreq         200000
-dcdfreq             200000
-outputTiming        200000
+restartfreq         100000
+outputEnergies      100000
+outputTiming        100000
+if $test {
+  dcdfreq    1
+} else {
+  dcdfreq    100000
+}
 
+# Call to OTFP config
 source OTFP.namd
+
+# Increase Load Balancer period
+ldbPeriod 100000
 
 # Restart restraints
 ds_loadrestrains $ds job0.rstr 
@@ -63,4 +81,8 @@ ds_loadrestrains $ds job0.rstr
 # Restart chapeaus
 chapeau_loadstate $chape(0.address) job0.ch0
           
-run  4000000 ;# 4ns
+if $test {
+  run  2500
+} else {
+  run  2000000 ;# 2ns
+}

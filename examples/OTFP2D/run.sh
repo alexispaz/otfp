@@ -3,9 +3,17 @@ set -o nounset
 set -o errexit
 set -o pipefail
 
-# Run simulation
-namd2 job0.namd 2>&1 | tee job0.log
-namd2 job1.namd 2>&1 | tee job1.log
+# Runs the full example to generate meaningful results.
+sed -i 's/set test true/set test false/g' job0.namd
+sed -i 's/set test true/set test false/g' job1.namd
+
+# Run simulations
+namd3 job0.namd 2>&1 | tee job0.log
+namd3 job1.namd 2>&1 | tee job1.log
+
+# Go back
+sed -i 's/set test false/set test true/g' job0.namd
+sed -i 's/set test false/set test true/g' job1.namd
 
 for file in $(ls *bsp); do
 
@@ -17,7 +25,7 @@ for file in $(ls *bsp); do
     > ${f}.LAMBDA
 
   # Unfolding the FES
-  awk -v Nx=151 -v Ny=151 \
+  awk -v Nx=101 -v Ny=101 \
       -v xmin=2.5 -v ymin=2 \
       -v xmax=5.3 -v ymax=10 \
       'END{

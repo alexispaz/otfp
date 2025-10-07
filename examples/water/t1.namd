@@ -66,8 +66,6 @@ tclforces on
 tclforcesscript                 $env(HOME)/cfacv_otfp/cfacv_tclforces.tcl
 set labelPDB                    label.pdb
 set cvINP                       cv.inp
-set TAMDof                      10
-set TAMDoutputlevel 0
 
 set CFACV_doAnalyticalCalc 1
 set XSCFILE tip3pE.xsc

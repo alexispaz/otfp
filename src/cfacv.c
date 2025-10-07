@@ -1,7 +1,7 @@
 /* Collective Variables module for NAMD via tclForces
  * Cameron F. Abrams
  *
- * Adapted for On-the-fly free-energy parameterization via TAMD
+ * Extended for 2D OTFP and RE OTFP
  * Sergio A. Paz
  *
  * This header declares structured data types and functions for
@@ -21,7 +21,7 @@
  * once per timestep on the master node during NAMD execution.
  *
  * In this particular OTFP impelementation, we are using linear chapeau
- * functions as the basis functions.  We use this to compute effective pair
+ * functions as the basis functions. We use this to compute effective pair
  * potentials between centers of mass of atomgroups (like water molecules).
  *
  */
@@ -31,8 +31,6 @@
 #include <math.h>
 
 #include "cfacv_obj.h"
- 
-//#include "wrapcoords.h"
 #include "chapeau.h"       // basis functions
 #include "measurements.h"  // random numbers
  
@@ -48,8 +46,6 @@
 #include <execinfo.h>
 #include <signal.h>
 #include <unistd.h>
-
-//#define _PARANOIA_ 1
 
 void handler(int sig) {
   void *array[10];
@@ -595,12 +591,9 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   //Xi[0]=(seed & 0xffff00000000) >> 32;
   //Xi[1]=(seed & 0x0000ffff0000) >> 16;
   //Xi[2]= 0x330e;
-  //fprintf(stderr,"CFACV/C/PARANOIA) XI1 %u\n",Xi[0]);
-  //fprintf(stderr,"CFACV/C/PARANOIA) XI2 %u\n",Xi[1]);
-  //fprintf(stderr,"CFACV/C/PARANOIA) XI3 %u\n",Xi[2]);
   srand48(seed);
-  fprintf(stderr,"CFACV/C/PARANOIA) first drand48 will be %.5f\n",drand48());
-  fprintf(stderr,"CFACV/C/PARANOIA) first gasdev  will be %.5f and %.5f\n",gasdev(),gasdev());
+  fprintf(stderr,"CFACV) first drand48 will be %.5f\n",drand48());
+  fprintf(stderr,"CFACV) first gasdev  will be %.5f and %.5f\n",gasdev(),gasdev());
   srand48(seed);
 
   //pfout=fopen("/dev/urandom","r");
@@ -903,17 +896,6 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
     for (j=0;j<r->nCV;j++) {
       cv=ds->cv[j];
       r->val+=cvc[j]*cv->val;
-#ifdef _PARANOIA_
-      if (_PARANOIA_) {
-        if (r->val!=r->val) {
-          fprintf(stderr,"CFACV/C/PARANOIA) Tripped at r->val %.5lf\n",r->val);
-          fprintf(stderr,"CFACV/C/PARANOIA) cvc[%i] %.5lf cv->val %.5lf\n",j,cv->val);
-          fprintf(stderr,"Program exits.\n");
-          fflush(stderr);
-          exit(-1);
-        }
-      }
-#endif
     }
     
     if (first) {
@@ -950,17 +932,6 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
 
           /* Increment the forces of the jj'th cartesian center on the j'th cv of this restraint */
           for (d=0;d<3;d++) ds->R[ cv->ind[jj] ][d]+=r->cvc[j]*cv->gr[jj][d]*r->f;
-#ifdef _PARANOIA_
-          if (_PARANOIA_) {
-            if ((ds->R[cv->ind[jj]][0]!=ds->R[cv->ind[jj]][0])
-      	  ||(ds->R[cv->ind[jj]][1]!=ds->R[cv->ind[jj]][1])
-      	  ||(ds->R[cv->ind[jj]][2]!=ds->R[cv->ind[jj]][2])) {
-      	fprintf(stderr,"CFACV/C/PARANOIA) Tripped when computing forces.\n");
-      	fflush(stderr);
-      	exit(-1);
-            }
-          }
-#endif
         }
       }
     }
@@ -1142,30 +1113,5 @@ void DataSpace_ReportAll ( DataSpace * ds ) {
   }
 }
 
-void DataSpace_BinaryReportRestraints ( DataSpace * ds, int step, int outputlevel, FILE * fp ) {
-  int i;
-  
-  if (outputlevel & 1) {
-    for (i=0;i<ds->K;i++) {
-      fwrite(&(ds->restr[i]->z),sizeof(double),1,fp);
-    }
-  }
-  if (outputlevel & 2) {
-    for (i=0;i<ds->K;i++) {
-      fwrite(&(ds->restr[i]->val),sizeof(double),1,fp);
-    }
-  }
-  if (outputlevel & 4) {
-    for (i=0;i<ds->K;i++) {
-      fwrite(&(ds->restr[i]->tamd_restraint),sizeof(double),1,fp);
-    }
-  }
-  if (outputlevel & 8) {
-    for (i=0;i<ds->K;i++) {
-      fwrite(&(ds->restr[i]->tamd_noise),sizeof(double),1,fp);
-    }
-  }
-  fflush(fp);
-}
 
 

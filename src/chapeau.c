@@ -587,7 +587,7 @@ void chapeau_solve ( chapeau * ch ) {
   // If the nred is small, singular matrix can occur easily
   if (nred<ch->ku+1) {
    // Avoiding to print this for REOTFP simulations
-   // fprintf(stderr,"Warning: No chapeau update, nred (%d) < nro diagonals (%d)\n",nred,ch->ku);
+   fprintf(stderr,"Warning: No chapeau update, nred (%d) < nro diagonals (%d)\n",nred,ch->ku);
    return;
   }
 
@@ -941,7 +941,6 @@ void chapeau_solve_secure ( chapeau * ch ) {
       }
     }
 
-    if (lb!=lb) {fprintf(stderr,"PARANOIA) Tripped at ii=%d i=%d: %.5f?\n",ii,i,lb);exit(-1);}
     ch->lam[i]=lb*ch->dr[0];
     ii++;
 

@@ -11,17 +11,6 @@ set XSCFILE         off
 set labelPDB          label.pdb ;# PDB file with group ID (1-based) in beta position
 set cvINP             cv.inp ;# list of CVs types togeter with it's parameters
 
-# Verbosidad
-# set DEBUG                0
-# set PARANOIA             0
-set TAMDverbose            1
-
-# for DataSpace_ReportRestraints
-# set TAMDoutputlevel        15     ;# Z-Th-FD-ND (e.g. 5 => 0101 => Th and ND)
-# set TAMDof                 200000 ;# frequency
-# set TAMDbinOutputFile       asd.bin
-# set TAMDbinof               100 ;# frequency
-
 # for chapeau_output
 # set BINREPORTPARAMFREQ     200000
 # set BINREPORTPARAMFILE     ${oname} ;#ds->ch->ofp

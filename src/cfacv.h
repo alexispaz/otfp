@@ -34,7 +34,6 @@ extern void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res );
 extern int DataSpace_checkdata ( DataSpace * ds );
 extern int DataSpace_dump ( DataSpace * ds ); 
 extern FILE * my_binfopen ( char * name, char * code, unsigned int outputLevel, DataSpace * ds );
-extern void DataSpace_BinaryReportRestraints ( DataSpace * ds, int step, int outputlevel, FILE * fp );
 
 
 // Evolve Functions

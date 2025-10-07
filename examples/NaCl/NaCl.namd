@@ -128,18 +128,6 @@ set labelPDB          label.pdb ;# PDB file with group ID (1-based) in beta posi
 set cvINP             cv.inp ;# list of CVs types togeter with it's parameters
 set pairmask          "{SOD CLA} {SOD SOD} {CLA CLA}"
 
-set DEBUG                   0
-set PARANOIA                0
-set TAMDverbose             0
-
-# for DataSpace_ReportRestraints
-set TAMDof                  50000 ;# frequency 
-set TAMDoutputlevel         0     ;# Z-Th-FD-ND (e.g. 5 => 0101 => Th and ND)
-
-## for DataSpace_BinaryReportRestraints
-# set TAMDbinOutputFile       asd.bin
-# set TAMDbinof               100 ;# frequency
-
 set REPORTPARAMFREQ         1     ;# report "LAMBDA: ..." in the logfile... (only when step%LAMUPDATEINTERVAL==0)
 # Reportparamfreq works only when the output step coincide with a multiply of LAMUPDATEINTERVAL 
 

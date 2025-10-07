@@ -1,18 +1,21 @@
 #!/bin/tclsh
- 
+
+# Run in test mode?
+# - true:  Runs a short, functional test for rapid debugging.
+# - false: Runs the full example to generate meaningful results.
+set test true
+
+# Global variables
 set oname           job0
 set temperature     298
 set seed            923458
+
+# NAMD seed
 seed                $seed
  
-
-# The molecules
+# System 
 structure           ../systems/buta.psf
 coordinates         ../systems/buta.pdb
-
-firsttimestep       0
-timestep            1.0
-rigidBonds          none
 
 # Potentials and parameters
 paraTypeCharmm      on
@@ -33,6 +36,11 @@ stepspercycle       10    ;#Pasos para el calculo de la lista de Verlet
 # Multiple time steps
 nonbondedFreq       1
 fullElectFrequency  2
+ 
+# The motion
+firsttimestep       0
+timestep            1.0
+rigidBonds          none
 
 # Ensemble NVT
 temperature         $temperature
@@ -43,11 +51,23 @@ langevinDamping     50.
 
 # Output
 outputName          ${oname}
-outputEnergies      200000
-restartfreq         200000
-dcdfreq             200000
-outputTiming        200000
+restartfreq         100000
+outputEnergies      100000
+outputTiming        100000
+if $test {
+  dcdfreq    1
+} else {
+  dcdfreq    100000
+}
 
+# Call to OTFP config
 source OTFP.namd
 
-run  10000000 ;# 10ns
+# Increase Load Balancer period
+ldbPeriod 100000
+
+if $test {
+  run  5000
+} else {
+  run  500000 ;# 500ps
+}

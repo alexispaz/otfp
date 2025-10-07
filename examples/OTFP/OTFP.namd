@@ -1,53 +1,45 @@
 #!/bin/tclsh
 
-tclforces             on
+# Set OTFP path
 if {![info exists CFACV_BASEDIR]} {set CFACV_BASEDIR $::env(CFACV_BASEDIR)}
 tclforcesscript       $CFACV_BASEDIR/include/calcforces.tcl
+            
+# OTFP use NAMD tclforces system
+tclforces             on
 
-# Periodic Boundary Conditions
-set XSCFILE         off
+# Definition of group/center IDs (1-based) from PDB beta position
+set labelPDB          label.pdb
 
-# CVs and group definition
-set labelPDB          label.pdb ;# PDB file with group ID (1-based) in beta position
+# Control FES recovery 
 
-# Verbosidad
-# set DEBUG                0
-# set PARANOIA             0
-set TAMDverbose            1
+set FES(max)                 4.8
+set FES(min)                 2.0
+set FES(knots)               201 
+set FES(start)              500 ;# Initial steps without accumulate FES statistics
+set FES(solve.freq)         500 ;# Frequency of solving FES          
+set FES(solve.start)        500 ;# Initial steps without solving FES 
+set FES(outfile)     ${oname}
+set FES(outfreq)     500
+set FES(outlvl)      3
 
-# for DataSpace_ReportRestraints
-set TAMDoutputlevel        15   ;# Z-Th-FD-ND (e.g. 5 => 0101 => Th and ND)
-set TAMDof                 5000 ;# frequency 
-# set TAMDbinOutputFile       asd.bin
-# set TAMDbinof               100 ;# frequency
-
-# for chapeau_output
-set BINREPORTPARAMFREQ     1000
-set BINREPORTPARAMFILE     ${oname} ;#ds->ch->ofp
-set BINOUTPUTLEVEL         3        ;#lambda-hits (e.g. 3 => 11 => both)
+if $test {
+  set FES(start)              10
+  set FES(solve.freq)        500
+  set FES(outfreq)           500
+}
  
-# About grid
-set CUTOFF                  4.8
-set SPLINEMIN               2.0
-set NKNOTS                  201 ;#dr=$CUTOFF-$SPLINEMIN/(NKNOTS-1)
-
-# Offset and interval for improve lambda parameters
-set CFACV_doAnalyticalCalc  1  ;# 1 optmize the analytical parameterization
-set USETAMDFORCES           1  ;# 1 use TAMD forces, 0 use gradient of G
-
-set BEGINEVOLVEPARAMETERS   5000  ;# Number of steps without evolution at the start
-set LAMUPDATEINTERVAL       5000
-set BEGINSOLVELAM           5000  ;# Number of steps without evolution at the start
-
+# Control parametrization solver
+set USETAMDFORCES           1     ;# 1 use TAMD forces, 0 use gradient of G
 
 # Collective Variables
 set cv(num) 1
 set cv(1.type)     BOND
-set cv(1.centers)  {1 2}
+ set cv(1.centers)  {1 2}
+set cv(1.outfile)  "${oname}.cv"
+ set cv(1.outfreq) 500
 
 # Restraints
 set restr(num)        1
-
 set restr(1.cv)       1              ; # The cv or cvs associated
 set restr(1.k)        1500           ; # spring constant
 set restr(1.type)     tamd
@@ -56,8 +48,10 @@ set restr(1.type)     tamd
  set restr(1.dt)      0.002         
 set restr(1.bound)    soft           ; # boundary behavior
  set restr(1.boundk)   100           
- set restr(1.max)      $CUTOFF       
- set restr(1.min)      $SPLINEMIN    
+ set restr(1.max)      $FES(max)
+ set restr(1.min)      $FES(min)
+set restr(1.outfile)   "${oname}.r"
+set restr(1.outfreq) 500
 
 # Initialize OTFP program
 source $CFACV_BASEDIR/include/cfacv.tcl

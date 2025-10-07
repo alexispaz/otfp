@@ -6,10 +6,6 @@
 // Este programa lee los .bsp.retart y saca un .bsp que corresponde al restart
 // todo, que lea tambien el .bsp y saque un .bsp en el tiempo 
 
-//#define _PARANOIA_ 1
-//
-
-
 int main ( int argc, char * argv[] ) {
   chapeau ** ch;
   int i,j;
