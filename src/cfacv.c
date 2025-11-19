@@ -245,7 +245,6 @@ void ds_saverestrains ( DataSpace * ds, char * filename ) {
   FILE * ofs;
 
   ofs=fopen(filename,"w");
-
   fwrite(&ds->K,sizeof(int),1,ofs);
   for (i=0;i<ds->K;i++) {
     r=ds->restr[i];
@@ -615,6 +614,9 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
 
   ds->ch=NULL;
 
+  sprintf(ds->filename, "checkpoint.rstr");
+  ds->restrsavefreq = 100000;
+
   return ds;
 }
 
@@ -623,7 +625,7 @@ chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i ) {
 }
   
 int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, int * nKnots,
-    double * max, int * periodic, int beginaccum, int beginsolve, int useTAMDforces, char * outfile, 
+    double * max, int * periodic, int beginaccum, int beginsolve, char * outfile, 
     int outfreq, int outlevel, int nupdate) {
   // Initialize chapeaus objects in DataSpace. Since Data space might not have
   // any chapeau allocated, the number of chapeaus is not indicated in the
@@ -634,8 +636,6 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
   
   ds->doAnalyticalCalc=1;
-  ds->useTAMDforces=useTAMDforces;
-  if (ds->useTAMDforces) fprintf(stdout,"OTFP: INFO: using TAMD forces instead of analytical forces.\n");
 
   // This is to let the system equilibrate
   ds->evolveAnalyticalParameters=1;
@@ -653,10 +653,6 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
     chapeau_setupoutput(ds->ch[i],buf,buf2,outfreq,outlevel);
     ds->ch[i]->nupdate=nupdate;
   }
-
-  //restart
-  ds->restrsavefreq=outfreq;
-  sprintf(ds->filename, "%s.rstr",outfile);
 
   ds->lamfric=0.0;
   ds->lamdt=0.0;
@@ -784,8 +780,12 @@ restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, do
  
   i=ds->iK-1;
   ds->restr[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
-    
-
+     
+  //restart
+  if (outputFreq>0) {
+    if (outputFreq < ds->restrsavefreq) {ds->restrsavefreq = outputFreq;}
+  }
+           
   return ds->restr[i];
 }
 
@@ -963,15 +963,6 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
   // OTFP
   if (ds->doAnalyticalCalc) {
  
-    if (!ds->useTAMDforces) {
-      // Use the computed free energy gradient to compute the force in the
-      // auxiliary variables, rather than the interatomic forces. In this case,
-      // each restraint must have one and only one CV
-      fprintf(stderr,"The needed code was temporal removed. \n");
-      fprintf(stderr,"Please useTAMDforces or see the original version of the code \n");
-      exit(1);
-    }
- 
     // Add statistic to b and A matrix
     if (timestep>ds->beginaccum) {
       for (i=0;i<ds->K;i++) {
@@ -1042,16 +1033,16 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
     }
   }
 
-  // Abort simulation when all restraint want it
-  // this is usefull for things like adam.
-  // To skip, add a dummy restraint without adam.
-  if(rabort==K) return 1;
-
   //Save restr trajectory for future restart
   if(K>0) {
     if (!(timestep % ds->restrsavefreq)) ds_saverestrains(ds,ds->filename);
   }
-
+ 
+  // Abort simulation when all restraint want it
+  // this is usefull for things like adam.
+  // To skip, add a dummy restraint without adam.
+  if(rabort==K) {return 2;}
+              
   return 0;
 }
 

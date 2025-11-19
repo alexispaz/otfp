@@ -40,6 +40,11 @@ namespace eval ::mock {
   # tclforcesscript
   variable script
 
+  # outputname and mock files
+  variable oname
+  variable f1
+  variable f2
+
   # structure  
   variable pdbfile
 
@@ -87,7 +92,6 @@ namespace eval ::mock {
   proc coordinates {filename} {
     variable pdbfile
     variable atoms
-    variable positions
 
     set pdbfile $filename
     set f [open $filename r]
@@ -190,25 +194,36 @@ namespace eval ::mock {
       set results(energy) $e
   }  
 
-  proc run arg {
+
+  proc outputName {filename} {
+    variable oname
+    variable f1
+    variable f2
+    set oneame $filename
+
+    loadxyz "$::oname.xyz"
+             
+    set f1 [open "$::oname.mk1" w]
+    set f2 [open "$::oname.mk2" w]
+
+  }
+
+  proc run {steps} {
     variable atoms
     variable groups
     variable script
     variable results
     variable step
+    variable oname
+    variable f1
+    variable f2
 
-    loadxyz "$::oname.xyz"
-             
     # Run tclforcesscript 
     namespace eval :: {
       source $mock::script
     }
 
-    set f1 [open "$::oname.mk1" w]
-    set f2 [open "$::oname.mk2" w]
-
-
-    for {set f 0} {$f < $atoms(nf)} {incr f} {
+    for {set f 0} {$f < $steps} {incr f} {
         calcforces
 
         foreach g $groups {

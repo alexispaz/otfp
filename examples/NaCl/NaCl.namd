@@ -147,7 +147,6 @@ set NKNOTS                  241 ;#dr=$CUTOFF-$SPLINEMIN/(NKNOTS-1)
 
 # Offset and interval for improve lambda parameters
 set CFACV_doAnalyticalCalc  1  ;# 1 optmize the analytical parameterization
-set USETAMDFORCES           1  ;# 1 use TAMD forces, 0 use gradient of G
 set BEGINEVOLVEPARAMETERS   1  ;# Number of steps without evolution at the start
 set LAMUPDATEINTERVAL       50000
  

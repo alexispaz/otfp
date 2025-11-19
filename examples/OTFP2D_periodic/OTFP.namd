@@ -1,48 +1,48 @@
 #!/bin/tclsh
 
-tclforces             on
+# Set OTFP path
 if {![info exists CFACV_BASEDIR]} {set CFACV_BASEDIR $::env(CFACV_BASEDIR)}
 tclforcesscript       $CFACV_BASEDIR/include/calcforces.tcl
+            
+# OTFP use NAMD tclforces system
+tclforces             on
 
-# Periodic Boundary Conditions
-set XSCFILE         off
+# Definition of group/center IDs (1-based) from PDB beta position
+set labelPDB          label.pdb
 
-# CVs and group definition
-set labelPDB          label.pdb ;# PDB file with group ID (1-based) in beta position
-set cvINP             cv.inp ;# list of CVs types togeter with it's parameters
+# Control FES recovery 
+set FES(dm)                2
+set FES(max)              [list [expr acos(-1.)] [expr acos(-1.)]]
+set FES(min)              [list [expr -acos(-1.)] [expr -acos(-1.)]] 
+set FES(knots)            {151 151}                                  
+set FES(start)              10000 ;# Initial steps without accumulate FES statistics
+set FES(solve.freq)        500000 ;# Frequency of solving FES
+set FES(solve.start)            0 ;# Initial steps without solving FES
+set FES(outfile)           ${oname}
+set FES(outfreq)           500000
+set FES(outlvl)            3
 
-# for chapeau_output
-set BINREPORTPARAMFREQ     200000
-set BINREPORTPARAMFILE     ${oname} ;#ds->ch->ofp
-set BINOUTPUTLEVEL         3        ;#lambda-hits (e.g. 3 => 11 => both)
+
+if $test {
+  set FES(start)               0
+  set FES(solve.freq)       2500
+  set FES(outfreq)          2500
+}
  
-# About grid                
-set DIMEN                        2
-set CUTOFF              [expr acos(-1.)]
-lappend CUTOFF          [expr acos(-1.)]
-set SPLINEMIN           [expr -acos(-1.)]
-lappend SPLINEMIN       [expr -acos(-1.)]
-set NKNOTS                 {151 151} 
 set PERIODIC                {1 1}
-#dr=$CUTOFF-$SPLINEMIN/(NKNOTS-1)
-
-# Offset and interval for improve lambda parameters
-set CFACV_doAnalyticalCalc  1  ;# 1 optmize the analytical parameterization
-set USETAMDFORCES           1  ;# 1 use TAMD forces, 0 use gradient of G
-
-set BEGINEVOLVEPARAMETERS        0  ;# Number of steps without evolution at the start
-set LAMUPDATEINTERVAL       200000
-set BEGINSOLVELAM                0 
-
 
 # Collective Variables
 set cv(num) 1
 set cv(1.type)     DIHED
 set cv(1.centers)  {1 2 3 4}
+set cv(1.outfile)  "phi.x"
+set cv(1.outfreq)  1
 
 set cv(num) 2
 set cv(2.type)     DIHED
 set cv(2.centers)  {2 3 4 5}
+set cv(2.outfile)  "psi.x"
+set cv(2.outfreq)  1
 
 # Restraints
 set restr(num)        2
@@ -58,6 +58,8 @@ set restr(1.type)     tamd           ; # spring constant
 set restr(1.bound)    periodic
  set restr(1.max)     [expr acos(-1.)]
  set restr(1.min)     [expr -acos(-1.)]
+set restr(1.outfile)  "phi.r"
+set restr(1.outfreq)  1
 
 set restr(2.cv)       2              ; # The cv or cvs associated
 set restr(2.chid)     0           
@@ -70,6 +72,8 @@ set restr(2.type)     tamd           ; # spring constant
 set restr(2.bound)    periodic
  set restr(2.max)     [expr acos(-1.)]
  set restr(2.min)     [expr -acos(-1.)]
+set restr(2.outfile)  "psi.r"
+set restr(2.outfreq)  1
  
 
 # Initialize OTFP program

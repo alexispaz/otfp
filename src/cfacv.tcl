@@ -18,6 +18,8 @@ source ${CFACV_BASEDIR}/include/restraints.tcl
 source ${CFACV_BASEDIR}/include/cvs.tcl
 source ${CFACV_BASEDIR}/include/chapeau.tcl
 
+set SIG(TERM) 0
+
 # BEGIN FUNCTION DEFINITION ###############################
 
 proc cfacv_banner { argv } {
@@ -57,6 +59,7 @@ proc getArg { argv key altkey def } {
 
 proc Tcl_UpdateDataSpace { ds lC groups first timestep bias } {
     upvar $lC p
+    global SIG
 
     # Move group center positions to dataspace
     set i 0
@@ -74,7 +77,14 @@ proc Tcl_UpdateDataSpace { ds lC groups first timestep bias } {
     # Compute restraining forces
     set rcode [DataSpace_RestrainingForces $ds $first $timestep $bias]
     if {$rcode == 1} {
-       abort "Terminating due to internal OTFP signal"
+       abort "Terminating due to internal OTFP signal."
+    } elseif {$rcode == 2} {
+       # abort "Terminating due to internal OTFP signal"
+       if {$SIG(TERM) == 0 } {
+         print "All restraints finish. Sending TERM signal."
+         set SIG(TERM) 1
+         # numsteps 10000
+       }
     }
 
     # Transmit forces back to groups
@@ -103,7 +113,8 @@ proc Tcl_ObserveDataSpace { ds cntrSel frame } {
 
 # END FUNCTION DEFINITION ####################
 
-
+# WARNING, this lines without a procedure
+# implies that all variables used here are global
 
 # Global variables
 set CFACV_VERSION 0.30
@@ -149,7 +160,6 @@ if [info exists FES] {
     if {![info exists FES(period)]} {
       for {set i 0} {$i < $FES(dm)} {incr i} {lappend FES(period) 0}
     }
-    if {![info exists USETAMDFORCES]} {set USETAMDFORCES 0}  
 
     # Replica exechange mode: 
     if {![info exists NUMREP]} {set NUMREP 1}
@@ -157,9 +167,8 @@ if [info exists FES] {
     # problema sodio cloro) a obtener en una simulacion. En ese caso
     # corregir.
 
- 
     # Saving for allocate chapeau functions
-    chapeau_setup $NUMREP $ds $FES(dm) $FES(min) $FES(knots) $FES(max) $FES(period) $FES(start) $FES(solve.start) $USETAMDFORCES $FES(outfile) $FES(outfreq) $FES(outlvl) $FES(solve.freq)
+    chapeau_setup $NUMREP $ds $FES(dm) $FES(min) $FES(knots) $FES(max) $FES(period) $FES(start) $FES(solve.start) $FES(outfile) $FES(outfreq) $FES(outlvl) $FES(solve.freq)
 }
 
 # Some default values regarding output

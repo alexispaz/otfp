@@ -1,36 +1,28 @@
 #!/bin/tclsh
- 
-# Restart OTFP: There is two modes to restart otfp, chose one:
-# set restart_otfp cfacv_loadstate
-# set restart_chapeau chapeau_loadlambda
-                        
+
+# Run in test mode?
+# - true:  Runs a short, functional test for rapid debugging.
+# - false: Runs the full example to generate meaningful results.
+set test true
+
+# Global variables
 set oname           job0
 set temperature     298
 set seed            923458
+
+# NAMD seed
 seed                $seed
  
-
-# The molecules
+# System 
 structure           ../systems/alad.psf
 coordinates         ../systems/alad.pdb
 
-firsttimestep       0
-timestep            2.0
-rigidBonds          all  
-
-# Periodic Boundary Conditions
-cellBasisVector1    24.4    0    0.0
-cellBasisVector2     0.0 24.4    0.0
-cellBasisVector3     0.0    0   24.4
-# cellOrigin           0.0    0.0  0.0
-wrapall             on   ;# wrap all the atoms
- 
 # Potentials and parameters
 paraTypeCharmm      on
 parameters          ../systems/par_all22_prot.prm
 parameters          ../systems/par_all36_prot.prm
 exclude             scaled1-4
-1-4scaling          1.0 
+1-4scaling          1.0
 
 # Non-bonding cutoff
 cutoff              10.0  ;#12.0 
@@ -39,15 +31,17 @@ switchdist           9.0  ;#10.0 # Desde donde comienza el suavizado
 
 # Verlet List
 pairlistdist        11.5  ;#14.0 #Radio externo de Verlet
-# stepspercycle       10    ;#Pasos para el calculo de la lista de Verlet
+stepspercycle       10    ;#Pasos para el calculo de la lista de Verlet
 
-# Particle Mesh Ewald algorithm
-PME                 on    ; # 3D grid representing the system charge.
-PMEgridspacing      1     ; # Maximum distance between grid points in each direction.
 
 # Multiple time steps
 nonbondedFreq       1
 fullElectFrequency  2
+ 
+# The motion
+firsttimestep       0
+timestep            2.0
+rigidBonds          all  
 
 # Ensemble NVT
 temperature         $temperature
@@ -56,27 +50,25 @@ langevinTemp        $temperature;   # bath temperature
 langevinHydrogen    no
 langevinDamping     50.
 
-# # Ensamble NPT
-# langevinPiston      off
-#
-# set pressure          1.01325
-# langevinPistonTarget  $pressure ;# in bar
-# set pressure          [expr $pressure*1.43933857e-10] ;#  in kcalmol/A3 
-#
-# langevinPistonPeriod  100.0 ;# oscillation time constant in fs
-# langevinPistonDecay   50.0 ;# damping time constant in fs
-# useGroupPresyysure    yes ;# needed for rigidBonds
-# useFlexibleCell       no  ;# three directions are independent
-# useConstantArea       no  ;# xy area constant.
- 
 # Output
 outputName          ${oname}
-outputEnergies      10000
-restartfreq         10000
-dcdfreq             10000
-outputTiming        50000
+restartfreq         100000
+outputEnergies      100000
+outputTiming        100000
+if $test {
+  dcdfreq    1
+} else {
+  dcdfreq    100000
+}
 
+# Call to OTFP config
 source OTFP.namd
 
-# variables needed for the tclforcesscript
-run   10000000 ;#  1ns
+# Increase Load Balancer period
+ldbPeriod 100000
+
+if $test {
+  run  5000
+} else {
+  run  10000000 ;#  1ns
+}

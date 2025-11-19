@@ -1,39 +1,14 @@
 #!/bin/tclsh
 
-tclforces             on
+# Set OTFP path
 if {![info exists CFACV_BASEDIR]} {set CFACV_BASEDIR $::env(CFACV_BASEDIR)}
 tclforcesscript       $CFACV_BASEDIR/include/calcforces.tcl
+            
+# OTFP use NAMD tclforces system
+tclforces             on
 
-# Periodic Boundary Conditions
-set XSCFILE         off
-
-# CVs and group definition
-set labelPDB          label.pdb ;# PDB file with group ID (1-based) in beta position
-set cvINP             cv.inp ;# list of CVs types togeter with it's parameters
-
-# for chapeau_output
-set BINREPORTPARAMFREQ     200000
-set BINREPORTPARAMFILE     ${oname} ;#ds->ch->ofp
-set BINOUTPUTLEVEL         3        ;#lambda-hits (e.g. 3 => 11 => both)
- 
-# About grid                
-set DIMEN                        2
-set CUTOFF              [expr acos(-1.)]
-lappend CUTOFF          [expr acos(-1.)]
-set SPLINEMIN           [expr -acos(-1.)]
-lappend SPLINEMIN       [expr -acos(-1.)]
-set NKNOTS                 {151 151} 
-set PERIODIC                {1 1}
-#dr=$CUTOFF-$SPLINEMIN/(NKNOTS-1)
-
-# Offset and interval for improve lambda parameters
-set CFACV_doAnalyticalCalc  1  ;# 1 optmize the analytical parameterization
-set USETAMDFORCES           1  ;# 1 use TAMD forces, 0 use gradient of G
-
-set BEGINEVOLVEPARAMETERS        0  ;# Number of steps without evolution at the start
-set LAMUPDATEINTERVAL       200000
-set BEGINSOLVELAM                0 
-
+# Definition of group/center IDs (1-based) from PDB beta position
+set labelPDB          label.pdb
 
 # Collective Variables
 set cv(num) 1
@@ -64,7 +39,7 @@ set restr(1.bound)    periodic
  set restr(1.max)     [expr acos(-1.)]
  set restr(1.min)     [expr -acos(-1.)]
 set restr(1.outfile)  "phi.r"
-set restr(1.outfreq)  1
+set restr(1.outfreq)  100
 
 set restr(2.cv)       2
 set restr(2.k)         800
@@ -79,9 +54,13 @@ set restr(2.bound)    periodic
  set restr(2.max)     [expr acos(-1.)]
  set restr(2.min)     [expr -acos(-1.)]
 set restr(2.outfile)  "psi.r"
-set restr(2.outfreq)  1
+set restr(2.outfreq)  100
  
-
+if $test {
+ set restr(1.b2)      0.99
+ set restr(2.b2)      0.99
+}
+    
 # Initialize OTFP program
 source $CFACV_BASEDIR/include/cfacv.tcl
- 
+

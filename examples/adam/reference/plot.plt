@@ -18,5 +18,5 @@ set pm3d map
 
 splot [-3.1415:3.1415][-3.1415:3.1415]\
     '../../OTFP2D_periodic/job0_ch0.fes' u 2:1:(Is0($3)-fesmin) notit w pm3d,\
-    '< paste phi.r psi.r' u 1:4:(26) w p ps 0.3
+    '< paste frame_00003.phi.r frame_00003.psi.r' u 1:4:(26) w p ps 0.3 notit
 

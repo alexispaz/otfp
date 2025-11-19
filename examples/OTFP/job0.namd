@@ -63,6 +63,9 @@ if $test {
 # Call to OTFP config
 source OTFP.namd
 
+# Increase Load Balancer period
+ldbPeriod 100000
+
 if $test {
   run  2000
 } else {

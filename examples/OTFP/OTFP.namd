@@ -29,7 +29,6 @@ if $test {
 }
  
 # Control parametrization solver
-set USETAMDFORCES           1     ;# 1 use TAMD forces, 0 use gradient of G
 
 # Collective Variables
 set cv(num) 1

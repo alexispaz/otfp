@@ -12,7 +12,7 @@ extern FILE * my_fopen ( char * name, char * code ) ;
 extern DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed );
 extern int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double * min,
     int * nKnots, double * max, int * periodic, int beginaccum, int beginsolve, 
-    int useTAMDforces, char * outfile, int outfreq, int outlevel, int nupdate);
+    char * outfile, int outfreq, int outlevel, int nupdate);
 extern chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i );
 extern int DataSpace_getN ( DataSpace * ds );
 extern double * DataSpace_centerPos ( DataSpace * ds, int i );

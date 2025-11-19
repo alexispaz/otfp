@@ -1,14 +1,21 @@
 # Scripts to be call by NAMD at each MD timestep.
 
-# Set up the centers as "groups". This give the list groups with the groups ids
-# and only can be done in the script call by tclforces.
-set groups {}
-for {set i 1} { $i <=$pdb(nctrs) } { incr i } {
-  # addgroup is a NAMD command that return a "gN" id with N a small integer
-  set gid [addgroup $pdb($i.atoms)]
-  lappend groups $gid
+proc centers2groups {} {
+  # Set up the centers as "groups". This give the list groups with the groups ids
+  # and only can be done in the script call by tclforces.
+  global groups
+  global pdb
+
+  set groups {}
+  for {set i 1} { $i <=$pdb(nctrs) } { incr i } {
+    # addgroup is a NAMD command that return a "gN" id with N a small integer
+    set gid [addgroup $pdb($i.atoms)]
+    lappend groups $gid
+  }
+
 }
 
+centers2groups
 set BIAS 0
 enabletotalforces
 
@@ -20,6 +27,7 @@ proc calcforces { } {
   global groups
   global first
   global BIAS
+  global SIG
          
   # Segun mis test y deducciones en el primer paso namd hace:
   # 1- llama a calcforces

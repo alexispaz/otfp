@@ -4,7 +4,6 @@ set K 1600
 set TAMDFRIC 800
 set LAMUPDATEINTERVAL 1
 set dt 0.002
-set USETAMDFORCES 1
 set LAMDT $dt
 langevinDamping         50
 

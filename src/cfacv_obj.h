@@ -130,7 +130,7 @@ typedef struct DataSpace {
   int ncv,icv;
   cv ** cv;
   
-  char filename[255];
+  char filename[16];
   int restrsavefreq;
 
   double ** R; // array of center cartesian coordinates R[i][0/1/2]
@@ -148,14 +148,6 @@ typedef struct DataSpace {
   int beginaccum;
   int beginsolve;
 
-  int useTAMDforces; // indicates whether tamd forces are used to
-		     // update auxiliary variables; other choice is
-		     // the use forces available from the
-		     // instantaneous parameterization of the
-		     // analytical free energy (this would make the
-		     // calculation conform to the heterogeneous
-		     // multiscale method
-  
 } DataSpace;
 
 
