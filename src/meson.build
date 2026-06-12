@@ -51,6 +51,7 @@ cfacv_src = files(
   'centers.h',
   'cfacv.c',
   'cfacv_dataspace.c',
+  'cfacv_restraint.c',
   'cfacv.h',
   'cfacv_obj.h',
   'cvs.c',
@@ -193,4 +194,3 @@ executable('chapcrop',
   dependencies: [lapacke, lapack, blas, m],
   install: true,
   )
-

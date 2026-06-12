@@ -3,6 +3,9 @@ extern void cfacvBanner ( void );
 extern tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);
 extern smdOptStruct * New_smdOptStruct ( double target, int t0, int t1);
 extern adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e , double decay, double kkT, double mvar, double vvar, double tmin);
+extern int smdOptInit ( smdOptStruct * smd, double initval);
+extern int rf_getityp ( char * typ );
+extern char * rf_getstyp ( int ityp );
 
 extern restraint * New_restraint ( double k, double z, int nCV, double * cvc, char * rftypstr, double zmin, double zmax, char * boundstr, double boundk, char * outfile, int outputFreq);
 extern void restraint_free ( restraint * r );
@@ -64,4 +67,3 @@ extern int restr_set_rchid ( restraint * r, DataSpace * ds, int chid);
 
 extern void ds_saverestrains ( DataSpace * ds, char * filename );
 extern void ds_loadrestrains ( DataSpace * ds, char * filename );
-

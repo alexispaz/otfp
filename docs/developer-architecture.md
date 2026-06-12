@@ -13,6 +13,7 @@ scientific behavior unless a feature is explicitly removed.
 | SWIG API | `cfacv.i`, `cvs.i`, public headers | Expose C structs/functions to Tcl. |
 | Runtime orchestration | `cfacv.c` | Compute CVs, compute restraint forces, evolve targets, accumulate/solve FES. |
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
+| Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV calculations | `cvs.c`, `measurements.c` | Compute CV values and gradients. |
 | FES/chapeau | `chapeau.c` | Manage grids, accumulation, solving, evaluation, IO, restarts, serialization. |
 | Tools | `catbinsp.c`, `simetrize.c`, `convchapeau.c`, `addchapeaus.c`, `cropchapeaus.c` | Offline manipulation of chapeau outputs/states. |
@@ -95,12 +96,10 @@ should be added as modules are split.
 ## Refactor Sequence
 
 1. Split public headers from internal headers.
-2. Move restraint construction, boundary functions, and evolution functions out
-   of `cfacv.c`.
-3. Replace CV factory switch with a descriptor table.
-4. Move chapeau IO/serialization out of `chapeau.c`.
-5. Move chapeau solver code out of `chapeau.c`.
-6. Decide explicitly which experimental/legacy features remain.
+2. Replace CV factory switch with a descriptor table.
+3. Move chapeau IO/serialization out of `chapeau.c`.
+4. Move chapeau solver code out of `chapeau.c`.
+5. Decide explicitly which experimental/legacy features remain.
 
 ## Behavior Guardrails
 
