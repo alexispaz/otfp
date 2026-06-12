@@ -4,8 +4,6 @@
 #include "cvs.h"
 
 
-// global variables
-
 enum {ZSDCIRCLE, 
       ZSDXRANGE, 
       ZSDRING, 
@@ -25,30 +23,42 @@ enum {ZSDCIRCLE,
       COGZ,
       CARTESIAN_X,
       CARTESIAN_Y,
-      CARTESIAN_Z, 
-      NULL_CV};
+	      CARTESIAN_Z, 
+	      NULL_CV};
 
-char * CVSTRINGS[NULL_CV] = {
-      "ZSDCIRCLE",
-      "ZSDXRANGE",
-      "ZSDRING",
-      "RMSD",
-      "CHARMMD",
-      "GAUSS2D",
-      "D2CHAP",
-      "LINE",
-      "BOND",
-      "BONDS",
-      "HALFBOND",
-      "S",
-      "ANGLE",
-      "DIHED",
-      "COGX",
-      "COGY",
-      "COGZ",
-      "CARTESIAN_X",
-      "CARTESIAN_Y",
-      "CARTESIAN_Z"};
+#define CV_REF_PER_CENTER -1
+
+typedef struct CVDescriptor {
+  const char * name;
+  int (*calc)(cv * c, double ** R);
+  int ref_count;
+  int ref_width;
+  int ref2_count;
+  int ref2_width;
+} CVDescriptor;
+
+static const CVDescriptor CV_DEFS[NULL_CV] = {
+  [ZSDCIRCLE]   = {"ZSDCIRCLE",   calccv_zsd_circle, 0, 0, 0, 0},
+  [ZSDXRANGE]   = {"ZSDXRANGE",   calccv_zsd_xrange, 0, 0, 0, 0},
+  [ZSDRING]     = {"ZSDRING",     calccv_zsd_ring,   0, 0, 0, 0},
+  [RMSD]        = {"RMSD",        calccv_rmsd,       CV_REF_PER_CENTER, 3, 0, 0},
+  [CHARMMD]     = {"CHARMMD",     calccv_charmmd,    1, 3, 0, 0},
+  [GAUSS2D]     = {"GAUSS2D",     calccv_gauss2d,    1, 4, 0, 0},
+  [D2CHAP]      = {"D2CHAP",      calccv_d2chap,     1, 1, 0, 0},
+  [LINE]        = {"LINE",        calccv_line,       CV_REF_PER_CENTER, 3, CV_REF_PER_CENTER, 3},
+  [BOND]        = {"BOND",        calccv_bond,       0, 0, 0, 0},
+  [BONDS]       = {"BONDS",       calccv_bonds,      0, 0, 0, 0},
+  [HALFBOND]    = {"HALFBOND",    calccv_halfbond,   0, 0, 0, 0},
+  [S]           = {"S",           calccv_s,          0, 0, 0, 0},
+  [ANGLE]       = {"ANGLE",       calccv_angle,      0, 0, 0, 0},
+  [DIHED]       = {"DIHED",       calccv_dihed,      0, 0, 0, 0},
+  [COGX]        = {"COGX",        calccv_cogx,       0, 0, 0, 0},
+  [COGY]        = {"COGY",        calccv_cogy,       0, 0, 0, 0},
+  [COGZ]        = {"COGZ",        calccv_cogz,       0, 0, 0, 0},
+  [CARTESIAN_X] = {"CARTESIAN_X", calccv_x,          0, 0, 0, 0},
+  [CARTESIAN_Y] = {"CARTESIAN_Y", calccv_y,          0, 0, 0, 0},
+  [CARTESIAN_Z] = {"CARTESIAN_Z", calccv_z,          0, 0, 0, 0},
+};
 
 // zsd circle
 double zsdc_x,zsdc_y;
@@ -63,10 +73,31 @@ double zsdr_r2; //external radius of the cilinder
 double zsdr_s; //radius of the lipids
 // Constructores
 
+static int cv_ref_count ( const CVDescriptor * def, int nC ) {
+  if (def->ref_count == CV_REF_PER_CENTER) return nC;
+  return def->ref_count;
+}
+
+static int cv_ref2_count ( const CVDescriptor * def, int nC ) {
+  if (def->ref2_count == CV_REF_PER_CENTER) return nC;
+  return def->ref2_count;
+}
+
+static double ** cv_alloc_ref ( int count, int width ) {
+  int i;
+  double ** ref;
+
+  if (count <= 0) return NULL;
+  ref = malloc(count*sizeof(double*));
+  for (i=0;i<count;i++) ref[i] = calloc(width,sizeof(double));
+  return ref;
+}
+
 cv * cv_init ( char * typ, int nC, int * ind, 
     double zmin, double zmax, char * boundstr, double boundk,
     char * outfile, int outputFreq )  {
   int i;
+  const CVDescriptor * def;
   cv * c=calloc(1,sizeof(cv));
 
   c->nC=nC;
@@ -85,50 +116,16 @@ cv * cv_init ( char * typ, int nC, int * ind,
   for (i=0;i<nC;i++) c->gr[i]=malloc(3*sizeof(double));
 
   c->typ=cv_getityp(typ);
-  switch(c->typ) {
-    case ZSDCIRCLE:   c->calc = calccv_zsd_circle; break;
-    case ZSDXRANGE:   c->calc = calccv_zsd_xrange; break;
-    case ZSDRING:     c->calc = calccv_zsd_ring; break;
-    case RMSD:        c->calc = calccv_rmsd; 
-                      c->ref = malloc(nC*sizeof(double*));
-                      for (i=0;i<nC;i++) c->ref[i] = calloc(3,sizeof(double));
-                      break;
-    case D2CHAP:      c->calc = calccv_d2chap;
-                      c->ref = malloc(1*sizeof(double*));
-                      c->ref[0] = calloc(1,sizeof(double));
-                      break;
-    case GAUSS2D:     c->calc = calccv_gauss2d; 
-                      c->ref = malloc(1*sizeof(double*));
-                      c->ref[0] = calloc(4,sizeof(double));
-                      // ref will hold k,delta and n for charmm potential
-                      break; 
-    case CHARMMD:     c->calc = calccv_charmmd; 
-                      c->ref = malloc(1*sizeof(double*));
-                      c->ref[0] = calloc(3,sizeof(double));
-                      // ref will hold k,delta and n for charmm potential
-                      break; 
-    case LINE:    c->calc = calccv_line; 
-                      c->ref = malloc(nC*sizeof(double*));
-                      for (i=0;i<nC;i++) c->ref[i] = calloc(3,sizeof(double));
-                      c->ref2 = malloc(nC*sizeof(double*));
-                      for (i=0;i<nC;i++) c->ref2[i] = calloc(3,sizeof(double));
-                      break;
-    case BOND:        c->calc = calccv_bond; break;
-    case BONDS:       c->calc = calccv_bonds; break;
-    case HALFBOND:    c->calc = calccv_halfbond; break;
-    case S:           c->calc = calccv_s; break;
-    case ANGLE:       c->calc = calccv_angle; break;
-    case DIHED:       c->calc = calccv_dihed; break;
-    case COGX:	      c->calc = calccv_cogx; break;
-    case COGY:	      c->calc = calccv_cogy; break;
-    case COGZ:	      c->calc = calccv_cogz; break;
-    case CARTESIAN_X: c->calc = calccv_x; break;
-    case CARTESIAN_Y: c->calc = calccv_y; break;
-    case CARTESIAN_Z: c->calc = calccv_z; break;
-    default: 
-      fprintf(stderr,"ERROR, CV not recognized");
-      fflush(stderr);exit(-1);break;
+  if (c->typ < 0) {
+    fprintf(stderr,"ERROR, CV not recognized");
+    fflush(stderr);
+    exit(-1);
   }
+
+  def = &CV_DEFS[c->typ];
+  c->calc = def->calc;
+  c->ref = cv_alloc_ref(cv_ref_count(def, nC), def->ref_width);
+  c->ref2 = cv_alloc_ref(cv_ref2_count(def, nC), def->ref2_width);
                        
   // boundary function
   c->f=0.;
@@ -163,6 +160,8 @@ cv * cv_init ( char * typ, int nC, int * ind,
 void cv_free ( cv * c ) {
   int i;
   int nref;
+  int nref2;
+  const CVDescriptor * def;
 
   if (!c) return;
   free(c->ind);
@@ -170,13 +169,15 @@ void cv_free ( cv * c ) {
     for (i=0;i<c->nC;i++) free(c->gr[i]);
     free(c->gr);
   }
-  nref = (c->typ == RMSD || c->typ == LINE) ? c->nC : 1;
+  def = (c->typ >= 0 && c->typ < NULL_CV) ? &CV_DEFS[c->typ] : NULL;
+  nref = def ? cv_ref_count(def, c->nC) : 0;
+  nref2 = def ? cv_ref2_count(def, c->nC) : 0;
   if (c->ref) {
     for (i=0;i<nref;i++) free(c->ref[i]);
     free(c->ref);
   }
   if (c->ref2) {
-    for (i=0;i<c->nC;i++) free(c->ref2[i]);
+    for (i=0;i<nref2;i++) free(c->ref2[i]);
     free(c->ref2);
   }
   if (c->d2ch) chapeau_free(c->d2ch);
@@ -200,13 +201,13 @@ double * cv_access_ref2 ( cv * c, int i ) {
 // Get properties
 int cv_getityp ( char * typ ) {
   int i;
-  for (i=0;i<NULL_CV&&strcmp(typ,CVSTRINGS[i]);i++);
+  for (i=0;i<NULL_CV&&strcmp(typ,CV_DEFS[i].name);i++);
   if (i<NULL_CV) return i;
   else return -1;
 }
 
 char * cv_getstyp ( int ityp ) {
-  if (ityp<NULL_CV) return CVSTRINGS[ityp];
+  if (ityp>=0 && ityp<NULL_CV) return (char *)CV_DEFS[ityp].name;
   else return "NOT_FOUND";
 }
  
