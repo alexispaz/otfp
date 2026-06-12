@@ -16,7 +16,7 @@ executables. It is also posible to compile using meson, e.g.:
     git clone https://github.com/alexispaz/otfp.git
     cd otfp
     meson setup build 
-    meson compile -vC build
+    meson compile -C build
 
 Then, run `meson install` or `meson dist` to create a distribution.
 

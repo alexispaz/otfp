@@ -1,0 +1,20 @@
+site_name: OTFP
+site_description: On-the-fly free-energy parameterization tools for NAMD/TclForce workflows
+repo_url: https://github.com/alexispaz/otfp
+
+theme:
+  name: readthedocs
+
+nav:
+  - Home: index.md
+  - Build: build.md
+  - Features: features.md
+  - Examples: examples.md
+  - Testing: testing.md
+  - Code audit: audit.md
+  - Developer architecture: developer-architecture.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
