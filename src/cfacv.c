@@ -104,7 +104,7 @@ restraint * New_restraint (
     char * outfile, int outputFreq
     ) {
 
-  restraint * newr=malloc(sizeof(restraint));
+  restraint * newr=calloc(1,sizeof(restraint));
   int i,b_pbc,b_peri;
   b_pbc=0;
   b_peri=0;
@@ -170,6 +170,16 @@ restraint * New_restraint (
   }
 
   return newr;
+}
+
+void restraint_free ( restraint * r ) {
+  if (!r) return;
+  free(r->cvc);
+  free(r->tamdOpt);
+  free(r->smdOpt);
+  free(r->adamOpt);
+  if (r->boutput && r->ofp) fclose(r->ofp);
+  free(r);
 }
 
 tamdOptStruct * New_tamdOptStruct ( double g, double kT, double dt, int riftyp) {
@@ -574,7 +584,7 @@ int uniformvelocity ( restraint * r ) {
 
 
 DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
-  DataSpace * ds = malloc(sizeof(DataSpace));
+  DataSpace * ds = calloc(1,sizeof(DataSpace));
   int i;
   ds->N=Nctr;
   ds->K=Nrstr;
@@ -603,10 +613,10 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   ds->R=malloc(Nctr*sizeof(double*));
   for (i=0;i<Nctr;i++) ds->R[i]=calloc(3,sizeof(double));
 
-  ds->ac = malloc(Nctr*sizeof(atomCenterStruct*));
+  ds->ac = calloc(Nctr,sizeof(atomCenterStruct*));
 
-  ds->cv=malloc(Ncv*sizeof(cv*));
-  ds->restr=malloc(Nrstr*sizeof(restraint*));
+  ds->cv=calloc(Ncv,sizeof(cv*));
+  ds->restr=calloc(Nrstr,sizeof(restraint*));
 
   ds->doAnalyticalCalc=0;
   ds->evolveAnalyticalParameters=0;
@@ -618,6 +628,33 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   ds->restrsavefreq = 100000;
 
   return ds;
+}
+
+void DataSpace_free ( DataSpace * ds ) {
+  int i;
+
+  if (!ds) return;
+  if (ds->R) {
+    for (i=0;i<ds->N;i++) free(ds->R[i]);
+    free(ds->R);
+  }
+  if (ds->ac) {
+    for (i=0;i<ds->N;i++) atomCenterStruct_free(ds->ac[i]);
+    free(ds->ac);
+  }
+  if (ds->cv) {
+    for (i=0;i<ds->ncv;i++) cv_free(ds->cv[i]);
+    free(ds->cv);
+  }
+  if (ds->restr) {
+    for (i=0;i<ds->K;i++) restraint_free(ds->restr[i]);
+    free(ds->restr);
+  }
+  if (ds->ch) {
+    for (i=0;i<ds->ch_num;i++) chapeau_free(ds->ch[i]);
+    free(ds->ch);
+  }
+  free(ds);
 }
 
 chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i ) {
@@ -737,8 +774,6 @@ int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m ) {
   
   i=ds->iN-1;
   ds->ac[i]=New_atomCenterStruct(n);
-  ds->ac[i]->ind=calloc(n,sizeof(int));
-  ds->ac[i]->m=calloc(n,sizeof(double));
   for (j=0;j<n;j++) {
     ds->ac[i]->ind[j]=ind[j];
     ds->ac[i]->m[j]=m[j];
@@ -1103,6 +1138,4 @@ void DataSpace_ReportAll ( DataSpace * ds ) {
     
   }
 }
-
-
 

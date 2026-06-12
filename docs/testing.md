@@ -15,14 +15,25 @@ meson install -C build
 meson test -C build examples
 ```
 
+There is also a small C lifecycle test:
+
+```sh
+meson test -C build lifecycle
+```
+
+It constructs and frees a minimal `DataSpace` with atom centers, one CV, and
+one restraint. This test is intentionally narrow; it catches constructor,
+destructor, and link-level regressions before the slower example suite runs.
+
 The script runs from `examples/` and checks selected output files against each
 example's `reference/` directory.
 
 ## Current coverage
 
-The current runner focuses on high-level example behavior. It is valuable
-because it exercises Tcl wrappers, the mock NAMD interface, chapeau output, and
-numeric regression files together.
+The current test set combines a low-level lifecycle test with high-level
+example behavior. The example runner is valuable because it exercises Tcl
+wrappers, the mock NAMD interface, chapeau output, and numeric regression files
+together.
 
 Recommended next additions:
 

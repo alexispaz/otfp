@@ -66,9 +66,18 @@ Current allocated objects:
 - `adamOptStruct`
 - `chapeau`
 
-Only `chapeau` has a real destructor today. Refactoring should add destructors
-for the rest before larger moves, because tests and sanitizers need explicit
-lifetime control.
+The refactor branch now has destructors for the core runtime objects:
+
+- `atomCenterStruct_free`
+- `centerStruct_free`
+- `cv_free`
+- `restraint_free`
+- `DataSpace_free`
+- `chapeau_free`
+
+The `lifecycle` Meson test exercises the basic constructor/destructor path for
+`DataSpace`, atom centers, one CV, and one restraint. Broader ownership tests
+should be added as modules are split.
 
 ## High-Value Refactor Targets
 
@@ -84,15 +93,14 @@ lifetime control.
 
 ## Refactor Sequence
 
-1. Add destructors and targeted tests for construction/free paths.
-2. Split public headers from internal headers.
-3. Move `DataSpace` construction and accessors out of `cfacv.c`.
-4. Move restraint construction, boundary functions, and evolution functions out
+1. Split public headers from internal headers.
+2. Move `DataSpace` construction and accessors out of `cfacv.c`.
+3. Move restraint construction, boundary functions, and evolution functions out
    of `cfacv.c`.
-5. Replace CV factory switch with a descriptor table.
-6. Move chapeau IO/serialization out of `chapeau.c`.
-7. Move chapeau solver code out of `chapeau.c`.
-8. Decide explicitly which experimental/legacy features remain.
+4. Replace CV factory switch with a descriptor table.
+5. Move chapeau IO/serialization out of `chapeau.c`.
+6. Move chapeau solver code out of `chapeau.c`.
+7. Decide explicitly which experimental/legacy features remain.
 
 ## Behavior Guardrails
 

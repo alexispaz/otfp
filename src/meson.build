@@ -78,7 +78,7 @@ endif
                  
 cfacv_src += swig_gen.process('cfacv.i')
 
-shared_library(
+cfacv_lib = shared_library(
   'cfacv',
   cfacv_src,
   dependencies: cfacv_dep,
@@ -86,6 +86,16 @@ shared_library(
   install: true,
   install_dir: 'lib/',
 )
+
+lifecycle_test = executable(
+  'test-lifecycle',
+  files('../tests/lifecycle.c'),
+  include_directories: include_directories('.'),
+  link_with: cfacv_lib,
+  dependencies: cfacv_dep,
+)
+
+test('lifecycle', lifecycle_test)
 
 
 
@@ -182,6 +192,5 @@ executable('chapcrop',
   dependencies: [lapacke, lapack, blas, m],
   install: true,
   )
-
 
 

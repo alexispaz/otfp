@@ -67,7 +67,7 @@ cv * cv_init ( char * typ, int nC, int * ind,
     double zmin, double zmax, char * boundstr, double boundk,
     char * outfile, int outputFreq )  {
   int i;
-  cv * c=malloc(sizeof(cv));
+  cv * c=calloc(1,sizeof(cv));
 
   c->nC=nC;
   c->val=0.0;
@@ -158,6 +158,30 @@ cv * cv_init ( char * typ, int nC, int * ind,
   }
    
   return c;
+}
+
+void cv_free ( cv * c ) {
+  int i;
+  int nref;
+
+  if (!c) return;
+  free(c->ind);
+  if (c->gr) {
+    for (i=0;i<c->nC;i++) free(c->gr[i]);
+    free(c->gr);
+  }
+  nref = (c->typ == RMSD || c->typ == LINE) ? c->nC : 1;
+  if (c->ref) {
+    for (i=0;i<nref;i++) free(c->ref[i]);
+    free(c->ref);
+  }
+  if (c->ref2) {
+    for (i=0;i<c->nC;i++) free(c->ref2[i]);
+    free(c->ref2);
+  }
+  if (c->d2ch) chapeau_free(c->d2ch);
+  if (c->boutput && c->ofp) fclose(c->ofp);
+  free(c);
 }
 
 // Get addresses

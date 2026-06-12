@@ -7,6 +7,7 @@
 // headers
 extern cv * cv_init ( char * typ, int nC, int * ind, 
     double zmin, double zmax, char * boundstr, double boundk, char * outfile, int outputFreq);
+extern void cv_free ( cv * c );
 
 extern int cv_getityp ( char * typ );
 extern char * cv_getstyp ( int ityp );
@@ -50,4 +51,3 @@ extern double * cv_access_ref2 ( cv * c, int i );
 extern void cv_output ( cv * c );
 
 extern int set_line (cv * c);
-

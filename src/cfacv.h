@@ -5,11 +5,13 @@ extern smdOptStruct * New_smdOptStruct ( double target, int t0, int t1);
 extern adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e , double decay, double kkT, double mvar, double vvar, double tmin);
 
 extern restraint * New_restraint ( double k, double z, int nCV, double * cvc, char * rftypstr, double zmin, double zmax, char * boundstr, double boundk, char * outfile, int outputFreq);
+extern void restraint_free ( restraint * r );
     
 
 // Other subroutines
 extern FILE * my_fopen ( char * name, char * code ) ;
 extern DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed );
+extern void DataSpace_free ( DataSpace * ds );
 extern int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double * min,
     int * nKnots, double * max, int * periodic, int beginaccum, int beginsolve, 
     char * outfile, int outfreq, int outlevel, int nupdate);
@@ -62,5 +64,4 @@ extern int restr_set_rchid ( restraint * r, DataSpace * ds, int chid);
 
 extern void ds_saverestrains ( DataSpace * ds, char * filename );
 extern void ds_loadrestrains ( DataSpace * ds, char * filename );
-
 

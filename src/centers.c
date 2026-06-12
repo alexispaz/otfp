@@ -9,6 +9,13 @@ atomCenterStruct * New_atomCenterStruct ( int n ) {
   return newac;
 }
 
+void atomCenterStruct_free ( atomCenterStruct * ac ) {
+  if (!ac) return;
+  free(ac->ind);
+  free(ac->m);
+  free(ac);
+}
+
 // note: all code below is not really used by cfacv-otfp, but 
 // can be useful for automated creation of collective variables.
 
@@ -187,6 +194,14 @@ centerStruct * New_centerStruct ( int id, int maxN ) {
   c->left=NULL;
   c->right=NULL;
   return c;
+}
+
+void centerStruct_free ( centerStruct * c ) {
+  if (!c) return;
+  centerStruct_free(c->left);
+  centerStruct_free(c->right);
+  free(c->mList);
+  free(c);
 }
 
 void centerStruct_addMember ( centerStruct * c, int i ) {

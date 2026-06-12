@@ -121,6 +121,8 @@ chapeau * chapeau_alloc ( int dm, double * rmin, double * rmax, int * N, int * p
 void chapeau_free ( chapeau * ch ) {
   int i;
 
+  if (!ch) return;
+  if (ch->ofp) fclose(ch->ofp);
   free(ch->periodic);
   free(ch->rmin);
   free(ch->rmax);
@@ -1938,4 +1940,3 @@ int accumulate_2D( chapeau * ch, double bias ) {
   return 0;
 }
  
-
