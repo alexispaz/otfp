@@ -62,6 +62,7 @@ cfacv_src = files(
   'centers.h',
   'cfacv.c',
   'cfacv_dataspace.c',
+  'cfacv_force.c',
   'cfacv_restraint.c',
   'cfacv.h',
   'cfacv_internal.h',

@@ -12,7 +12,8 @@ scientific behavior unless a feature is explicitly removed.
 | Tcl setup | `cfacv.tcl`, `cvs.tcl`, `restraints.tcl`, `chapeau.tcl`, `data.tcl` | Parse user variables, allocate C objects through SWIG, and prepare runtime state. |
 | SWIG API | `cfacv.i`, `cvs.i`, public headers | Expose C structs/functions to Tcl. |
 | Runtime public API | `cfacv.h` | Expose opaque runtime, restraint, and optimizer types plus user/SWIG-facing setup and update functions. |
-| Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and orchestrate CVs, forces, targets, and FES updates. |
+| Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and expose runtime helpers for CV computation, energy, and reporting. |
+| Runtime force loop | `cfacv_force.c` | Orchestrate per-step force clearing, restraint values, restraint forces, CV boundary forces, chapeau updates, and target evolution. |
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV public API | `cvs.h` | Expose the opaque `cv` type and user/SWIG-facing CV lifecycle, type, reference, and setup helpers. |
