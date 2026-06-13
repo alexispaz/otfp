@@ -84,8 +84,8 @@ double DataSpace_ComputeCVs ( DataSpace * ds ) {
   bias=0;
   if (!ds) return -1;
   for (i=0;i<ds->ncv;i++){
-    ds->cv[i]->calc(ds->cv[i],ds->R);
-    if (ds->cv[i]->amd) bias+=ds->cv[i]->val;
+    cv_compute(ds->cv[i],ds->R);
+    bias+=cv_bias_value(ds->cv[i]);
   }
  
   return bias;
@@ -117,7 +117,7 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
     r->val=0.0;
     for (j=0;j<r->nCV;j++) {
       cv=ds->cv[j];
-      r->val+=cvc[j]*cv->val;
+      r->val+=cvc[j]*cv_value(cv);
     }
     
     if (first) {
@@ -150,10 +150,12 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
       if (r->cvc[j]) {
         
         // For each center in this CV
-        for (jj=0;jj<cv->nC;jj++) {
+        for (jj=0;jj<cv_center_count(cv);jj++) {
 
           /* Increment the forces of the jj'th cartesian center on the j'th cv of this restraint */
-          for (d=0;d<3;d++) ds->R[ cv->ind[jj] ][d]+=r->cvc[j]*cv->gr[jj][d]*r->f;
+          for (d=0;d<3;d++) {
+            ds->R[cv_center_index(cv,jj)][d]+=r->cvc[j]*cv_gradient_component(cv,jj,d)*r->f;
+          }
         }
       }
     }
@@ -164,21 +166,20 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
     cv=ds->cv[j];
 
     // Restart forces in CVs
-    cv->f=0;
-    cv->u=0;
+    cv_reset_force_energy(cv);
 
     // Compute the boundary forces
-    cv->boundFunc(cv);
+    cv_apply_boundary(cv);
     
     // Add boundary forces
-    for (jj=0;jj<cv->nC;jj++) {
-      for (d=0;d<3;d++) ds->R[ cv->ind[jj] ][d]+=cv->gr[jj][d]*cv->f;
+    for (jj=0;jj<cv_center_count(cv);jj++) {
+      for (d=0;d<3;d++) {
+        ds->R[cv_center_index(cv,jj)][d]+=cv_gradient_component(cv,jj,d)*cv_force(cv);
+      }
     }
 
     // cv output
-    if (cv->boutput) {
-      if (!(timestep % cv->outputFreq)) cv_output(cv);
-    }
+    if (cv_should_output(cv,timestep)) cv_output(cv);
      
   }
    
@@ -282,7 +283,7 @@ void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res ) {
   if (ds) {
     int i;
     for (i=0;i<ds->ncv;i++) {
-      if (active[i]) res[i]=ds->cv[i]->val;
+      if (active[i]) res[i]=cv_value(ds->cv[i]);
       else res[i]=0.0;
     }
   }

@@ -950,4 +950,45 @@ void cv_output ( cv * c ) {
   fprintf(c->ofp," %11.5f\n",c->f);
   fflush(c->ofp);
 }
+
+int cv_compute ( cv * c, double ** R ) {
+  return c->calc(c,R);
+}
+
+double cv_bias_value ( cv * c ) {
+  return c->amd ? c->val : 0.0;
+}
+
+double cv_value ( cv * c ) {
+  return c->val;
+}
+
+int cv_center_count ( cv * c ) {
+  return c->nC;
+}
+
+int cv_center_index ( cv * c, int i ) {
+  return c->ind[i];
+}
+
+double cv_gradient_component ( cv * c, int center, int dim ) {
+  return c->gr[center][dim];
+}
+
+void cv_reset_force_energy ( cv * c ) {
+  c->f=0;
+  c->u=0;
+}
+
+void cv_apply_boundary ( cv * c ) {
+  c->boundFunc(c);
+}
+
+double cv_force ( cv * c ) {
+  return c->f;
+}
+
+int cv_should_output ( cv * c, int timestep ) {
+  return c->boutput && !(timestep % c->outputFreq);
+}
             

@@ -61,6 +61,9 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
 - `cvs.h` declares `typedef struct cv cv` plus public CV helpers.
 - `cvs_internal.h` defines `struct cv` and the internal calculation/boundary
   functions used by the C runtime.
+- Runtime force orchestration uses CV helper functions for compute, value,
+  gradient, boundary force, and output scheduling; direct CV field access is
+  limited to diagnostic reporting and CV implementation code.
 - `cfacv.h` declares opaque `DataSpace`, `restraint`, and optimizer types plus
   the Tcl-facing runtime setup/update API.
 - `cfacv_internal.h` defines the runtime structs and internal force/evolution
@@ -113,7 +116,7 @@ should be added as modules are split.
 | --- | --- | --- |
 | `cfacv.c` | Mixes construction, force loop, output, restart, target evolution, and OTFP solve orchestration. | Split into `dataspace`, `restraint`, `evolution`, and `force_loop` modules. |
 | `cvs.c` | Switch-heavy factory, global setup state for ZSD CVs, and all CV implementations in one file. | Use CV descriptor tables and per-CV parameter structs. |
-| `chapeau_internal.h` | Internal chapeau state is isolated, and runtime orchestration now uses focused helper APIs. Tools and chapeau modules still access fields directly. | Keep narrowing direct field access where it reduces coupling without obscuring numerical code. |
+| Internal state headers | Chapeau and CV state are isolated, and runtime orchestration now uses focused helper APIs for their hot paths. Tools, diagnostics, and implementation modules still access fields directly. | Keep narrowing direct field access where it reduces coupling without obscuring numerical code. |
 | `chapeau_sparse.c` | Duplicate implementation marked under construction. | Remove from default architecture or replace with a backend interface. |
 | SWIG headers | Internal helpers become Tcl-visible API. | Expose a small deliberate API. |
 | Error handling | Most failures call `exit`, which is hard to test and hard to recover from Tcl. | Return status codes in C and convert to Tcl errors at the boundary. |

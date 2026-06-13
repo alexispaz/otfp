@@ -68,4 +68,15 @@ int cv_nada ( cv * c );
 
 int set_line (cv * c);
 
+int cv_compute ( cv * c, double ** R );
+double cv_bias_value ( cv * c );
+double cv_value ( cv * c );
+int cv_center_count ( cv * c );
+int cv_center_index ( cv * c, int i );
+double cv_gradient_component ( cv * c, int center, int dim );
+void cv_reset_force_energy ( cv * c );
+void cv_apply_boundary ( cv * c );
+double cv_force ( cv * c );
+int cv_should_output ( cv * c, int timestep );
+
 #endif
