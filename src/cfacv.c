@@ -91,28 +91,20 @@ double DataSpace_ComputeCVs ( DataSpace * ds ) {
   return bias;
 }
 
+static void DataSpace_clear_forces ( DataSpace * ds ) {
+  int i,d;
 
-int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, double bias ) {
-  int i,j,jj;
-  int d=0;
-  int rabort;
-  int K;
+  for (i=0;i<ds->N;i++) {
+    for (d=0;d<3;d++) ds->R[i][d]=0.0;
+  }
+}
+
+static void DataSpace_compute_restraint_values ( DataSpace * ds, int first ) {
+  int i,j;
   int nCV;
-  double coefficient;
   cv * cv;
   restraint * r;
-  chapeau * ch;
-      
-  // install SIGINT handler
-  signal(SIGINT, handler);   
-  if (!ds) return -1;
-  K=ds->K;
 
-  /* clear out the position arrays to hold forces to be communicated
-     back to tclForces */
-  for (i=0;i<ds->N;i++) for (d=0;d<3;d++) ds->R[i][d]=0.0;
-
-  /* Loop over all restraints and compute restraint values from their CV's */
   for (i=0;i<ds->K;i++) {
     r=ds->restr[i];
     nCV=restraint_cv_count(r);
@@ -121,127 +113,130 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
       cv=ds->cv[j];
       restraint_add_cv_value(r,j,cv_value(cv));
     }
-    
-    if (first) {
-      restraint_init_target_from_value(r);
-    }
+
+    if (first) restraint_init_target_from_value(r);
   }
-  /* compute forces on all restraints */
+}
+
+static void DataSpace_apply_restraint_forces ( DataSpace * ds, int timestep ) {
+  int i,j,jj,d;
+  int nCV;
+  double coefficient;
+  cv * cv;
+  restraint * r;
+
   for (i=0;i<ds->K;i++) {
     r=ds->restr[i];
     nCV=restraint_cv_count(r);
 
-    // Compute the energy and the force of the restrain
     restraint_compute_energy(r);
-
-    // restraint output
     if (restraint_should_output(r,timestep)) restr_output(r);
 
-    /* accumulate force increments in ds->R for each real particle*/
-    /* cv->gr[jj][kk] = \partial CV / \partial (kk-coord of center jj of CV) */
-
-    // For each CV in this restraint
     for (j=0;j<nCV;j++) {
       cv=ds->cv[j];
       coefficient=restraint_cv_coefficient(r,j);
-      if (coefficient) {
-        
-        // For each center in this CV
-        for (jj=0;jj<cv_center_count(cv);jj++) {
+      if (!coefficient) continue;
 
-          /* Increment the forces of the jj'th cartesian center on the j'th cv of this restraint */
-          for (d=0;d<3;d++) {
-            ds->R[cv_center_index(cv,jj)][d]+=coefficient*cv_gradient_component(cv,jj,d)*restraint_force(r);
-          }
+      for (jj=0;jj<cv_center_count(cv);jj++) {
+        for (d=0;d<3;d++) {
+          ds->R[cv_center_index(cv,jj)][d]+=coefficient*cv_gradient_component(cv,jj,d)*restraint_force(r);
         }
       }
     }
   }
+}
 
-  // For each CV in dataspace
+static void DataSpace_apply_cv_boundary_forces ( DataSpace * ds, int timestep ) {
+  int j,jj,d;
+  cv * cv;
+
   for (j=0;j<ds->ncv;j++) {
     cv=ds->cv[j];
 
-    // Restart forces in CVs
     cv_reset_force_energy(cv);
-
-    // Compute the boundary forces
     cv_apply_boundary(cv);
-    
-    // Add boundary forces
+
     for (jj=0;jj<cv_center_count(cv);jj++) {
       for (d=0;d<3;d++) {
         ds->R[cv_center_index(cv,jj)][d]+=cv_gradient_component(cv,jj,d)*cv_force(cv);
       }
     }
 
-    // cv output
     if (cv_should_output(cv,timestep)) cv_output(cv);
-     
   }
-   
-  // OTFP
-  if (ds->doAnalyticalCalc) {
- 
-    // Add statistic to b and A matrix
-    if (timestep>ds->beginaccum) {
-      for (i=0;i<ds->K;i++) {
-        r=ds->restr[i];
-        ch=ds->ch[restraint_chapeau_id(r)];
-        chapeau_set_sample(ch,restraint_chapeau_dim(r),restraint_target(r),-restraint_force(r)); // F=k(\theta-z)
-      }
-      for (i=0;i<ds->ch_num;i++) {
-        chapeau_accumulate_sample(ds->ch[i],bias);
-      }
+}
+
+static void DataSpace_update_chapeau ( DataSpace * ds, int timestep, double bias ) {
+  int i;
+  restraint * r;
+  chapeau * ch;
+
+  if (!ds->doAnalyticalCalc) return;
+
+  if (timestep>ds->beginaccum) {
+    for (i=0;i<ds->K;i++) {
+      r=ds->restr[i];
+      ch=ds->ch[restraint_chapeau_id(r)];
+      chapeau_set_sample(ch,restraint_chapeau_dim(r),restraint_target(r),-restraint_force(r)); // F=k(\theta-z)
     }
-
-    // Solving FES
-    if (ds->evolveAnalyticalParameters) {
-
-      for (i=0;i<ds->ch_num;i++) {
-        ch=ds->ch[i];
-
-        if (chapeau_should_solve(ch,timestep,ds->beginsolve)) {
-          // chapeau_savestate(ch,"after.ch0\0");
-         // getchar();
-          chapeau_solve(ch);
-
-          // chapeau_savestate(ch,"before.ch0\0");
-        }
-
-        if (chapeau_should_output(ch,timestep)) {
-          chapeau_output(ch,timestep);
-
-          // TODO: separete savestate from outputFreq
-          chapeau_savestate_default(ch);
-        }
-      }
+    for (i=0;i<ds->ch_num;i++) {
+      chapeau_accumulate_sample(ds->ch[i],bias);
     }
   }
-   
-  // Evolving auxilary variables
-  rabort=0;
-  for (i=0;i<K;i++) {
+
+  if (!ds->evolveAnalyticalParameters) return;
+
+  for (i=0;i<ds->ch_num;i++) {
+    ch=ds->ch[i];
+
+    if (chapeau_should_solve(ch,timestep,ds->beginsolve)) {
+      chapeau_solve(ch);
+    }
+
+    if (chapeau_should_output(ch,timestep)) {
+      chapeau_output(ch,timestep);
+
+      // TODO: separete savestate from outputFreq
+      chapeau_savestate_default(ch);
+    }
+  }
+}
+
+static int DataSpace_evolve_restraints ( DataSpace * ds, int timestep ) {
+  int i;
+  int rabort=0;
+  restraint * r;
+
+  for (i=0;i<ds->K;i++) {
     r=ds->restr[i];
 
     if (restraint_evolve_for_timestep(r,timestep)) {
       ds_saverestrains(ds,ds->filename);
       restraint_stop_evolution(r);
-      rabort=rabort+1;
+      rabort++;
     }
   }
 
-  //Save restr trajectory for future restart
-  if(K>0) {
+  if(ds->K>0) {
     if (!(timestep % ds->restrsavefreq)) ds_saverestrains(ds,ds->filename);
   }
- 
-  // Abort simulation when all restraint want it
-  // this is usefull for things like adam.
-  // To skip, add a dummy restraint without adam.
-  if(rabort==K) {return 2;}
-              
+
+  if(rabort==ds->K) return 2;
   return 0;
+}
+
+int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, double bias ) {
+  // install SIGINT handler
+  signal(SIGINT, handler);
+  if (!ds) return -1;
+
+  DataSpace_clear_forces(ds);
+  DataSpace_compute_restraint_values(ds,first);
+  DataSpace_apply_restraint_forces(ds,timestep);
+  DataSpace_apply_cv_boundary_forces(ds,timestep);
+  DataSpace_update_chapeau(ds,timestep,bias);
+
+  return DataSpace_evolve_restraints(ds,timestep);
 }
 
 double DataSpace_RestraintEnergy ( DataSpace * ds ) {
