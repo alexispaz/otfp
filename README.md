@@ -10,8 +10,7 @@ interface to be used with [NAMD](www.ks.uiuc.edu/Research/namd) via TCLforce.
  
 # Build system
 
-There is a `src/makefile` file that can be used to build libraries and
-executables. It is also posible to compile using meson, e.g.:
+OTFP builds libraries and executables with Meson, e.g.:
 
     git clone https://github.com/alexispaz/otfp.git
     cd otfp
@@ -44,20 +43,6 @@ Also optimization might be given:
       -Doptimization=3 \
       -Dwarning_level=0 -Dwerror=false \
       -Db_ndebug=true -Dstrip=true 
-
-## Using sparse solvers
-
-To improve efficiency in solving periodicity in FES, Direct Sparse Solvers of
-Intel Math Kernel Library can be use. Intel oneAPI MKL (oneMKL) provides
-pkg-config metadata files that can be used by meson build system. Check them
-with:
-
-    pkg-config --list-all | grep mkl
-
-The setup will be something like
-
-    meson setup build --prefix=$(realpath ./usr) \
-      -Dblas=mkl-dynamic-lp64-gomp -Dlapack=mkl-dynamic-lp64-gomp
 
 # Citations
 
@@ -149,6 +134,5 @@ Attempt to add chapeau object files together.
 If attempt fail, it might be needed to adjust the size of
 chapeau objects to have the same number of knots using
 `chapcrop`
-
 
 
