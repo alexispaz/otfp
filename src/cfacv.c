@@ -31,7 +31,7 @@
 #include <math.h>
 
 #include "cfacv_obj.h"
-#include "chapeau.h"       // basis functions
+#include "chapeau_internal.h"       // basis functions
 #include "measurements.h"  // random numbers
  
 #include "cvs.h"

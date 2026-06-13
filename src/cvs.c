@@ -1,4 +1,4 @@
-#include "chapeau_obj.h"
+#include "chapeau_internal.h"
 #include "chapeau.h"
 #include "cvs_obj.h"
 #include "cvs.h"

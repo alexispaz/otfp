@@ -3,7 +3,7 @@
 
 #include "cfacv_obj.h"
 #include "cfacv.h"
-#include "chapeau.h"
+#include "chapeau_internal.h"
 #include "cvs.h"
 #include "measurements.h"
 

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "chapeau_obj.h"
+#include "chapeau_internal.h"
 #include "chapeau.h"
 
 void chapeau_setupoutput ( chapeau * ch, char * outfile, char * restartfile, int outputFreq, int outputLevel ) {

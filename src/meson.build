@@ -60,7 +60,7 @@ cfacv_src = files(
   )
  
 # Using sparse matrix requires MKL DSS
-cfacv_src += files('chapeau_obj.h')
+cfacv_src += files('chapeau_internal.h')
 if get_option('sparse').enabled()
   
   if dss.found()
@@ -114,7 +114,7 @@ cvs_src = files(
   'chapeau_accumulate.c',
   'chapeau_grid.c',
   'chapeau.h',
-  'chapeau_obj.h',
+  'chapeau_internal.h',
 )
 
 cvs_src += swig_gen.process('cvs.i')
@@ -149,7 +149,7 @@ chapsim_src = files(
   'chapeau_accumulate.c',
   'chapeau_grid.c',
   'chapeau.h',
-  'chapeau_obj.h',
+  'chapeau_internal.h',
 )
 
 
@@ -170,7 +170,7 @@ chapconv_src = files(
   'chapeau_accumulate.c',
   'chapeau_grid.c',
   'chapeau.h',
-  'chapeau_obj.h',
+  'chapeau_internal.h',
   'chapeau_old.h',
   ) 
 
@@ -191,7 +191,7 @@ chapadd_src = files(
   'chapeau_accumulate.c',
   'chapeau_grid.c',
   'chapeau.h',
-  'chapeau_obj.h',
+  'chapeau_internal.h',
   )
 
 executable('chapadd', 
@@ -211,7 +211,7 @@ chapcrop_src = files(
   'chapeau_accumulate.c',
   'chapeau_grid.c',
   'chapeau.h',
-  'chapeau_obj.h',
+  'chapeau_internal.h',
   )
 
 executable('chapcrop', 

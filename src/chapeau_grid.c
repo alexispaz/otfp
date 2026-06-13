@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "chapeau_obj.h"
+#include "chapeau_internal.h"
 #include "chapeau.h"
 
 chapeau * chapeau_crop (chapeau * ch, double * rmin, double * rmax) {

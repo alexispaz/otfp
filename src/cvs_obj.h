@@ -2,7 +2,9 @@
 #ifndef _CVS_H
 #define _CVS_H
  
-#include "chapeau_obj.h"
+#include <stdio.h>
+
+#include "chapeau.h"
 
 // collective variable structure
 typedef struct cv {

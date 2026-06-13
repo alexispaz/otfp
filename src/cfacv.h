@@ -1,3 +1,11 @@
+#pragma once
+#ifndef OTFP_CFACV_H
+#define OTFP_CFACV_H
+
+#include <stdio.h>
+
+#include "cfacv_obj.h"
+
 extern void cfacvBanner ( void );
 
 extern tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);
@@ -67,3 +75,5 @@ extern int restr_set_rchid ( restraint * r, DataSpace * ds, int chid);
 
 extern void ds_saverestrains ( DataSpace * ds, char * filename );
 extern void ds_loadrestrains ( DataSpace * ds, char * filename );
+
+#endif

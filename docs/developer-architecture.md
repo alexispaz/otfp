@@ -15,7 +15,8 @@ scientific behavior unless a feature is explicitly removed.
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV calculations | `cvs.c`, `measurements.c` | Register CV descriptors and compute CV values and gradients. |
-| FES/chapeau core | `chapeau.c` | Manage allocation, grid metadata, lifecycle, and size/grid comparisons. |
+| FES/chapeau public API | `chapeau.h` | Expose the opaque `chapeau` type and user/SWIG-facing lifecycle, output, and restart functions. |
+| FES/chapeau internals | `chapeau_internal.h`, `chapeau.c` | Define the concrete `chapeau` layout and internal module contracts for lifecycle, grid metadata, and size/grid comparisons. |
 | FES/chapeau grid utilities | `chapeau_grid.c` | Crop, sum, and symmetrize chapeau grid statistics. |
 | FES/chapeau accumulation | `chapeau_accumulate.c` | Accumulate 1D/2D force statistics into chapeau matrices and hit masks. |
 | FES/chapeau IO | `chapeau_io.c` | Manage binary output, restart state, lambda loading, and replica serialization. |
@@ -46,11 +47,18 @@ NAMD calcforces
 
 ## Public API Boundaries
 
-The current public API is larger than the intended user API because SWIG
-includes whole headers:
+The chapeau API has been split so SWIG sees only the opaque public interface:
+
+- `chapeau.h` declares `typedef struct CHAPEAU chapeau` plus public lifecycle,
+  output, and restart functions.
+- `chapeau_internal.h` defines `struct CHAPEAU` and the internal module
+  functions used by C modules and command-line tools.
+
+Other APIs are still larger than the intended user API because SWIG includes
+whole headers:
 
 - `cfacv.i` includes `cfacv.h`.
-- `cvs.i` includes `chapeau.h` and `cvs.h`.
+- `cvs.i` includes the public `chapeau.h` and `cvs.h`.
 
 During refactor, split headers into:
 
@@ -92,7 +100,7 @@ should be added as modules are split.
 | --- | --- | --- |
 | `cfacv.c` | Mixes construction, force loop, output, restart, target evolution, and OTFP solve orchestration. | Split into `dataspace`, `restraint`, `evolution`, and `force_loop` modules. |
 | `cvs.c` | Switch-heavy factory, global setup state for ZSD CVs, and all CV implementations in one file. | Use CV descriptor tables and per-CV parameter structs. |
-| `chapeau.c` | Core lifecycle is still exposed through broad public headers. | Split public/internal chapeau headers once module boundaries settle. |
+| `chapeau_internal.h` | Internal chapeau state is now isolated but still shared broadly among C modules and tools. | Replace direct field access with focused helper APIs where it reduces coupling. |
 | `chapeau_sparse.c` | Duplicate implementation marked under construction. | Remove from default architecture or replace with a backend interface. |
 | SWIG headers | Internal helpers become Tcl-visible API. | Expose a small deliberate API. |
 | Error handling | Most failures call `exit`, which is hard to test and hard to recover from Tcl. | Return status codes in C and convert to Tcl errors at the boundary. |
@@ -100,8 +108,8 @@ should be added as modules are split.
 
 ## Refactor Sequence
 
-1. Split public headers from internal headers.
-2. Split public headers from internal headers.
+1. Split `cfacv.h` and `cvs.h` public/internal headers.
+2. Narrow the Tcl/SWIG API to deliberate user-facing functions.
 3. Decide explicitly which experimental/legacy features remain.
 
 ## Behavior Guardrails

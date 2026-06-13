@@ -7,7 +7,7 @@
   #include <lapacke.h>
 #endif
 
-#include "chapeau_obj.h"
+#include "chapeau_internal.h"
 #include "chapeau.h"
 
 void chapeau_solve ( chapeau * ch ) {

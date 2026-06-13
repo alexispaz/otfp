@@ -2,7 +2,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "chapeau_obj.h"
+#include "chapeau_internal.h"
 #include "chapeau.h"
 #include "chapeau_old.h"
 

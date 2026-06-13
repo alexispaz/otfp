@@ -1,6 +1,6 @@
 #include <math.h>
 
-#include "chapeau_obj.h"
+#include "chapeau_internal.h"
 #include "chapeau.h"
 
 int accumulate_1D( chapeau * ch, double bias ) {

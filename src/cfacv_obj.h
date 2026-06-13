@@ -2,12 +2,14 @@
 #ifndef _CFACV_H_
 #define _CFACV_H_
  
+#include <stdio.h>
+
 // #ifndef MAXNBOR
 // #define MAXNBOR 250
 // #endif
 
 #include "cvs_obj.h"
-#include "chapeau_obj.h"
+#include "chapeau.h"
 #include "centers.h"
          
 // Temperature-accelerated MD options structure; will be owned by the

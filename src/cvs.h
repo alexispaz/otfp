@@ -1,7 +1,12 @@
+#pragma once
+#ifndef OTFP_CVS_H
+#define OTFP_CVS_H
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "cvs_obj.h"
 #include "measurements.h"
     
 // headers
@@ -51,3 +56,5 @@ extern double * cv_access_ref2 ( cv * c, int i );
 extern void cv_output ( cv * c );
 
 extern int set_line (cv * c);
+
+#endif

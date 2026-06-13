@@ -15,5 +15,6 @@ double get_double(double *a, int index) {
 #include "chapeau.h"
 #include "cvs.h"
 %}
+/* Only the public chapeau API is exported through this wrapper. */
 %include "chapeau.h"
 %include "cvs.h"
