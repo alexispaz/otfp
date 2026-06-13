@@ -138,10 +138,6 @@ its own TCL library from source and use that one to compile of `cfacv.so`.
 
 # Additional tools to handle chapeau object files
 
-Convert old format of chapeau object files, create `converted.ch`
-
-    ./chapconv run12.ch0 
-
 Cropping or expanding the CV space, create `croped.ch`
 
     ./chapcrop cryo.ch 4 18.40076 4 18.40076
@@ -153,7 +149,6 @@ Attempt to add chapeau object files together.
 If attempt fail, it might be needed to adjust the size of
 chapeau objects to have the same number of knots using
 `chapcrop`
-
 
 
 

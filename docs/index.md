@@ -18,7 +18,6 @@ The codebase provides:
 | `libcvs` | Collective variable calculations and Tcl interface. |
 | `catbinsp` | Export chapeau binary state data. |
 | `chapsim` | Symmetrize chapeau data. |
-| `chapconv` | Convert older chapeau file formats. |
 | `chapadd` | Add compatible chapeau files. |
 | `chapcrop` | Crop or expand a chapeau grid. |
 

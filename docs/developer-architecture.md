@@ -24,7 +24,7 @@ scientific behavior unless a feature is explicitly removed.
 | FES/chapeau IO | `chapeau_io.c` | Manage binary output, restart state, lambda loading, and replica serialization. |
 | FES/chapeau solver | `chapeau_solver.c` | Build reduced band matrices and solve chapeau coefficients with LAPACK. |
 | FES/chapeau evaluation | `chapeau_eval.c` | Evaluate 1D/2D simplex interpolation, gradients, and peak-file loading. |
-| Tools | `catbinsp.c`, `simetrize.c`, `convchapeau.c`, `addchapeaus.c`, `cropchapeaus.c` | Offline manipulation of chapeau outputs/states. |
+| Tools | `catbinsp.c`, `simetrize.c`, `addchapeaus.c`, `cropchapeaus.c` | Offline manipulation of chapeau outputs/states. |
 
 ## Main Runtime Flow
 

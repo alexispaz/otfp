@@ -188,7 +188,6 @@ Replica OTFP features include:
 | --- | --- |
 | `catbinsp` | Read binary chapeau output and print selected output levels. |
 | `chapsim` | Symmetrize two-dimensional chapeau state. |
-| `chapconv` | Convert old chapeau state format to current format. |
 | `chapadd` | Add compatible chapeau states. |
 | `chapcrop` | Crop or expand a chapeau grid. |
 
@@ -199,6 +198,7 @@ The fast regression suite currently covers mock-driven examples:
 - `OTFP`
 - `OTFP2D`
 - `OTFP2D_periodic`
+- `CVs`
 - `adam`
 
 Run it through Meson:

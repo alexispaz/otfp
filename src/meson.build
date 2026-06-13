@@ -147,22 +147,6 @@ executable('chapsim',
  
 
 
-chapconv_src = files(
-  'convchapeau.c',
-  'chapeau_old.h',
-  ) 
-
-chapconv_src += chapeau_dense_src
-chapconv_src += chapeau_headers
-
-executable('chapconv', 
-  chapconv_src, 
-  dependencies: [lapacke, lapack, blas, m],
-  install: true,
-  )
-
-
-
 chapadd_src = files(
   'addchapeaus.c',
   )
