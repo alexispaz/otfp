@@ -75,7 +75,7 @@ if get_option('sparse').enabled()
   error('Direct Sparse Solver implementation is under construction.')
 
 else
-  cfacv_src += files('chapeau.c')
+  cfacv_src += files('chapeau.c', 'chapeau_io.c')
 endif
                  
 cfacv_src += swig_gen.process('cfacv.i')
@@ -108,6 +108,7 @@ cvs_src = files(
   'cvs.h',
   'cvs_obj.h',
   'chapeau.c',
+  'chapeau_io.c',
   'chapeau.h',
   'chapeau_obj.h',
 )
@@ -138,6 +139,7 @@ executable('catbinsp',
 chapsim_src = files(
   'simetrize.c',
   'chapeau.c',
+  'chapeau_io.c',
   'chapeau.h',
   'chapeau_obj.h',
 )
@@ -154,6 +156,7 @@ executable('chapsim',
 chapconv_src = files(
   'convchapeau.c',
   'chapeau.c',
+  'chapeau_io.c',
   'chapeau.h',
   'chapeau_obj.h',
   'chapeau_old.h',
@@ -170,6 +173,7 @@ executable('chapconv',
 chapadd_src = files(
   'addchapeaus.c',
   'chapeau.c',
+  'chapeau_io.c',
   'chapeau.h',
   'chapeau_obj.h',
   )
@@ -185,6 +189,7 @@ executable('chapadd',
 chapcrop_src = files(
   'cropchapeaus.c',
   'chapeau.c',
+  'chapeau_io.c',
   'chapeau.h',
   'chapeau_obj.h',
   )

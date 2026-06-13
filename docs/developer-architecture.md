@@ -15,7 +15,8 @@ scientific behavior unless a feature is explicitly removed.
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV calculations | `cvs.c`, `measurements.c` | Register CV descriptors and compute CV values and gradients. |
-| FES/chapeau | `chapeau.c` | Manage grids, accumulation, solving, evaluation, IO, restarts, serialization. |
+| FES/chapeau core | `chapeau.c` | Manage grids, accumulation, solving, and evaluation. |
+| FES/chapeau IO | `chapeau_io.c` | Manage binary output, restart state, lambda loading, and replica serialization. |
 | Tools | `catbinsp.c`, `simetrize.c`, `convchapeau.c`, `addchapeaus.c`, `cropchapeaus.c` | Offline manipulation of chapeau outputs/states. |
 
 ## Main Runtime Flow
@@ -96,9 +97,8 @@ should be added as modules are split.
 ## Refactor Sequence
 
 1. Split public headers from internal headers.
-2. Move chapeau IO/serialization out of `chapeau.c`.
-3. Move chapeau solver code out of `chapeau.c`.
-4. Decide explicitly which experimental/legacy features remain.
+2. Move chapeau solver code out of `chapeau.c`.
+3. Decide explicitly which experimental/legacy features remain.
 
 ## Behavior Guardrails
 
