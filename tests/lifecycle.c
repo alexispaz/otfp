@@ -30,7 +30,6 @@ int main(void) {
 
   DataSpace_free(ds);
   DataSpace_free(NULL);
-  restraint_free(NULL);
   cv_free(NULL);
   chapeau_free(NULL);
 

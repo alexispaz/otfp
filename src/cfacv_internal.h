@@ -108,6 +108,24 @@ struct DataSpace {
   int beginsolve;
 };
 
+tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);
+smdOptStruct * New_smdOptStruct ( double target, int t0, int t1);
+adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e , double decay, double kkT, double mvar, double vvar, double tmin);
+int smdOptInit ( smdOptStruct * smd, double initval);
+int rf_getityp ( char * typ );
+char * rf_getstyp ( int ityp );
+
+restraint * New_restraint ( double k, double z, int nCV, double * cvc, char * rftypstr, double zmin, double zmax, char * boundstr, double boundk, char * outfile, int outputFreq);
+void restraint_free ( restraint * r );
+void restr_output  ( restraint * r );
+
+FILE * my_fopen ( char * name, char * code ) ;
+FILE * my_binfopen ( char * name, char * code, unsigned int outputLevel, DataSpace * ds );
+
+int DataSpace_getN ( DataSpace * ds );
+int DataSpace_checkdata ( DataSpace * ds );
+int DataSpace_dump ( DataSpace * ds );
+
 int cbd ( restraint * r );
 int uniformvelocity ( restraint * r );
 int adam ( restraint * r );

@@ -66,9 +66,11 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
   gradient, boundary force, and output scheduling; direct CV field access is
   limited to CV implementation code.
 - `cfacv.h` declares opaque `DataSpace`, `restraint`, and optimizer types plus
-  the Tcl-facing runtime setup/update API.
+  the supported C runtime setup/update API.
 - `cfacv_internal.h` defines the runtime structs and internal force/evolution
-  helpers used by C modules.
+  helpers used by C modules. It also owns low-level constructors, type lookup
+  helpers, debug dump helpers, and file wrappers that are not part of the public
+  C or Tcl API.
 - Runtime force orchestration uses restraint helper functions for value
   accumulation, energy/force calculation, output scheduling, chapeau sampling,
   target evolution, and energy reads; direct restraint field access is limited
@@ -86,7 +88,7 @@ They intentionally do not export lower-level constructors, type lookup helpers,
 debug dump helpers, or internal chapeau evaluation/serialization routines.
 
 The remaining broad C headers are still used for C compilation and tests.
-During the next refactor passes, split them into:
+During the next refactor passes, continue splitting them into:
 
 - Internal headers for C modules.
 - Tool-only headers if needed.
