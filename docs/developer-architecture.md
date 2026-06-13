@@ -55,6 +55,9 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
   output, and restart functions.
 - `chapeau_internal.h` defines `struct CHAPEAU` and the internal module
   functions used by C modules and command-line tools.
+- Runtime orchestration uses chapeau helper functions for sampling,
+  accumulation, solve scheduling, output scheduling, and default restart saves
+  instead of writing chapeau fields directly.
 - `cvs.h` declares `typedef struct cv cv` plus public CV helpers.
 - `cvs_internal.h` defines `struct cv` and the internal calculation/boundary
   functions used by the C runtime.
@@ -110,7 +113,7 @@ should be added as modules are split.
 | --- | --- | --- |
 | `cfacv.c` | Mixes construction, force loop, output, restart, target evolution, and OTFP solve orchestration. | Split into `dataspace`, `restraint`, `evolution`, and `force_loop` modules. |
 | `cvs.c` | Switch-heavy factory, global setup state for ZSD CVs, and all CV implementations in one file. | Use CV descriptor tables and per-CV parameter structs. |
-| `chapeau_internal.h` | Internal chapeau state is now isolated but still shared broadly among C modules and tools. | Replace direct field access with focused helper APIs where it reduces coupling. |
+| `chapeau_internal.h` | Internal chapeau state is isolated, and runtime orchestration now uses focused helper APIs. Tools and chapeau modules still access fields directly. | Keep narrowing direct field access where it reduces coupling without obscuring numerical code. |
 | `chapeau_sparse.c` | Duplicate implementation marked under construction. | Remove from default architecture or replace with a backend interface. |
 | SWIG headers | Internal helpers become Tcl-visible API. | Expose a small deliberate API. |
 | Error handling | Most failures call `exit`, which is hard to test and hard to recover from Tcl. | Return status codes in C and convert to Tcl errors at the boundary. |

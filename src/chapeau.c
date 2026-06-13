@@ -164,3 +164,27 @@ int chapeau_comparegrid ( chapeau * ch1,  chapeau * ch2) {
   return 1;
 }
 
+void chapeau_set_update_frequency ( chapeau * ch, int nupdate ) {
+  ch->nupdate=nupdate;
+}
+
+void chapeau_set_sample ( chapeau * ch, int dim, double r, double f ) {
+  ch->r[dim]=r;
+  ch->f[dim]=f;
+}
+
+int chapeau_accumulate_sample ( chapeau * ch, double bias ) {
+  return ch->accumulate(ch,bias);
+}
+
+int chapeau_should_solve ( chapeau * ch, int timestep, int beginsolve ) {
+  return timestep>beginsolve && !(timestep % ch->nupdate);
+}
+
+int chapeau_should_output ( chapeau * ch, int timestep ) {
+  return !(timestep % ch->outputFreq);
+}
+
+void chapeau_savestate_default ( chapeau * ch ) {
+  chapeau_savestate(ch,ch->filename);
+}

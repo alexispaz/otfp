@@ -112,7 +112,7 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
     sprintf(buf, "%s_ch%d.bsp", outfile,i);
     sprintf(buf2, "%s.ch%d", outfile,i);
     chapeau_setupoutput(ds->ch[i],buf,buf2,outfreq,outlevel);
-    ds->ch[i]->nupdate=nupdate;
+    chapeau_set_update_frequency(ds->ch[i],nupdate);
   }
 
   ds->lamfric=0.0;

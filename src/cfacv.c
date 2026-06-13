@@ -190,11 +190,10 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
       for (i=0;i<ds->K;i++) {
         r=ds->restr[i];
         ch=ds->ch[r->chid];
-        ch->r[r->chdm]=r->z;
-        ch->f[r->chdm]=-r->f; // F=k(\theta-z)
+        chapeau_set_sample(ch,r->chdm,r->z,-r->f); // F=k(\theta-z)
       }
       for (i=0;i<ds->ch_num;i++) {
-        ds->ch[i]->accumulate(ds->ch[i],bias);
+        chapeau_accumulate_sample(ds->ch[i],bias);
       }
     }
 
@@ -204,7 +203,7 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
       for (i=0;i<ds->ch_num;i++) {
         ch=ds->ch[i];
 
-        if (timestep>ds->beginsolve && !(timestep % ch->nupdate)) {
+        if (chapeau_should_solve(ch,timestep,ds->beginsolve)) {
           // chapeau_savestate(ch,"after.ch0\0");
          // getchar();
           chapeau_solve(ch);
@@ -216,14 +215,11 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
           // chapeau_savestate(ch,"before.ch0\0");
         }
 
-        //aux=ch->nsample/ch->nupdate
-        //if(!(aux%ch->outputFreq)) chapeau_output(ch);
-
-        if (!(timestep % ch->outputFreq)) {
+        if (chapeau_should_output(ch,timestep)) {
           chapeau_output(ch,timestep);
 
           // TODO: separete savestate from outputFreq
-          chapeau_savestate(ch,ch->filename);
+          chapeau_savestate_default(ch);
         }
       }
     }

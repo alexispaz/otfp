@@ -65,6 +65,12 @@ struct CHAPEAU {
 int chapeau_init ( chapeau * ch, int dm, double * rmin, double * rmax, int * N, int * periodic);
 int chapeau_comparesize ( chapeau * ch1, chapeau * ch2);
 int chapeau_comparegrid ( chapeau * ch1, chapeau * ch2);
+void chapeau_set_update_frequency ( chapeau * ch, int nupdate );
+void chapeau_set_sample ( chapeau * ch, int dim, double r, double f );
+int chapeau_accumulate_sample ( chapeau * ch, double bias );
+int chapeau_should_solve ( chapeau * ch, int timestep, int beginsolve );
+int chapeau_should_output ( chapeau * ch, int timestep );
+void chapeau_savestate_default ( chapeau * ch );
 
 void chapeau_sum ( chapeau * ch1, chapeau * ch2 );
 chapeau * chapeau_crop (chapeau * ch, double * rmin, double * rmax);
