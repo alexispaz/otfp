@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-#include "cfacv_obj.h"
 #include "cfacv.h"
 #include "chapeau.h"
 #include "cvs.h"

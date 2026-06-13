@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "cfacv_obj.h"
+#include "cfacv_internal.h"
 #include "cfacv.h"
 #include "chapeau_internal.h"
 #include "cvs.h"

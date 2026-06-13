@@ -4,76 +4,57 @@
 
 #include <stdio.h>
 
-#include "cfacv_obj.h"
+#include "chapeau.h"
+#include "cvs.h"
 
-extern void cfacvBanner ( void );
+typedef struct TamdOptStruct tamdOptStruct;
+typedef struct SMDOPTSTRUCT smdOptStruct;
+typedef struct AdamOptStruct adamOptStruct;
+typedef struct restraint restraint;
+typedef struct DataSpace DataSpace;
 
-extern tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);
-extern smdOptStruct * New_smdOptStruct ( double target, int t0, int t1);
-extern adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e , double decay, double kkT, double mvar, double vvar, double tmin);
-extern int smdOptInit ( smdOptStruct * smd, double initval);
-extern int rf_getityp ( char * typ );
-extern char * rf_getstyp ( int ityp );
+void cfacvBanner ( void );
 
-extern restraint * New_restraint ( double k, double z, int nCV, double * cvc, char * rftypstr, double zmin, double zmax, char * boundstr, double boundk, char * outfile, int outputFreq);
-extern void restraint_free ( restraint * r );
-    
+tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);
+smdOptStruct * New_smdOptStruct ( double target, int t0, int t1);
+adamOptStruct * New_adamOptStruct ( double a, double b1, double b2, double e , double decay, double kkT, double mvar, double vvar, double tmin);
+int smdOptInit ( smdOptStruct * smd, double initval);
+int rf_getityp ( char * typ );
+char * rf_getstyp ( int ityp );
 
-// Other subroutines
-extern FILE * my_fopen ( char * name, char * code ) ;
-extern DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed );
-extern void DataSpace_free ( DataSpace * ds );
-extern int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double * min,
-    int * nKnots, double * max, int * periodic, int beginaccum, int beginsolve, 
+restraint * New_restraint ( double k, double z, int nCV, double * cvc, char * rftypstr, double zmin, double zmax, char * boundstr, double boundk, char * outfile, int outputFreq);
+void restraint_free ( restraint * r );
+
+FILE * my_fopen ( char * name, char * code ) ;
+DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed );
+void DataSpace_free ( DataSpace * ds );
+int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double * min,
+    int * nKnots, double * max, int * periodic, int beginaccum, int beginsolve,
     char * outfile, int outfreq, int outlevel, int nupdate);
-extern chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i );
-extern int DataSpace_getN ( DataSpace * ds );
-extern double * DataSpace_centerPos ( DataSpace * ds, int i );
-extern int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m );
-extern cv * DataSpace_add_cv ( DataSpace * ds, char * typ, int nind, int * ind,
-		      double zmin, double zmax,char * boundf, double boundk, char * outfile, int outputFreq );
+chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i );
+int DataSpace_getN ( DataSpace * ds );
+double * DataSpace_centerPos ( DataSpace * ds, int i );
+int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m );
+cv * DataSpace_add_cv ( DataSpace * ds, char * typ, int nind, int * ind,
+    double zmin, double zmax,char * boundf, double boundk, char * outfile, int outputFreq );
 
-extern restraint * DataSpace_AddRestr  ( DataSpace * ds, double k, double targ, int nCV, double * cvc, char * rftypstr, double zmin, double zmax,char * boundf, double boundk,char * outfile, int outputFreq);
-extern int restr_UpdateTamdOpt ( restraint * r, double g, double kt, double dt );
-extern int restr_AddTamdOpt ( restraint * r, double g, double kt, double dt, int chid  , int chdm );
-extern int restr_AddSmdOpt  ( restraint * r, double target, int t0, int t1 );
-extern int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e , double decay, double kT, double tmin);
-extern void restr_output  ( restraint * r );
-extern double DataSpace_ComputeCVs ( DataSpace * ds);
-extern int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, double bias);
-extern double DataSpace_RestraintEnergy ( DataSpace * ds );
-extern void DataSpace_ReportAll ( DataSpace * ds );
-extern void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res );
-extern int DataSpace_checkdata ( DataSpace * ds );
-extern int DataSpace_dump ( DataSpace * ds ); 
-extern FILE * my_binfopen ( char * name, char * code, unsigned int outputLevel, DataSpace * ds );
+restraint * DataSpace_AddRestr  ( DataSpace * ds, double k, double targ, int nCV, double * cvc, char * rftypstr, double zmin, double zmax,char * boundf, double boundk,char * outfile, int outputFreq);
+int restr_UpdateTamdOpt ( restraint * r, double g, double kt, double dt );
+int restr_AddTamdOpt ( restraint * r, double g, double kt, double dt, int chid, int chdm );
+int restr_AddSmdOpt  ( restraint * r, double target, int t0, int t1 );
+int restr_AddAdamOpt  ( restraint * r, double a, double b1, double b2, double e, double decay, double kT, double tmin);
+void restr_output  ( restraint * r );
+double DataSpace_ComputeCVs ( DataSpace * ds);
+int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, double bias);
+double DataSpace_RestraintEnergy ( DataSpace * ds );
+void DataSpace_ReportAll ( DataSpace * ds );
+void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res );
+int DataSpace_checkdata ( DataSpace * ds );
+int DataSpace_dump ( DataSpace * ds );
+FILE * my_binfopen ( char * name, char * code, unsigned int outputLevel, DataSpace * ds );
 
-
-// Evolve Functions
-extern int cbd ( restraint * r );
-extern int uniformvelocity ( restraint * r );
-extern int adam ( restraint * r );
-
-
-// Boundaries Functions
-extern int SoftUpperWall ( restraint * r );
-extern int SoftLowerWall ( restraint * r );
-extern int SoftWalls ( restraint * r );
-extern int pbc ( restraint * r );
-extern int Periodic ( restraint * r );
-extern int nada ( restraint * r );
-
-// Potential Function
-extern int HarmonicCart ( restraint * r );
-extern int HarmonicCart_cutoff ( restraint * r );
-extern int HarmonicCart_pbc ( restraint * r );
-extern int HarmonicCart_cutoff_pbc ( restraint * r );
-
-extern double restr_getz ( restraint * r );
-extern double restr_getu ( restraint * r );
-extern int restr_set_rchid ( restraint * r, DataSpace * ds, int chid);
-
-extern void ds_saverestrains ( DataSpace * ds, char * filename );
-extern void ds_loadrestrains ( DataSpace * ds, char * filename );
+double restr_getz ( restraint * r );
+double restr_getu ( restraint * r );
+int restr_set_rchid ( restraint * r, DataSpace * ds, int chid);
 
 #endif

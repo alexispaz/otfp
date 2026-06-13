@@ -11,7 +11,6 @@ double get_double(double *a, int index) {
 #include <execinfo.h>
 #include <signal.h>  
 #include <unistd.h>  
-#include "cfacv_obj.h"
 #include "cfacv.h"
 %}
 

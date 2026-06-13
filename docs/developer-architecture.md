@@ -11,7 +11,8 @@ scientific behavior unless a feature is explicitly removed.
 | NAMD callback | `calcforces.tcl` | Register NAMD groups, load coordinates, call C/Tcl update flow, return forces and energy. |
 | Tcl setup | `cfacv.tcl`, `cvs.tcl`, `restraints.tcl`, `chapeau.tcl`, `data.tcl` | Parse user variables, allocate C objects through SWIG, and prepare runtime state. |
 | SWIG API | `cfacv.i`, `cvs.i`, public headers | Expose C structs/functions to Tcl. |
-| Runtime orchestration | `cfacv.c` | Compute CVs, compute restraint forces, evolve targets, accumulate/solve FES. |
+| Runtime public API | `cfacv.h` | Expose opaque runtime, restraint, and optimizer types plus user/SWIG-facing setup and update functions. |
+| Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and orchestrate CVs, forces, targets, and FES updates. |
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV public API | `cvs.h` | Expose the opaque `cv` type and user/SWIG-facing CV lifecycle, type, reference, and setup helpers. |
@@ -57,9 +58,14 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
 - `cvs.h` declares `typedef struct cv cv` plus public CV helpers.
 - `cvs_internal.h` defines `struct cv` and the internal calculation/boundary
   functions used by the C runtime.
+- `cfacv.h` declares opaque `DataSpace`, `restraint`, and optimizer types plus
+  the Tcl-facing runtime setup/update API.
+- `cfacv_internal.h` defines the runtime structs and internal force/evolution
+  helpers used by C modules.
 
-Other APIs are still larger than the intended user API because SWIG includes
-whole headers:
+The remaining public headers are intentionally narrower than the old `_obj`
+headers, but the Tcl/SWIG surface still includes more functions than a final
+user API should expose:
 
 - `cfacv.i` includes `cfacv.h`.
 - `cvs.i` includes the public `chapeau.h` and public `cvs.h`.
@@ -112,8 +118,8 @@ should be added as modules are split.
 
 ## Refactor Sequence
 
-1. Split `cfacv.h` public/internal headers.
-2. Narrow the Tcl/SWIG API to deliberate user-facing functions.
+1. Narrow the Tcl/SWIG API to deliberate user-facing functions.
+2. Replace broad direct struct access with focused helper APIs where it reduces coupling.
 3. Decide explicitly which experimental/legacy features remain.
 
 ## Behavior Guardrails

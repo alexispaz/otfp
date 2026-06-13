@@ -53,7 +53,7 @@ cfacv_src = files(
   'cfacv_dataspace.c',
   'cfacv_restraint.c',
   'cfacv.h',
-  'cfacv_obj.h',
+  'cfacv_internal.h',
   'cvs.c',
   'cvs.h',
   'cvs_internal.h',

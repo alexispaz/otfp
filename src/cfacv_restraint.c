@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "cfacv_obj.h"
+#include "cfacv_internal.h"
 #include "cfacv.h"
 #include "measurements.h"
 

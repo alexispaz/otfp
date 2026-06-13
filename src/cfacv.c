@@ -30,7 +30,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "cfacv_obj.h"
+#include "cfacv_internal.h"
 #include "chapeau_internal.h"       // basis functions
 #include "measurements.h"  // random numbers
  
