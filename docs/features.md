@@ -152,8 +152,6 @@ Capabilities:
 - Optional periodic grid dimensions.
 - Accumulation of force statistics from TAMD restraints.
 - Dense LAPACK solve path.
-- Sparse/MKL path exists in source but is marked under construction in the
-  build logic.
 - Binary output via `*_chN.bsp`.
 - Restart state via `*.chN`.
 - Lambda export through `catbinsp`.

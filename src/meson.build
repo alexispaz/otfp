@@ -17,15 +17,13 @@ swig_gen = generator(
 blas_name = get_option('blas')
 lapacke_name = get_option('lapacke')
 lapack_name = get_option('lapack')
-dss_name = get_option('dss')
   
 blas = dependency(blas_name)
 lapack = dependency(lapack_name)
-dss = dependency(dss_name, required : get_option('sparse'))
 
 # LAPACKE dependency only if provieder need it
 if lapacke_name == 'mkl_lapacke'
-    add_project_arguments('-DUSE_MKL', language: 'c')
+    add_project_arguments('-DUSE_MKL_LAPACKE', language: 'c')
     lapacke = dependency('mkl_lapacke', required: true)
 else
     lapacke = dependency(lapacke_name, method: 'pkg-config', required: true)
@@ -74,23 +72,7 @@ cfacv_src = files(
  
 cfacv_src += chapeau_headers
 
-# Using sparse matrix requires MKL DSS
-if get_option('sparse').enabled()
-  
-  if dss.found()
-    cfacv_dep += dss
-    # message('Using MKL ', mkl_name)
-    add_project_arguments('-DUSE_MKL', language: 'c')
-  else
-    error('Intel MKL Direct Sparse Solver is required.')
-  endif
-
-  cfacv_src += files('chapeau_sparse.c')
-  error('Direct Sparse Solver implementation is under construction.')
-
-else
-  cfacv_src += chapeau_dense_src
-endif
+cfacv_src += chapeau_dense_src
                  
 cfacv_src += swig_gen.process('cfacv.i')
 

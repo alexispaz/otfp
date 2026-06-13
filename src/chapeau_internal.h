@@ -6,11 +6,6 @@
 
 #include "chapeau.h"
 
-#ifdef USE_MKL
-#include <mkl.h>
-#include <mkl_dss.h>
-#endif
-
 // Chapeau type definition: this defines a linear expansion of chapeau
 // functions and stores the statistics used to evolve the coefficients.
 struct CHAPEAU {
@@ -42,22 +37,10 @@ struct CHAPEAU {
 
   double norm;
 
-#ifdef USE_MKL
-  _MKL_DSS_HANDLE_t * handle;
-  MKL_INT nRows, non0;
-  int * rowIndex;
-  int * columns;
-  double * A;
-#else
   double ** A;
-#endif
 
   double * bfull;
-#ifdef USE_MKL
-  double * Afull;
-#else
   double ** Afull;
-#endif
 
   int (*accumulate)(struct CHAPEAU * self, double bias);
 };

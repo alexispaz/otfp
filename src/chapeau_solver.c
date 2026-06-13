@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#ifdef USE_MKL
+#ifdef USE_MKL_LAPACKE
   #include <mkl_lapacke.h>
 #else
   #include <lapacke.h>

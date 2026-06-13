@@ -7,13 +7,6 @@
 int chapeau_init ( chapeau * ch, int dm, double * rmin, double * rmax, int * N, int * periodic) {
   int i;
 
-  // IF NO DSS and (periodic[0]||periodic[1]) {
-  //   fprintf(stderr,"Warning OTFP: Intel MKL Direct Sparse Solver is better for periodicty.\n");
-  // }
-  // IF DSS and !(periodic[0]||periodic[1]) {
-  //   fprintf(stderr,"OTFP: No periodicity implies a banded matrix. Consider using lapack for better performance.\n");
-  // }  
-  
   //TODO: check size of argument vectors and write the errors
   
   ch->ofp=NULL;

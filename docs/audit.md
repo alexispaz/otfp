@@ -32,7 +32,6 @@ Only remove `dead` routines after the example regression suite passes.
 
 ## Areas to inspect first
 
-- Duplicated dense and sparse chapeau implementations.
 - Old chapeau conversion compatibility code.
 - Collective variable variants in `src/cvs.c`.
 - Experimental or generated files under `examples/`, `scripts/ana_tamd/`, and

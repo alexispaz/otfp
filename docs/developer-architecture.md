@@ -121,7 +121,6 @@ should be added as modules are split.
 | `cfacv.c` | Mixes construction, force loop, output, restart, target evolution, and OTFP solve orchestration. | Split into `dataspace`, `restraint`, `evolution`, and `force_loop` modules. |
 | `cvs.c` | Switch-heavy factory, global setup state for ZSD CVs, and all CV implementations in one file. | Use CV descriptor tables and per-CV parameter structs. |
 | Internal state headers | Chapeau, CV, and restraint state are isolated, and runtime orchestration now uses focused helper APIs for their hot paths and diagnostics. Tools, serialization, and implementation modules still access fields directly. | Keep narrowing direct field access where it reduces coupling without obscuring numerical code. |
-| `chapeau_sparse.c` | Duplicate implementation marked under construction. | Remove from default architecture or replace with a backend interface. |
 | SWIG headers | Internal helpers become Tcl-visible API. | Expose a small deliberate API. |
 | Error handling | Most failures call `exit`, which is hard to test and hard to recover from Tcl. | Return status codes in C and convert to Tcl errors at the boundary. |
 | Allocation | Constructors do not consistently initialize optional pointers; most types lack frees. | Introduce zero-initializing constructors and destructors. |
