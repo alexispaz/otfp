@@ -13,7 +13,6 @@ double get_double(double *a, int index) {
 #include <stdlib.h>
 #include "chapeau.h"
 #include "cvs.h"
+#include "cvs_tcl.h"
 %}
-/* Only the public chapeau API is exported through this wrapper. */
-%include "chapeau.h"
-%include "cvs.h"
+%include "cvs_tcl.h"

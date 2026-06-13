@@ -10,7 +10,7 @@ scientific behavior unless a feature is explicitly removed.
 | --- | --- | --- |
 | NAMD callback | `calcforces.tcl` | Register NAMD groups, load coordinates, call C/Tcl update flow, return forces and energy. |
 | Tcl setup | `cfacv.tcl`, `cvs.tcl`, `restraints.tcl`, `chapeau.tcl`, `data.tcl` | Parse user variables, allocate C objects through SWIG, and prepare runtime state. |
-| SWIG API | `cfacv.i`, `cvs.i`, public headers | Expose C structs/functions to Tcl. |
+| SWIG API | `cfacv.i`, `cvs.i`, `cfacv_tcl.h`, `cvs_tcl.h` | Expose a deliberate Tcl-facing C API. |
 | Runtime public API | `cfacv.h` | Expose opaque runtime, restraint, and optimizer types plus user/SWIG-facing setup and update functions. |
 | Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and expose runtime helpers for CV computation, energy, and reporting. |
 | Runtime force loop | `cfacv_force.c` | Orchestrate per-step force clearing, restraint values, restraint forces, CV boundary forces, chapeau updates, and target evolution. |
@@ -74,18 +74,24 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
   target evolution, and energy reads; direct restraint field access is limited
   to restraint implementation and restart serialization.
 
-The remaining public headers are intentionally narrower than the old `_obj`
-headers, but the Tcl/SWIG surface still includes more functions than a final
-user API should expose:
+The SWIG surface no longer includes the broad C headers directly:
 
-- `cfacv.i` includes `cfacv.h`.
-- `cvs.i` includes the public `chapeau.h` and public `cvs.h`.
+- `cfacv.i` includes `cfacv_tcl.h`.
+- `cvs.i` includes `cvs_tcl.h`.
 
-During refactor, split headers into:
+These Tcl headers declare only the functions used by the main Tcl setup/runtime
+flow: `DataSpace` lifecycle and setup, CV setup helpers, restraint setup and
+target updates, per-step compute/force/energy calls, and chapeau restart calls.
+They intentionally do not export lower-level constructors, type lookup helpers,
+debug dump helpers, or internal chapeau evaluation/serialization routines.
 
-- Public Tcl/SWIG API headers.
+The remaining broad C headers are still used for C compilation and tests.
+During the next refactor passes, split them into:
+
 - Internal headers for C modules.
 - Tool-only headers if needed.
+- Narrow C headers for tests and external embedding, if that remains a supported
+  use case.
 
 This is the first step before deleting or renaming functions.
 

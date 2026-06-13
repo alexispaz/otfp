@@ -65,9 +65,11 @@ cfacv_src = files(
   'cfacv_force.c',
   'cfacv_restraint.c',
   'cfacv.h',
+  'cfacv_tcl.h',
   'cfacv_internal.h',
   'cvs.c',
   'cvs.h',
+  'cvs_tcl.h',
   'cvs_internal.h',
   )
  
@@ -103,6 +105,7 @@ cvs_src = files(
   'measurements.h',
   'cvs.c',
   'cvs.h',
+  'cvs_tcl.h',
   'cvs_internal.h',
 )
 
