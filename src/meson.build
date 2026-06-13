@@ -131,46 +131,18 @@ executable('catbinsp',
  
 
 
-chapsim_src = files(
-  'simetrize.c',
-)
+chapeau_tool_dep = [lapacke, lapack, blas, m]
+chapeau_tools = {
+  'chapsim': 'simetrize.c',
+  'chapadd': 'addchapeaus.c',
+  'chapcrop': 'cropchapeaus.c',
+}
 
-chapsim_src += chapeau_dense_src
-chapsim_src += chapeau_headers
-
-
-executable('chapsim', 
-  chapsim_src, 
-  dependencies: [lapacke, lapack, blas, m],
-  install: true,
-)
- 
-
-
-chapadd_src = files(
-  'addchapeaus.c',
+foreach tool_name, tool_source : chapeau_tools
+  executable(
+    tool_name,
+    files(tool_source) + chapeau_dense_src + chapeau_headers,
+    dependencies: chapeau_tool_dep,
+    install: true,
   )
-
-chapadd_src += chapeau_dense_src
-chapadd_src += chapeau_headers
-
-executable('chapadd', 
-  chapadd_src, 
-  dependencies: [lapacke, lapack, blas, m],
-  install: true,
-  )
-
-
-
-chapcrop_src = files(
-  'cropchapeaus.c',
-  )
-
-chapcrop_src += chapeau_dense_src
-chapcrop_src += chapeau_headers
-
-executable('chapcrop', 
-  chapcrop_src, 
-  dependencies: [lapacke, lapack, blas, m],
-  install: true,
-  )
+endforeach
