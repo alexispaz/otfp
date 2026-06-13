@@ -56,7 +56,7 @@ cfacv_src = files(
   'cfacv_obj.h',
   'cvs.c',
   'cvs.h',
-  'cvs_obj.h',
+  'cvs_internal.h',
   )
  
 # Using sparse matrix requires MKL DSS
@@ -106,7 +106,7 @@ cvs_src = files(
   'measurements.h',
   'cvs.c',
   'cvs.h',
-  'cvs_obj.h',
+  'cvs_internal.h',
   'chapeau.c',
   'chapeau_io.c',
   'chapeau_solver.c',

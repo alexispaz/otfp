@@ -8,7 +8,7 @@
 // #define MAXNBOR 250
 // #endif
 
-#include "cvs_obj.h"
+#include "cvs.h"
 #include "chapeau.h"
 #include "centers.h"
          

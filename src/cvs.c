@@ -1,7 +1,13 @@
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "chapeau_internal.h"
 #include "chapeau.h"
-#include "cvs_obj.h"
+#include "cvs_internal.h"
 #include "cvs.h"
+#include "measurements.h"
 
 
 enum {ZSDCIRCLE, 

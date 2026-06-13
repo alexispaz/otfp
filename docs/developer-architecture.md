@@ -14,7 +14,8 @@ scientific behavior unless a feature is explicitly removed.
 | Runtime orchestration | `cfacv.c` | Compute CVs, compute restraint forces, evolve targets, accumulate/solve FES. |
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
-| CV calculations | `cvs.c`, `measurements.c` | Register CV descriptors and compute CV values and gradients. |
+| CV public API | `cvs.h` | Expose the opaque `cv` type and user/SWIG-facing CV lifecycle, type, reference, and setup helpers. |
+| CV internals | `cvs_internal.h`, `cvs.c`, `measurements.c` | Define the concrete `cv` layout, CV descriptors, boundary functions, and value/gradient calculations. |
 | FES/chapeau public API | `chapeau.h` | Expose the opaque `chapeau` type and user/SWIG-facing lifecycle, output, and restart functions. |
 | FES/chapeau internals | `chapeau_internal.h`, `chapeau.c` | Define the concrete `chapeau` layout and internal module contracts for lifecycle, grid metadata, and size/grid comparisons. |
 | FES/chapeau grid utilities | `chapeau_grid.c` | Crop, sum, and symmetrize chapeau grid statistics. |
@@ -53,12 +54,15 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
   output, and restart functions.
 - `chapeau_internal.h` defines `struct CHAPEAU` and the internal module
   functions used by C modules and command-line tools.
+- `cvs.h` declares `typedef struct cv cv` plus public CV helpers.
+- `cvs_internal.h` defines `struct cv` and the internal calculation/boundary
+  functions used by the C runtime.
 
 Other APIs are still larger than the intended user API because SWIG includes
 whole headers:
 
 - `cfacv.i` includes `cfacv.h`.
-- `cvs.i` includes the public `chapeau.h` and `cvs.h`.
+- `cvs.i` includes the public `chapeau.h` and public `cvs.h`.
 
 During refactor, split headers into:
 
@@ -108,7 +112,7 @@ should be added as modules are split.
 
 ## Refactor Sequence
 
-1. Split `cfacv.h` and `cvs.h` public/internal headers.
+1. Split `cfacv.h` public/internal headers.
 2. Narrow the Tcl/SWIG API to deliberate user-facing functions.
 3. Decide explicitly which experimental/legacy features remain.
 

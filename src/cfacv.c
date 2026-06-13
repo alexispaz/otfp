@@ -34,7 +34,7 @@
 #include "chapeau_internal.h"       // basis functions
 #include "measurements.h"  // random numbers
  
-#include "cvs.h"
+#include "cvs_internal.h"
 #include "cfacv.h"
                     
 // Handling SIGSEGV or SIGINT signal to make a call stack using backtrace.
