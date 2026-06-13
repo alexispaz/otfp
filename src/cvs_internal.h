@@ -78,5 +78,6 @@ void cv_reset_force_energy ( cv * c );
 void cv_apply_boundary ( cv * c );
 double cv_force ( cv * c );
 int cv_should_output ( cv * c, int timestep );
+void cv_report ( cv * c, int index );
 
 #endif

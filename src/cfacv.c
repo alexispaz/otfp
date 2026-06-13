@@ -270,7 +270,7 @@ void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res ) {
 
 void DataSpace_ReportAll ( DataSpace * ds ) {
   if (ds) {
-    int i,j,k;
+    int i;
     printf("CFACV_OTFP/C) DataSpace: %i Centers, %i CV's, %i Restraints\n",
 	   ds->N, ds->ncv, ds->K);
     for (i=0;i<ds->N;i++) {
@@ -278,25 +278,10 @@ void DataSpace_ReportAll ( DataSpace * ds ) {
 	     i,ds->R[i][0],ds->R[i][1],ds->R[i][2]);
     }
     for (i=0;i<ds->ncv;i++) {
-      printf("CFACV_OTFP/C)      CV %i : typ %s val %.5f ind ",i,cv_getstyp(ds->cv[i]->typ),
-	     ds->cv[i]->val);
-      for (j=0;j<ds->cv[i]->nC;j++) printf("%i ",ds->cv[i]->ind[j]);
-      printf(" grads: ");
-      for (j=0;j<ds->cv[i]->nC;j++) 
-	for (k=0;k<3;k++) printf("%.5f ",ds->cv[i]->gr[j][k]);
-      printf("\n");
+      cv_report(ds->cv[i],i);
     }
     for (i=0;i<ds->K;i++) {
-      printf("CFACV_OTFP/C)       R %i : k %.3f z %.3f cvc ",i,ds->restr[i]->k,ds->restr[i]->z);
-      for (j=0;j<ds->restr[i]->nCV;j++) printf("%.2f ",ds->restr[i]->cvc[j]);
-      if (ds->restr[i]->tamdOpt) {
-	printf("TAMD(kT=%.2f,gamma=%.2f,dt=%.3f) ",
-	       ds->restr[i]->tamdOpt->kT,
-	       ds->restr[i]->tamdOpt->gamma,
-	       ds->restr[i]->tamdOpt->dt);
-      }
-      printf(" typ %s min %.5f max %.5f\n",rf_getstyp(ds->restr[i]->rfityp),ds->restr[i]->min,ds->restr[i]->max);
-      printf("\n");
+      restraint_report(ds->restr[i],i);
     }
     
   }

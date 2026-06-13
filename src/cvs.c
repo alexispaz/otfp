@@ -991,4 +991,16 @@ double cv_force ( cv * c ) {
 int cv_should_output ( cv * c, int timestep ) {
   return c->boutput && !(timestep % c->outputFreq);
 }
+
+void cv_report ( cv * c, int index ) {
+  int j,k;
+
+  printf("CFACV_OTFP/C)      CV %i : typ %s val %.5f ind ",index,cv_getstyp(c->typ),c->val);
+  for (j=0;j<c->nC;j++) printf("%i ",c->ind[j]);
+  printf(" grads: ");
+  for (j=0;j<c->nC;j++) {
+    for (k=0;k<3;k++) printf("%.5f ",c->gr[j][k]);
+  }
+  printf("\n");
+}
             

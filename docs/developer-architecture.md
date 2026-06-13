@@ -63,7 +63,7 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
   functions used by the C runtime.
 - Runtime force orchestration uses CV helper functions for compute, value,
   gradient, boundary force, and output scheduling; direct CV field access is
-  limited to diagnostic reporting and CV implementation code.
+  limited to CV implementation code.
 - `cfacv.h` declares opaque `DataSpace`, `restraint`, and optimizer types plus
   the Tcl-facing runtime setup/update API.
 - `cfacv_internal.h` defines the runtime structs and internal force/evolution
@@ -71,7 +71,7 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
 - Runtime force orchestration uses restraint helper functions for value
   accumulation, energy/force calculation, output scheduling, chapeau sampling,
   target evolution, and energy reads; direct restraint field access is limited
-  to restraint implementation, restart serialization, and diagnostics.
+  to restraint implementation and restart serialization.
 
 The remaining public headers are intentionally narrower than the old `_obj`
 headers, but the Tcl/SWIG surface still includes more functions than a final
@@ -120,7 +120,7 @@ should be added as modules are split.
 | --- | --- | --- |
 | `cfacv.c` | Mixes construction, force loop, output, restart, target evolution, and OTFP solve orchestration. | Split into `dataspace`, `restraint`, `evolution`, and `force_loop` modules. |
 | `cvs.c` | Switch-heavy factory, global setup state for ZSD CVs, and all CV implementations in one file. | Use CV descriptor tables and per-CV parameter structs. |
-| Internal state headers | Chapeau, CV, and restraint state are isolated, and runtime orchestration now uses focused helper APIs for their hot paths. Tools, diagnostics, serialization, and implementation modules still access fields directly. | Keep narrowing direct field access where it reduces coupling without obscuring numerical code. |
+| Internal state headers | Chapeau, CV, and restraint state are isolated, and runtime orchestration now uses focused helper APIs for their hot paths and diagnostics. Tools, serialization, and implementation modules still access fields directly. | Keep narrowing direct field access where it reduces coupling without obscuring numerical code. |
 | `chapeau_sparse.c` | Duplicate implementation marked under construction. | Remove from default architecture or replace with a backend interface. |
 | SWIG headers | Internal helpers become Tcl-visible API. | Expose a small deliberate API. |
 | Error handling | Most failures call `exit`, which is hard to test and hard to recover from Tcl. | Return status codes in C and convert to Tcl errors at the boundary. |

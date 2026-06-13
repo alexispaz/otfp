@@ -140,6 +140,7 @@ int restraint_chapeau_id ( restraint * r );
 int restraint_chapeau_dim ( restraint * r );
 int restraint_evolve_for_timestep ( restraint * r, int timestep );
 void restraint_stop_evolution ( restraint * r );
+void restraint_report ( restraint * r, int index );
 
 void ds_saverestrains ( DataSpace * ds, char * filename );
 void ds_loadrestrains ( DataSpace * ds, char * filename );

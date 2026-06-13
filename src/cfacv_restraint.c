@@ -272,6 +272,21 @@ void restraint_stop_evolution ( restraint * r ) {
   r->evolve=0;
 }
 
+void restraint_report ( restraint * r, int index ) {
+  int j;
+
+  printf("CFACV_OTFP/C)       R %i : k %.3f z %.3f cvc ",index,r->k,r->z);
+  for (j=0;j<r->nCV;j++) printf("%.2f ",r->cvc[j]);
+  if (r->tamdOpt) {
+    printf("TAMD(kT=%.2f,gamma=%.2f,dt=%.3f) ",
+           r->tamdOpt->kT,
+           r->tamdOpt->gamma,
+           r->tamdOpt->dt);
+  }
+  printf(" typ %s min %.5f max %.5f\n",rf_getstyp(r->rfityp),r->min,r->max);
+  printf("\n");
+}
+
 int HarmonicCart ( restraint * r ) {
   double tmp=r->val-r->z;
   r->f=-r->k*tmp;
