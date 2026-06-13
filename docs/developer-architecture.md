@@ -15,7 +15,8 @@ scientific behavior unless a feature is explicitly removed.
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV calculations | `cvs.c`, `measurements.c` | Register CV descriptors and compute CV values and gradients. |
-| FES/chapeau core | `chapeau.c` | Manage allocation, grid metadata, accumulation, crop/sum helpers, and 2D symmetrization. |
+| FES/chapeau core | `chapeau.c` | Manage allocation, grid metadata, crop/sum helpers, and 2D symmetrization. |
+| FES/chapeau accumulation | `chapeau_accumulate.c` | Accumulate 1D/2D force statistics into chapeau matrices and hit masks. |
 | FES/chapeau IO | `chapeau_io.c` | Manage binary output, restart state, lambda loading, and replica serialization. |
 | FES/chapeau solver | `chapeau_solver.c` | Build reduced band matrices and solve chapeau coefficients with LAPACK. |
 | FES/chapeau evaluation | `chapeau_eval.c` | Evaluate 1D/2D simplex interpolation, gradients, and peak-file loading. |
@@ -90,7 +91,7 @@ should be added as modules are split.
 | --- | --- | --- |
 | `cfacv.c` | Mixes construction, force loop, output, restart, target evolution, and OTFP solve orchestration. | Split into `dataspace`, `restraint`, `evolution`, and `force_loop` modules. |
 | `cvs.c` | Switch-heavy factory, global setup state for ZSD CVs, and all CV implementations in one file. | Use CV descriptor tables and per-CV parameter structs. |
-| `chapeau.c` | Grid math, accumulation, crop/sum helpers, and 2D symmetrization are still coupled. | Split accumulation and grid utilities after the solver/eval/IO boundaries settle. |
+| `chapeau.c` | Grid math, crop/sum helpers, and 2D symmetrization are still coupled. | Split grid utilities after the solver/eval/IO/accumulation boundaries settle. |
 | `chapeau_sparse.c` | Duplicate implementation marked under construction. | Remove from default architecture or replace with a backend interface. |
 | SWIG headers | Internal helpers become Tcl-visible API. | Expose a small deliberate API. |
 | Error handling | Most failures call `exit`, which is hard to test and hard to recover from Tcl. | Return status codes in C and convert to Tcl errors at the boundary. |
@@ -99,7 +100,7 @@ should be added as modules are split.
 ## Refactor Sequence
 
 1. Split public headers from internal headers.
-2. Move chapeau accumulation and grid utilities out of `chapeau.c`.
+2. Move chapeau grid utilities out of `chapeau.c`.
 3. Decide explicitly which experimental/legacy features remain.
 
 ## Behavior Guardrails
