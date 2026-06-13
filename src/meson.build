@@ -42,11 +42,24 @@ install_headers('mock.tcl')
 # CFACV Shared Library
  
 cfacv_dep = [lapacke, lapack, blas, m, tcl]
+
+chapeau_headers = files(
+  'chapeau.h',
+  'chapeau_internal.h',
+)
+
+chapeau_dense_src = files(
+  'chapeau.c',
+  'chapeau_io.c',
+  'chapeau_solver.c',
+  'chapeau_eval.c',
+  'chapeau_accumulate.c',
+  'chapeau_grid.c',
+)
  
 cfacv_src = files(
   'measurements.c',
   'measurements.h',
-  'chapeau.h',
   'centers.c',
   'centers.h',
   'cfacv.c',
@@ -59,8 +72,9 @@ cfacv_src = files(
   'cvs_internal.h',
   )
  
+cfacv_src += chapeau_headers
+
 # Using sparse matrix requires MKL DSS
-cfacv_src += files('chapeau_internal.h')
 if get_option('sparse').enabled()
   
   if dss.found()
@@ -75,7 +89,7 @@ if get_option('sparse').enabled()
   error('Direct Sparse Solver implementation is under construction.')
 
 else
-  cfacv_src += files('chapeau.c', 'chapeau_io.c', 'chapeau_solver.c', 'chapeau_eval.c', 'chapeau_accumulate.c', 'chapeau_grid.c')
+  cfacv_src += chapeau_dense_src
 endif
                  
 cfacv_src += swig_gen.process('cfacv.i')
@@ -107,15 +121,10 @@ cvs_src = files(
   'cvs.c',
   'cvs.h',
   'cvs_internal.h',
-  'chapeau.c',
-  'chapeau_io.c',
-  'chapeau_solver.c',
-  'chapeau_eval.c',
-  'chapeau_accumulate.c',
-  'chapeau_grid.c',
-  'chapeau.h',
-  'chapeau_internal.h',
 )
+
+cvs_src += chapeau_dense_src
+cvs_src += chapeau_headers
 
 cvs_src += swig_gen.process('cvs.i')
 
@@ -142,15 +151,10 @@ executable('catbinsp',
 
 chapsim_src = files(
   'simetrize.c',
-  'chapeau.c',
-  'chapeau_io.c',
-  'chapeau_solver.c',
-  'chapeau_eval.c',
-  'chapeau_accumulate.c',
-  'chapeau_grid.c',
-  'chapeau.h',
-  'chapeau_internal.h',
 )
+
+chapsim_src += chapeau_dense_src
+chapsim_src += chapeau_headers
 
 
 executable('chapsim', 
@@ -163,16 +167,11 @@ executable('chapsim',
 
 chapconv_src = files(
   'convchapeau.c',
-  'chapeau.c',
-  'chapeau_io.c',
-  'chapeau_solver.c',
-  'chapeau_eval.c',
-  'chapeau_accumulate.c',
-  'chapeau_grid.c',
-  'chapeau.h',
-  'chapeau_internal.h',
   'chapeau_old.h',
   ) 
+
+chapconv_src += chapeau_dense_src
+chapconv_src += chapeau_headers
 
 executable('chapconv', 
   chapconv_src, 
@@ -184,15 +183,10 @@ executable('chapconv',
 
 chapadd_src = files(
   'addchapeaus.c',
-  'chapeau.c',
-  'chapeau_io.c',
-  'chapeau_solver.c',
-  'chapeau_eval.c',
-  'chapeau_accumulate.c',
-  'chapeau_grid.c',
-  'chapeau.h',
-  'chapeau_internal.h',
   )
+
+chapadd_src += chapeau_dense_src
+chapadd_src += chapeau_headers
 
 executable('chapadd', 
   chapadd_src, 
@@ -204,15 +198,10 @@ executable('chapadd',
 
 chapcrop_src = files(
   'cropchapeaus.c',
-  'chapeau.c',
-  'chapeau_io.c',
-  'chapeau_solver.c',
-  'chapeau_eval.c',
-  'chapeau_accumulate.c',
-  'chapeau_grid.c',
-  'chapeau.h',
-  'chapeau_internal.h',
   )
+
+chapcrop_src += chapeau_dense_src
+chapcrop_src += chapeau_headers
 
 executable('chapcrop', 
   chapcrop_src, 
