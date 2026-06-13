@@ -60,8 +60,8 @@ The chapeau API has been split so SWIG sees only the opaque public interface:
   accumulation, solve scheduling, output scheduling, and default restart saves
   instead of writing chapeau fields directly.
 - `cvs.h` declares `typedef struct cv cv` plus public CV helpers.
-- `cvs_internal.h` defines `struct cv` and the internal calculation/boundary
-  functions used by the C runtime.
+- `cvs_internal.h` defines `struct cv`, type lookup helpers, and the internal
+  calculation/boundary functions used by the C runtime.
 - Runtime force orchestration uses CV helper functions for compute, value,
   gradient, boundary force, and output scheduling; direct CV field access is
   limited to CV implementation code.

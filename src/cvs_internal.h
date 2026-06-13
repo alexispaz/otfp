@@ -36,6 +36,9 @@ struct cv {
   chapeau * d2ch;
 };
 
+int cv_getityp ( char * typ );
+char * cv_getstyp ( int ityp );
+
 int calccv_line  ( cv * c, double ** R );
 int calccv_rmsd  ( cv * c, double ** R );
 int calccv_charmmd ( cv * c, double ** R );
