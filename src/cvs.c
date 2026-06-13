@@ -236,7 +236,7 @@ int calccv_rmsd (cv * c, double ** R ) {
   for (l=0;l<c->nC;l++) {
     for (d=0;d<3;d++) {
       i=c->ind[l];
-      aux=R[i][d]-c->ref[i][d];
+      aux=R[i][d]-c->ref[l][d];
       c->val+=aux*aux;
     }
   }
@@ -244,7 +244,7 @@ int calccv_rmsd (cv * c, double ** R ) {
   for (l=0;l<c->nC;l++) {
     for (d=0;d<3;d++) {
       i=c->ind[l];
-      c->gr[i][d]=2.0*(R[i][d]-c->ref[i][d]);
+      c->gr[l][d]=2.0*(R[i][d]-c->ref[l][d]);
     }
   } 
 

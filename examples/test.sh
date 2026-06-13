@@ -96,13 +96,19 @@ run_test() {
   local mode="$2"
   local tol="$3"
   local files=( $(echo "$4" | tr ',' ' ') ) 
+  local exec_ec=0
 
   # Ejecuto
   for n in "${name[@]}"; do
 		 [[ "$n" == "none" ]] && continue
      rm -f "${files[@]}"
-     exe "$n"
+     exe "$n" || exec_ec=1
   done 
+
+  if [[ $exec_ec -ne 0 ]]; then
+    echo -e "$line$fail"
+    return 1
+  fi
 
   if [[ "$mode" == "lambda" ]]; then
 	  $catb -f job0_ch0.bsp -ol 3 2>/dev/null > "${files[0]}"
@@ -147,10 +153,11 @@ declare -A tests=(
   [OTFP2D_periodic]="job0.namd:tol_abs:1e-4:phi.r,psi.r,phi.x,psi.x,job0.mk1,job0.mk2 \
           none:lambda:1e-4:job0_ch0.LAMBDA "
   [adam]="job0.namd:tol_abs:1e-4:phi.r,psi.r,phi.x,psi.x,job0.mk1,job0.mk2"
+  [CVs]="rmsd.namd,line.namd:none:0:"
 )
-# [CVs]="rmsd,line:none:0:"
 
 # Test execution
+ec=0
 for section in "${!tests[@]}"; do
   if prompt "$section"; then
     cd "$section"
@@ -158,7 +165,7 @@ for section in "${!tests[@]}"; do
     for entry in ${tests[$section]}; do
       IFS=":" read -r name mode tol files <<<"$entry"
       # expandir comas en espacios para pasar a run_test
-      run_test "$name" "$mode" "$tol" "$files"
+      run_test "$name" "$mode" "$tol" "$files" || ec=1
     done
     cd ..
   fi
@@ -175,3 +182,4 @@ elif command -v perl &>/dev/null; then
   echo "Total time: $(perl -E "say $end-$start")"
 fi
 
+exit $ec

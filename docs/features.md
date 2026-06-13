@@ -56,7 +56,7 @@ Supported C CV types:
 | `COGY` | one or more | Average y coordinate of centers. |
 | `COGZ` | one or more | Average z coordinate of centers. |
 | `LINE` | one or more | Projection between two reference PDB states. |
-| `RMSD` | one or more | Allocated in C but Tcl setup currently errors as under construction. |
+| `RMSD` | one or more | Mean squared displacement from a reference PDB. |
 | `CHARMMD` | 4 | CHARMM-style dihedral energy CV using `n`, `k`, and `d`. |
 | `GAUSS2D` | 5 | Two-dihedral Gaussian function. |
 | `D2CHAP` | 5 | Two-dihedral CV evaluated from a chapeau file. |

@@ -11,7 +11,11 @@ double get_double(double *a, int index) {
 #include <execinfo.h>
 #include <signal.h>  
 #include <unistd.h>  
+#include "chapeau.h"
+#include "cvs.h"
 #include "cfacv.h"
 %}
 
+%include "chapeau.h"
+%include "cvs.h"
 %include "cfacv.h"

@@ -3,12 +3,13 @@
 set oname           rmsd
 set temperature     298
 set seed            923458
+set test            true
 seed                $seed
  
 
 # The molecules
 structure           ../systems/buta.psf
-coordinates         ../systems/buta_gauche.pdb
+coordinates         buta_gauche.pdb
 
 firsttimestep       0
 timestep            2.0
@@ -50,4 +51,8 @@ outputEnergies      1000
 
 source rmsd.otfp
 
-run  1000000 ;# 2ns
+if $test {
+  run  2
+} else {
+  run  1000000 ;# 2ns
+}

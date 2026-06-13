@@ -40,7 +40,6 @@ int calccv_line  ( cv * c, double ** R );
 int calccv_rmsd  ( cv * c, double ** R );
 int calccv_charmmd ( cv * c, double ** R );
 int calccv_d2chap  ( cv * c, double ** R );
-int set_d2chap    ( cv * c, char * filename );
 int calccv_gauss2d ( cv * c, double ** R );
 int calccv_cogx  ( cv * c, double ** R );
 int calccv_cogy  ( cv * c, double ** R );
@@ -65,8 +64,6 @@ int cv_SoftUpperWall ( cv * c );
 int cv_SoftLowerWall ( cv * c );
 int cv_SoftWalls ( cv * c );
 int cv_nada ( cv * c );
-
-int set_line (cv * c);
 
 int cv_compute ( cv * c, double ** R );
 double cv_bias_value ( cv * c );
