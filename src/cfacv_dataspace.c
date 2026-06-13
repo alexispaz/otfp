@@ -115,9 +115,6 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
     chapeau_set_update_frequency(ds->ch[i],nupdate);
   }
 
-  ds->lamfric=0.0;
-  ds->lamdt=0.0;
-
   return 0;
 }
 

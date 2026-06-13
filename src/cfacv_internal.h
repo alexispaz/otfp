@@ -87,7 +87,7 @@ struct restraint {
 struct DataSpace {
   int N,iN;
   int K,iK;
-  int ch_num,ch_now;
+  int ch_num;
 
   atomCenterStruct ** ac;
   restraint ** restr;
@@ -102,9 +102,6 @@ struct DataSpace {
   double ** R;
 
   int doAnalyticalCalc;
-
-  double lamfric;
-  double lamdt;
 
   int evolveAnalyticalParameters;
   int beginaccum;
