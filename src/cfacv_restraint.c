@@ -203,6 +203,75 @@ void ds_loadrestrains ( DataSpace * ds, char * filename ) {
   fclose(ofs);
 }
 
+void restraint_reset_value ( restraint * r ) {
+  r->val=0.0;
+}
+
+void restraint_add_cv_value ( restraint * r, int cv_index, double value ) {
+  r->val+=r->cvc[cv_index]*value;
+}
+
+void restraint_init_target_from_value ( restraint * r ) {
+  r->z=r->val;
+  if (r->smdOpt) smdOptInit(r->smdOpt,r->val);
+}
+
+int restraint_compute_energy ( restraint * r ) {
+  return r->energyFunc(r);
+}
+
+int restraint_should_output ( restraint * r, int timestep ) {
+  return r->boutput && !(timestep % r->outputFreq);
+}
+
+int restraint_cv_count ( restraint * r ) {
+  return r->nCV;
+}
+
+double restraint_cv_coefficient ( restraint * r, int cv_index ) {
+  return r->cvc[cv_index];
+}
+
+double restraint_force ( restraint * r ) {
+  return r->f;
+}
+
+double restraint_target ( restraint * r ) {
+  return r->z;
+}
+
+int restraint_chapeau_id ( restraint * r ) {
+  return r->chid;
+}
+
+int restraint_chapeau_dim ( restraint * r ) {
+  return r->chdm;
+}
+
+int restraint_evolve_for_timestep ( restraint * r, int timestep ) {
+  int done;
+
+  r->boundFunc(r);
+
+  if (r->tamdOpt) r->evolveFunc(r);
+
+  if (r->smdOpt) {
+    r->evolve=(int)(r->smdOpt->t0<=timestep)&&(r->smdOpt->t1>=timestep);
+    r->evolveFunc(r);
+  }
+
+  if (r->adamOpt) {
+    done=r->evolveFunc(r);
+    if (done==1) return 1;
+  }
+
+  return 0;
+}
+
+void restraint_stop_evolution ( restraint * r ) {
+  r->evolve=0;
+}
+
 int HarmonicCart ( restraint * r ) {
   double tmp=r->val-r->z;
   r->f=-r->k*tmp;

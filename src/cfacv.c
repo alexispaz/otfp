@@ -94,10 +94,11 @@ double DataSpace_ComputeCVs ( DataSpace * ds ) {
 
 int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, double bias ) {
   int i,j,jj;
-  double * cvc;
   int d=0;
   int rabort;
-  int K=ds->K;
+  int K;
+  int nCV;
+  double coefficient;
   cv * cv;
   restraint * r;
   chapeau * ch;
@@ -105,6 +106,7 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
   // install SIGINT handler
   signal(SIGINT, handler);   
   if (!ds) return -1;
+  K=ds->K;
 
   /* clear out the position arrays to hold forces to be communicated
      back to tclForces */
@@ -113,48 +115,43 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
   /* Loop over all restraints and compute restraint values from their CV's */
   for (i=0;i<ds->K;i++) {
     r=ds->restr[i];
-    cvc=r->cvc;
-    r->val=0.0;
-    for (j=0;j<r->nCV;j++) {
+    nCV=restraint_cv_count(r);
+    restraint_reset_value(r);
+    for (j=0;j<nCV;j++) {
       cv=ds->cv[j];
-      r->val+=cvc[j]*cv_value(cv);
+      restraint_add_cv_value(r,j,cv_value(cv));
     }
     
     if (first) {
-      r->z=r->val;
-      if (r->smdOpt) smdOptInit(r->smdOpt,r->val);
+      restraint_init_target_from_value(r);
     }
   }
-
-  //printf("OTFP: %i restraint %i val %.4f targ %.4f\n",timestep,i,r->val,r->z);
-
   /* compute forces on all restraints */
   for (i=0;i<ds->K;i++) {
     r=ds->restr[i];
-    cvc=r->cvc;
+    nCV=restraint_cv_count(r);
 
     // Compute the energy and the force of the restrain
-    r->energyFunc(r);
+    restraint_compute_energy(r);
 
     // restraint output
-    if (r->boutput) {
-      if (!(timestep % r->outputFreq)) restr_output(r);
-    }
+    if (restraint_should_output(r,timestep)) restr_output(r);
 
     /* accumulate force increments in ds->R for each real particle*/
     /* cv->gr[jj][kk] = \partial CV / \partial (kk-coord of center jj of CV) */
 
     // For each CV in this restraint
-    for (j=0;j<r->nCV;j++) {
+    for (j=0;j<nCV;j++) {
       cv=ds->cv[j];
-      if (r->cvc[j]) {
+      coefficient=restraint_cv_coefficient(r,j);
+      if (coefficient) {
         
         // For each center in this CV
         for (jj=0;jj<cv_center_count(cv);jj++) {
 
           /* Increment the forces of the jj'th cartesian center on the j'th cv of this restraint */
           for (d=0;d<3;d++) {
-            ds->R[cv_center_index(cv,jj)][d]+=r->cvc[j]*cv_gradient_component(cv,jj,d)*r->f;
+            ds->R[cv_center_index(cv,jj)][d]+=coefficient*cv_gradient_component(cv,jj,d)*restraint_force(r);
           }
         }
       }
@@ -190,8 +187,8 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
     if (timestep>ds->beginaccum) {
       for (i=0;i<ds->K;i++) {
         r=ds->restr[i];
-        ch=ds->ch[r->chid];
-        chapeau_set_sample(ch,r->chdm,r->z,-r->f); // F=k(\theta-z)
+        ch=ds->ch[restraint_chapeau_id(r)];
+        chapeau_set_sample(ch,restraint_chapeau_dim(r),restraint_target(r),-restraint_force(r)); // F=k(\theta-z)
       }
       for (i=0;i<ds->ch_num;i++) {
         chapeau_accumulate_sample(ds->ch[i],bias);
@@ -209,10 +206,6 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
          // getchar();
           chapeau_solve(ch);
 
-          //for (j=0;j<K;j++) {
-          //  r=ds->restr[j];
-          //  r->ofp=freopen(NULL, "w", r->ofp);
-          //}
           // chapeau_savestate(ch,"before.ch0\0");
         }
 
@@ -231,24 +224,10 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
   for (i=0;i<K;i++) {
     r=ds->restr[i];
 
-    // Compute the boundary forces not included in the atom forces!!
-    r->boundFunc(r);
-
-    // Evolution of TAMD restraints
-    if (r->tamdOpt) r->evolveFunc(r);
-  
-    // Evolution of SMD restraints
-    if (r->smdOpt) {
-      r->evolve=(int)(r->smdOpt->t0<=timestep)&&(r->smdOpt->t1>=timestep);
-      r->evolveFunc(r);
-    }
-    if (r->adamOpt) {
-      j=r->evolveFunc(r);
-      if(j==1) {
-        ds_saverestrains(ds,ds->filename);
-        r->evolve=0;
-        rabort=rabort+1;
-      }
+    if (restraint_evolve_for_timestep(r,timestep)) {
+      ds_saverestrains(ds,ds->filename);
+      restraint_stop_evolution(r);
+      rabort=rabort+1;
     }
   }
 
@@ -272,7 +251,7 @@ double DataSpace_RestraintEnergy ( DataSpace * ds ) {
     restraint * r;
     for (i=0;i<ds->K;i++) {
       r=ds->restr[i];
-      u+=r->u;
+      u+=restr_getu(r);
     }
     return u;
   }

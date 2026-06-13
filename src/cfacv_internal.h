@@ -127,6 +127,20 @@ int HarmonicCart_cutoff ( restraint * r );
 int HarmonicCart_pbc ( restraint * r );
 int HarmonicCart_cutoff_pbc ( restraint * r );
 
+void restraint_reset_value ( restraint * r );
+void restraint_add_cv_value ( restraint * r, int cv_index, double value );
+void restraint_init_target_from_value ( restraint * r );
+int restraint_compute_energy ( restraint * r );
+int restraint_should_output ( restraint * r, int timestep );
+int restraint_cv_count ( restraint * r );
+double restraint_cv_coefficient ( restraint * r, int cv_index );
+double restraint_force ( restraint * r );
+double restraint_target ( restraint * r );
+int restraint_chapeau_id ( restraint * r );
+int restraint_chapeau_dim ( restraint * r );
+int restraint_evolve_for_timestep ( restraint * r, int timestep );
+void restraint_stop_evolution ( restraint * r );
+
 void ds_saverestrains ( DataSpace * ds, char * filename );
 void ds_loadrestrains ( DataSpace * ds, char * filename );
 
