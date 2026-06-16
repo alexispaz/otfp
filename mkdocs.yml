@@ -10,6 +10,7 @@ nav:
   - Build: build.md
   - Features: features.md
   - Examples: examples.md
+  - GEMS integration: integration-gems.md
   - Testing: testing.md
   - Code audit: audit.md
   - Developer architecture: developer-architecture.md

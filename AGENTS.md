@@ -70,6 +70,7 @@ The `examples` test depends on the installed local prefix under `usr/`, so run
 - Keep user-facing features documented in `docs/features.md`.
 - Keep developer architecture and refactor status in
   `docs/developer-architecture.md`.
+- Keep GEMS and driver-embedding context in `docs/integration-gems.md`.
 - Keep test commands and coverage notes in `docs/testing.md`.
 - If a user-visible configuration key, feature, tool, or workflow changes,
   update docs in the same commit.
@@ -91,9 +92,11 @@ The `examples` test depends on the installed local prefix under `usr/`, so run
 
 ## Known Constraints
 
-- SWIG currently includes broad public headers, so some internal helpers are
-  still exposed. Splitting public headers from internal headers is a planned
-  cleanup.
+- SWIG uses Tcl-specific headers (`cfacv_tcl.h`, `cvs_tcl.h`). Keep that
+  adapter boundary narrow; do not expose internal helpers through Tcl unless the
+  supported workflow requires them.
+- OTFP is being prepared as a vendored engine for GEMS. Do not make new core
+  code depend on Tcl, SWIG, or NAMD concepts.
 - Sparse/MKL chapeau support exists in source but is marked under construction
   in the build logic.
 - Restart files serialize raw structs in places; be careful when changing

@@ -1,6 +1,6 @@
 # Developer Architecture
 
-This page documents the current architecture before refactoring. The refactor
+This page documents the current architecture during refactoring. The refactor
 branch does not need to preserve backward compatibility, but it should preserve
 scientific behavior unless a feature is explicitly removed.
 
@@ -27,7 +27,23 @@ scientific behavior unless a feature is explicitly removed.
 | FES/chapeau evaluation | `chapeau_eval.c` | Evaluate 1D/2D simplex interpolation, gradients, and peak-file loading. |
 | Tools | `catbinsp.c`, `simetrize.c`, `addchapeaus.c`, `cropchapeaus.c` | Offline manipulation of chapeau outputs/states. |
 
-## Main Runtime Flow
+## Driver Boundaries
+
+NAMD is currently the only complete production driver in this repository, but
+it is not the engine model. The desired architecture is:
+
+| Boundary | Responsibility |
+| --- | --- |
+| Core engine | Own `DataSpace`, CVs, restraints, chapeau state, per-step force/energy calculation, and restart/output scheduling. |
+| NAMD/Tcl adapter | Translate NAMD TclForces callbacks and user Tcl variables into core engine calls. |
+| Mock adapter | Emulate enough of NAMD TclForces for fast regression tests. |
+| Future GEMS adapter | Bind a driver-oriented C facade from Fortran with `iso_c_binding`, without going through Tcl or SWIG. |
+
+The GEMS integration plan is documented in
+[GEMS integration](integration-gems.md). Refactors should keep moving NAMD/Tcl
+assumptions out of the core engine boundary.
+
+## Current NAMD Runtime Flow
 
 ```text
 NAMD calcforces
@@ -138,7 +154,8 @@ should be added as modules are split.
 
 1. Narrow the Tcl/SWIG API to deliberate user-facing functions.
 2. Replace broad direct struct access with focused helper APIs where it reduces coupling.
-3. Decide explicitly which experimental/legacy features remain.
+3. Add a driver-oriented C embedding facade for GEMS and non-NAMD tests.
+4. Decide explicitly which experimental/legacy features remain.
 
 ## Behavior Guardrails
 
