@@ -110,6 +110,18 @@ embedding_test = executable(
 
 test('embedding', embedding_test)
 
+if fortran_enabled
+  embedding_fortran_test = executable(
+    'test-embedding-fortran',
+    files('../tests/embedding_fortran.f90'),
+    include_directories: include_directories('.'),
+    link_with: cfacv_lib,
+    dependencies: cfacv_dep,
+  )
+
+  test('embedding-fortran', embedding_fortran_test)
+endif
+
 
 
 cvs_src = files(

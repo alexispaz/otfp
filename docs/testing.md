@@ -35,20 +35,31 @@ It constructs an `otfp_engine`, registers two centers, one `BOND` CV, and one
 harmonic restraint, then computes one step without sourcing Tcl or using the
 mock NAMD adapter. This is the first guardrail for future GEMS integration.
 
+When a Fortran compiler is available, Meson also builds and runs an
+`iso_c_binding` smoke test:
+
+```sh
+meson test -C build embedding-fortran
+```
+
+This test exercises the same `otfp_engine` path from Fortran and verifies that
+opaque handles, C strings, contiguous arrays, and returned force pointers can be
+used from a Fortran caller.
+
 The script runs from `examples/` and checks selected output files against each
 example's `reference/` directory.
 
 ## Current coverage
 
-The current test set combines low-level lifecycle and embedding tests with
-high-level example behavior. The example runner is valuable because it
-exercises Tcl wrappers, the mock NAMD interface, chapeau output, and numeric
-regression files together.
+The current test set combines low-level lifecycle, C embedding, and optional
+Fortran embedding tests with high-level example behavior. The example runner is
+valuable because it exercises Tcl wrappers, the mock NAMD interface, chapeau
+output, and numeric regression files together.
 
 Recommended next additions:
 
 - Small C unit tests for `measurements.c` geometry routines.
 - Chapeau serialization/load round-trip tests.
 - Error-path tests for missing or incompatible restart files.
-- A Fortran `iso_c_binding` smoke test for `otfp_engine`.
+- More Fortran coverage for GEMS-like setup and repeated steps.
 - A CI job that builds, installs into `usr/`, and runs `meson test`.

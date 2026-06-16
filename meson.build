@@ -5,6 +5,8 @@ project('otfp', 'c',
 
 meson.add_dist_script('version.sh')
 
+fortran_enabled = add_languages('fortran', native: false, required: false)
+
 subdir('src')
 
 bash = find_program('bash', required: false)

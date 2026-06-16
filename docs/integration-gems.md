@@ -134,7 +134,8 @@ Ownership and data rules:
 ## Fortran Binding Notes
 
 The first GEMS integration should use `iso_c_binding` against the embedding
-facade:
+facade. The repository now includes `tests/embedding_fortran.f90` as a minimal
+working example.
 
 - Store the opaque C handle as `type(c_ptr)`.
 - Pass scalar integers as `integer(c_int)` or the exact width chosen by the C
@@ -147,15 +148,19 @@ facade:
   the C API; Tcl scripts often translate from user-facing 1-based data.
 
 The initial Fortran layer should be thin. Its job is to map GEMS data
-structures into the C facade and return forces/energies to GEMS.
+structures into the C facade and return forces/energies to GEMS. The smoke test
+constructs the same two-center `BOND` CV and harmonic restraint as the C
+embedding test, computes one step, reads a force pointer with `c_f_pointer`,
+and checks that force and energy values are finite.
 
 ## Work To Do Before Asking Another Agent To Integrate
 
 1. Keep `docs/developer-architecture.md` current with core/adapter boundaries.
 2. Extend the C embedding facade as GEMS needs more setup features.
 3. Add a fuller C embedding example that does not source Tcl.
-4. Add a minimal Fortran `iso_c_binding` example or pseudocode page.
-5. Expand the embedding test beyond lifecycle/finite-value checks.
+4. Expand the Fortran `iso_c_binding` example toward the setup patterns GEMS
+   will need.
+5. Expand the embedding tests beyond lifecycle/finite-value checks.
 6. Decide how OTFP will be vendored in GEMS: subtree under `lib/`, direct source
    import under a free-energy module, or a temporary development copy.
 7. Only after the C/Fortran boundary is working, evaluate whether any C modules
