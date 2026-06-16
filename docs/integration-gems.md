@@ -55,8 +55,8 @@ The current public C calls that match this model are:
 | Restart hooks | `chapeau_savestate`, `chapeau_loadstate`, `chapeau_loadlambda` |
 
 This API is usable, but it still reflects the historical Tcl/NAMD workflow.
-Before GEMS integration, prefer adding a small embedding facade instead of
-teaching GEMS every historical function.
+New driver code should prefer the embedding facade in `otfp_engine.h` instead
+of teaching GEMS every historical function.
 
 ## Recommended GEMS Strategy
 
@@ -82,12 +82,14 @@ lower-risk path is:
 This avoids mixing language conversion, build-system migration, memory
 ownership changes, and scientific validation in one step.
 
-## Proposed Embedding Facade
+## Embedding Facade
 
-Add a driver-oriented API after the current headers are stable enough. A future
-facade could live in files such as `otfp_engine.h` and `otfp_engine.c`.
+The first driver-oriented facade lives in `otfp_engine.h` and `otfp_engine.c`.
+It is intentionally thin: it wraps `DataSpace` without changing numerical
+behavior. Its purpose is to give GEMS one stable dependency point while the
+Tcl/NAMD-facing internals continue to be refactored.
 
-The facade should hide Tcl/NAMD naming and expose a small workflow:
+Current API:
 
 ```c
 typedef struct otfp_engine otfp_engine;
@@ -95,20 +97,39 @@ typedef struct otfp_engine otfp_engine;
 otfp_engine *otfp_engine_create(int ncenters, int ncvs, int nrestr, long seed);
 void otfp_engine_free(otfp_engine *engine);
 
-int otfp_engine_add_center(otfp_engine *engine, int natoms, const int *indices,
-                           const double *masses);
+int otfp_engine_add_center(otfp_engine *engine, int natoms,
+                           const int *indices, const double *masses);
 int otfp_engine_set_center_position(otfp_engine *engine, int center,
                                     const double xyz[3]);
 const double *otfp_engine_center_force(otfp_engine *engine, int center);
+
+int otfp_engine_add_cv(otfp_engine *engine, const char *type, int ncenters,
+                       const int *centers, double zmin, double zmax,
+                       const char *boundary, double boundary_k);
+int otfp_engine_add_restraint(otfp_engine *engine, double k, double target,
+                              int ncvs, const double *coefficients,
+                              const char *function, double zmin, double zmax,
+                              const char *boundary, double boundary_k);
 
 int otfp_engine_compute(otfp_engine *engine, int first_step, int step,
                         double external_bias);
 double otfp_engine_bias_energy(otfp_engine *engine);
 ```
 
-That shape is easier to bind from Fortran than the historical Tcl-facing API.
-It also gives GEMS one stable dependency point while the internals continue to
-be refactored.
+Ownership and data rules:
+
+- `otfp_engine_create` allocates the engine and owned OTFP state.
+- `otfp_engine_free` releases all owned state and accepts `NULL`.
+- Center, CV, and restraint setup arrays are copied by the underlying OTFP
+  constructors; callers do not need to keep those temporary arrays alive after
+  setup.
+- `otfp_engine_set_center_position` writes the current position for one center.
+- `otfp_engine_compute` computes CVs, restraint forces, chapeau updates, target
+  evolution, and bias energy for one step.
+- `otfp_engine_center_force` returns a pointer to the internal force buffer for
+  one center after `otfp_engine_compute`; callers must copy it before the next
+  position update or compute call.
+- Center and CV indices are C-style zero-based indices.
 
 ## Fortran Binding Notes
 
@@ -131,10 +152,10 @@ structures into the C facade and return forces/energies to GEMS.
 ## Work To Do Before Asking Another Agent To Integrate
 
 1. Keep `docs/developer-architecture.md` current with core/adapter boundaries.
-2. Add or finalize a C embedding facade for the engine lifecycle.
-3. Add a minimal C embedding example that does not source Tcl.
+2. Extend the C embedding facade as GEMS needs more setup features.
+3. Add a fuller C embedding example that does not source Tcl.
 4. Add a minimal Fortran `iso_c_binding` example or pseudocode page.
-5. Add a test that exercises the embedding path without the mock Tcl adapter.
+5. Expand the embedding test beyond lifecycle/finite-value checks.
 6. Decide how OTFP will be vendored in GEMS: subtree under `lib/`, direct source
    import under a free-energy module, or a temporary development copy.
 7. Only after the C/Fortran boundary is working, evaluate whether any C modules
@@ -146,4 +167,3 @@ structures into the C facade and return forces/energies to GEMS.
 - Do not require NAMD concepts in the engine-facing API.
 - Do not translate all CV/chapeau code to Fortran before integration.
 - Do not change numerical behavior while only moving adapter boundaries.
-

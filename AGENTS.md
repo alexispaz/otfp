@@ -78,6 +78,8 @@ The `examples` test depends on the installed local prefix under `usr/`, so run
 ## Current Fast Tests
 
 - `meson test -C build lifecycle`: small C constructor/destructor guardrail.
+- `meson test -C build embedding`: C driver-embedding smoke test that avoids
+  Tcl and the NAMD mock adapter.
 - `meson test -C build examples`: mock-driven Tcl/NAMD example regression
   suite.
 

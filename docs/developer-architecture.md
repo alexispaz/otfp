@@ -14,6 +14,7 @@ scientific behavior unless a feature is explicitly removed.
 | Runtime public API | `cfacv.h` | Expose opaque runtime, restraint, and optimizer types plus user/SWIG-facing setup and update functions. |
 | Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and expose runtime helpers for CV computation, energy, and reporting. |
 | Runtime force loop | `cfacv_force.c` | Orchestrate per-step force clearing, restraint values, restraint forces, CV boundary forces, chapeau updates, and target evolution. |
+| Driver embedding facade | `otfp_engine.h`, `otfp_engine.c` | Provide a small C API for non-Tcl drivers such as GEMS. |
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV public API | `cvs.h` | Expose the opaque `cv` type and user/SWIG-facing CV lifecycle, type, reference, and setup helpers. |
@@ -37,7 +38,7 @@ it is not the engine model. The desired architecture is:
 | Core engine | Own `DataSpace`, CVs, restraints, chapeau state, per-step force/energy calculation, and restart/output scheduling. |
 | NAMD/Tcl adapter | Translate NAMD TclForces callbacks and user Tcl variables into core engine calls. |
 | Mock adapter | Emulate enough of NAMD TclForces for fast regression tests. |
-| Future GEMS adapter | Bind a driver-oriented C facade from Fortran with `iso_c_binding`, without going through Tcl or SWIG. |
+| Future GEMS adapter | Bind the `otfp_engine` C facade from Fortran with `iso_c_binding`, without going through Tcl or SWIG. |
 
 The GEMS integration plan is documented in
 [GEMS integration](integration-gems.md). Refactors should keep moving NAMD/Tcl
@@ -154,7 +155,7 @@ should be added as modules are split.
 
 1. Narrow the Tcl/SWIG API to deliberate user-facing functions.
 2. Replace broad direct struct access with focused helper APIs where it reduces coupling.
-3. Add a driver-oriented C embedding facade for GEMS and non-NAMD tests.
+3. Expand the driver-oriented C embedding facade for GEMS and non-NAMD tests.
 4. Decide explicitly which experimental/legacy features remain.
 
 ## Behavior Guardrails

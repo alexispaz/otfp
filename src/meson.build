@@ -67,6 +67,8 @@ cfacv_src = files(
   'cfacv.h',
   'cfacv_tcl.h',
   'cfacv_internal.h',
+  'otfp_engine.c',
+  'otfp_engine.h',
   'cvs.c',
   'cvs.h',
   'cvs_tcl.h',
@@ -97,6 +99,16 @@ lifecycle_test = executable(
 )
 
 test('lifecycle', lifecycle_test)
+
+embedding_test = executable(
+  'test-embedding',
+  files('../tests/embedding.c'),
+  include_directories: include_directories('.'),
+  link_with: cfacv_lib,
+  dependencies: cfacv_dep,
+)
+
+test('embedding', embedding_test)
 
 
 
