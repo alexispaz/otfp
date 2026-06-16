@@ -66,6 +66,16 @@ program embedding_fortran
       integer(c_int) :: otfp_engine_add_restraint
     end function
 
+    function otfp_engine_add_smd(engine, restraint, target, first_step, last_step) &
+        bind(C, name="otfp_engine_add_smd")
+      import :: c_int, c_double, c_ptr
+      type(c_ptr), value :: engine
+      integer(c_int), value :: restraint
+      real(c_double), value :: target
+      integer(c_int), value :: first_step, last_step
+      integer(c_int) :: otfp_engine_add_smd
+    end function
+
     function otfp_engine_compute(engine, first_step, step, external_bias) bind(C, name="otfp_engine_compute")
       import :: c_int, c_double, c_ptr
       type(c_ptr), value :: engine
@@ -96,6 +106,7 @@ program embedding_fortran
   character(kind=c_char), target :: harmonic(9) = [character(kind=c_char) :: &
       'H', 'A', 'R', 'M', 'O', 'N', 'I', 'C', c_null_char]
   integer(c_int) :: code
+  integer(c_int) :: restraint
   real(c_double) :: energy
 
   engine = otfp_engine_create(2_c_int, 1_c_int, 1_c_int, 1234_c_long)
@@ -105,22 +116,24 @@ program embedding_fortran
   if (otfp_engine_add_center(engine, 1_c_int, ind1, mass) /= 1_c_int) error stop 3
   if (otfp_engine_add_cv(engine, bond, 2_c_int, cv_centers, 0.0_c_double, 0.0_c_double, &
       nada, 0.0_c_double) /= 0_c_int) error stop 4
-  if (otfp_engine_add_restraint(engine, 1.0_c_double, 0.0_c_double, 1_c_int, cvc, harmonic, &
-      0.0_c_double, 0.0_c_double, nada, 0.0_c_double) /= 0_c_int) error stop 5
+  restraint = otfp_engine_add_restraint(engine, 1.0_c_double, 0.0_c_double, 1_c_int, cvc, harmonic, &
+      0.0_c_double, 0.0_c_double, nada, 0.0_c_double)
+  if (restraint /= 0_c_int) error stop 5
+  if (otfp_engine_add_smd(engine, restraint, 1.0_c_double, 0_c_int, 10_c_int) /= 0_c_int) error stop 6
 
-  if (otfp_engine_set_center_position(engine, 0_c_int, p0) /= 0_c_int) error stop 6
-  if (otfp_engine_set_center_position(engine, 1_c_int, p1) /= 0_c_int) error stop 7
+  if (otfp_engine_set_center_position(engine, 0_c_int, p0) /= 0_c_int) error stop 7
+  if (otfp_engine_set_center_position(engine, 1_c_int, p1) /= 0_c_int) error stop 8
 
   code = otfp_engine_compute(engine, 0_c_int, 1_c_int, 0.0_c_double)
-  if (code /= 0_c_int) error stop 8
+  if (code /= 0_c_int) error stop 9
 
   force_ptr = otfp_engine_center_force(engine, 0_c_int)
-  if (.not. c_associated(force_ptr)) error stop 9
+  if (.not. c_associated(force_ptr)) error stop 10
   call c_f_pointer(force_ptr, force, [3])
 
   energy = otfp_engine_bias_energy(engine)
-  if (energy /= energy) error stop 10
-  if (any(force /= force)) error stop 11
+  if (energy /= energy) error stop 11
+  if (any(force /= force)) error stop 12
 
   call otfp_engine_free(engine)
   call otfp_engine_free(c_null_ptr)

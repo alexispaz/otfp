@@ -114,6 +114,15 @@ int otfp_engine_add_restraint(otfp_engine *engine, double k, double target,
                               int ncvs, const double *coefficients,
                               const char *function, double zmin, double zmax,
                               const char *boundary, double boundary_k);
+int otfp_engine_add_tamd(otfp_engine *engine, int restraint,
+                         double gamma, double kt, double dt,
+                         int chapeau_id, int chapeau_dim);
+int otfp_engine_add_smd(otfp_engine *engine, int restraint,
+                        double target, int first_step, int last_step);
+int otfp_engine_add_adam(otfp_engine *engine, int restraint,
+                         double step_size, double beta1, double beta2,
+                         double epsilon, double decay, double kt,
+                         double min_step);
 
 int otfp_engine_compute(otfp_engine *engine, int first_step, int step,
                         double external_bias);
@@ -127,6 +136,8 @@ Ownership and data rules:
 - Center, CV, and restraint setup arrays are copied by the underlying OTFP
   constructors; callers do not need to keep those temporary arrays alive after
   setup.
+- `otfp_engine_add_restraint` returns the zero-based restraint index, or `-1`
+  on failure. Use that index to attach TAMD, SMD, or ADAM evolution options.
 - `otfp_engine_set_center_position` writes the current position for one center.
 - `otfp_engine_compute` computes CVs, restraint forces, chapeau updates, target
   evolution, and bias energy for one step.
@@ -153,7 +164,7 @@ working example.
 
 The initial Fortran layer should be thin. Its job is to map GEMS data
 structures into the C facade and return forces/energies to GEMS. The smoke test
-constructs the same two-center `BOND` CV and harmonic restraint as the C
+constructs the same two-center `BOND` CV and harmonic/SMD restraint as the C
 embedding test, computes one step, reads a force pointer with `c_f_pointer`,
 and checks that force and energy values are finite.
 

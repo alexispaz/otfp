@@ -32,8 +32,9 @@ meson test -C build embedding
 ```
 
 It constructs an `otfp_engine`, registers two centers, one `BOND` CV, and one
-harmonic restraint, then computes one step without sourcing Tcl or using the
-mock NAMD adapter. This is the first guardrail for future GEMS integration.
+harmonic restraint with SMD target evolution, then computes one step without
+sourcing Tcl or using the mock NAMD adapter. This is the first guardrail for
+future GEMS integration.
 
 When a Fortran compiler is available, Meson also builds and runs an
 `iso_c_binding` smoke test:
