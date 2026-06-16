@@ -36,6 +36,7 @@ install_headers('cvs.tcl')
 install_headers('data.tcl')
 install_headers('restraints.tcl')
 install_headers('mock.tcl')
+install_headers('otfp_engine.h')
 
 # CFACV Shared Library
  

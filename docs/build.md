@@ -12,6 +12,10 @@ meson install -C build
 The examples expect the installed Tcl scripts and shared libraries under that
 prefix.
 
+The installed `otfp_engine.h` header is the supported C embedding facade for
+external drivers. The lower-level C headers are still internal refactor
+surfaces unless documented otherwise.
+
 ## Dependencies
 
 Required build tools and libraries:

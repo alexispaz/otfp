@@ -89,6 +89,10 @@ It is intentionally thin: it wraps `DataSpace` without changing numerical
 behavior. Its purpose is to give GEMS one stable dependency point while the
 Tcl/NAMD-facing internals continue to be refactored.
 
+Meson installs `otfp_engine.h` next to the Tcl adapter scripts under the
+configured include directory. Consumers should include only this header for the
+embedding path.
+
 Current API:
 
 ```c
