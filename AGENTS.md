@@ -71,6 +71,7 @@ The `examples` test depends on the installed local prefix under `usr/`, so run
 - Keep developer architecture and refactor status in
   `docs/developer-architecture.md`.
 - Keep GEMS and driver-embedding context in `docs/integration-gems.md`.
+- Keep the standalone C embedding example in `examples/embedding`.
 - Keep test commands and coverage notes in `docs/testing.md`.
 - If a user-visible configuration key, feature, tool, or workflow changes,
   update docs in the same commit.
@@ -100,7 +101,8 @@ The `examples` test depends on the installed local prefix under `usr/`, so run
   adapter boundary narrow; do not expose internal helpers through Tcl unless the
   supported workflow requires them.
 - OTFP is being prepared as a vendored engine for GEMS. Do not make new core
-  code depend on Tcl, SWIG, or NAMD concepts.
+  code depend on Tcl, SWIG, or NAMD concepts. New driver-facing code should use
+  `otfp_engine.h`.
 - Sparse/MKL chapeau support exists in source but is marked under construction
   in the build logic.
 - Restart files serialize raw structs in places; be careful when changing

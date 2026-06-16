@@ -93,6 +93,9 @@ Meson installs `otfp_engine.h` next to the Tcl adapter scripts under the
 configured include directory. Consumers should include only this header for the
 embedding path.
 
+See `examples/embedding` for a minimal C driver that uses this facade without
+Tcl, SWIG, NAMD, or the mock adapter.
+
 Current API:
 
 ```c
@@ -172,7 +175,7 @@ and checks that force and energy values are finite.
 
 1. Keep `docs/developer-architecture.md` current with core/adapter boundaries.
 2. Extend the C embedding facade as GEMS needs more setup features.
-3. Add a fuller C embedding example that does not source Tcl.
+3. Expand the C embedding example toward GEMS-like repeated-step setup.
 4. Expand the Fortran `iso_c_binding` example toward the setup patterns GEMS
    will need.
 5. Expand the embedding tests beyond lifecycle/finite-value checks.
