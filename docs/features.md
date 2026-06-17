@@ -161,7 +161,8 @@ Capabilities:
 
 Supported restart data:
 
-- Restraint targets through `ds_saverestrains` and `ds_loadrestrains`.
+- Restraint targets through `DataSpace_save_restraints` and
+  `DataSpace_load_restraints`.
 - Chapeau state through `chapeau_savestate`, `chapeau_loadstate`, and
   `chapeau_loadlambda`.
 - Example restart scripts set `restart_otfp` or `restart_chapeau`, then source

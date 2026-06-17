@@ -35,6 +35,8 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
 double DataSpace_RestraintEnergy ( DataSpace * ds );
 void DataSpace_ReportAll ( DataSpace * ds );
 void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res );
+void DataSpace_save_restraints ( DataSpace * ds, char * filename );
+void DataSpace_load_restraints ( DataSpace * ds, char * filename );
 
 double restr_getz ( restraint * r );
 double restr_getu ( restraint * r );

@@ -52,7 +52,7 @@ The current public C calls that match this model are:
 | Register FES | `DataSpace_SetupChapeau`, `DataSpace_chapeau` |
 | Step update | `DataSpace_centerPosition`, `DataSpace_ComputeCVs`, `DataSpace_RestrainingForces` |
 | Read results | `DataSpace_centerForce`, `DataSpace_RestraintEnergy`, `restr_getz`, `restr_getu` |
-| Restart hooks | `chapeau_savestate`, `chapeau_loadstate`, `chapeau_loadlambda` |
+| Restart hooks | `DataSpace_save_restraints`, `DataSpace_load_restraints`, `chapeau_savestate`, `chapeau_loadstate`, `chapeau_loadlambda` |
 
 This API is usable, but it still reflects the historical Tcl/NAMD workflow.
 New driver code should prefer the embedding facade in `otfp_engine.h` instead

@@ -64,6 +64,7 @@ cfacv_src = files(
   'cfacv.c',
   'cfacv_dataspace.c',
   'cfacv_force.c',
+  'cfacv_restart.c',
   'cfacv_restraint.c',
   'cfacv.h',
   'cfacv_tcl.h',

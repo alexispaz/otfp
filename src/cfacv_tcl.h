@@ -39,6 +39,8 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
 double DataSpace_RestraintEnergy ( DataSpace * ds );
 void DataSpace_ReportAll ( DataSpace * ds );
 void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res );
+void DataSpace_save_restraints ( DataSpace * ds, char * filename );
+void DataSpace_load_restraints ( DataSpace * ds, char * filename );
 
 int set_zsd_circle ( double x, double y, double xy, double s );
 int set_zsd_ring ( double x, double y, double r1, double r2, double s );

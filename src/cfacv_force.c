@@ -133,7 +133,7 @@ static int DataSpace_evolve_rstrs ( DataSpace * ds, int timestep ) {
     r=DataSpace_rstr(ds,i);
 
     if (restraint_evolve_for_timestep(r,timestep)) {
-      ds_saverestrains(ds,DataSpace_rstr_checkpoint_file(ds));
+      DataSpace_save_restraints(ds,DataSpace_rstr_checkpoint_file(ds));
       restraint_stop_evolution(r);
       rabort++;
     }
@@ -141,7 +141,7 @@ static int DataSpace_evolve_rstrs ( DataSpace * ds, int timestep ) {
 
   if(DataSpace_rstr_count(ds)>0) {
     if (!(timestep % DataSpace_rstr_save_frequency(ds))) {
-      ds_saverestrains(ds,DataSpace_rstr_checkpoint_file(ds));
+      DataSpace_save_restraints(ds,DataSpace_rstr_checkpoint_file(ds));
     }
   }
 
