@@ -12,7 +12,7 @@ scientific behavior unless a feature is explicitly removed.
 | Tcl setup | `cfacv.tcl`, `cvs.tcl`, `restraints.tcl`, `chapeau.tcl`, `data.tcl` | Parse user variables, allocate C objects through SWIG, and prepare runtime state. |
 | SWIG API | `cfacv.i`, `cvs.i`, `cfacv_tcl.h`, `cvs_tcl.h` | Expose a deliberate Tcl-facing C API. |
 | Runtime public API | `cfacv.h` | Expose opaque runtime, restraint, and optimizer types plus user/SWIG-facing setup and update functions. |
-| Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and expose runtime helpers for CV computation, energy, and reporting. |
+| Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and expose runtime helpers for CV computation, energy, and reporting. `DataSpace` fields use explicit capacity/count/ownership names for core readability. |
 | Runtime force loop | `cfacv_force.c` | Orchestrate per-step force clearing, restraint values, restraint forces, CV boundary forces, chapeau updates, and target evolution. |
 | Driver embedding facade | `otfp_engine.h`, `otfp_engine.c` | Provide a small C API for non-Tcl drivers such as GEMS. |
 | DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |

@@ -22,8 +22,8 @@ static void handler(int sig) {
 static void DataSpace_clear_forces ( DataSpace * ds ) {
   int i,d;
 
-  for (i=0;i<ds->N;i++) {
-    for (d=0;d<3;d++) ds->R[i][d]=0.0;
+  for (i=0;i<ds->center_capacity;i++) {
+    for (d=0;d<3;d++) ds->center_data[i][d]=0.0;
   }
 }
 
@@ -33,12 +33,12 @@ static void DataSpace_compute_restraint_values ( DataSpace * ds, int first ) {
   cv * cv;
   restraint * r;
 
-  for (i=0;i<ds->K;i++) {
-    r=ds->restr[i];
+  for (i=0;i<ds->restraint_capacity;i++) {
+    r=ds->restraints[i];
     nCV=restraint_cv_count(r);
     restraint_reset_value(r);
     for (j=0;j<nCV;j++) {
-      cv=ds->cv[j];
+      cv=ds->cvs[j];
       restraint_add_cv_value(r,j,cv_value(cv));
     }
 
@@ -53,21 +53,21 @@ static void DataSpace_apply_restraint_forces ( DataSpace * ds, int timestep ) {
   cv * cv;
   restraint * r;
 
-  for (i=0;i<ds->K;i++) {
-    r=ds->restr[i];
+  for (i=0;i<ds->restraint_capacity;i++) {
+    r=ds->restraints[i];
     nCV=restraint_cv_count(r);
 
     restraint_compute_energy(r);
     if (restraint_should_output(r,timestep)) restr_output(r);
 
     for (j=0;j<nCV;j++) {
-      cv=ds->cv[j];
+      cv=ds->cvs[j];
       coefficient=restraint_cv_coefficient(r,j);
       if (!coefficient) continue;
 
       for (jj=0;jj<cv_center_count(cv);jj++) {
         for (d=0;d<3;d++) {
-          ds->R[cv_center_index(cv,jj)][d]+=coefficient*cv_gradient_component(cv,jj,d)*restraint_force(r);
+          ds->center_data[cv_center_index(cv,jj)][d]+=coefficient*cv_gradient_component(cv,jj,d)*restraint_force(r);
         }
       }
     }
@@ -78,15 +78,15 @@ static void DataSpace_apply_cv_boundary_forces ( DataSpace * ds, int timestep ) 
   int j,jj,d;
   cv * cv;
 
-  for (j=0;j<ds->ncv;j++) {
-    cv=ds->cv[j];
+  for (j=0;j<ds->cv_capacity;j++) {
+    cv=ds->cvs[j];
 
     cv_reset_force_energy(cv);
     cv_apply_boundary(cv);
 
     for (jj=0;jj<cv_center_count(cv);jj++) {
       for (d=0;d<3;d++) {
-        ds->R[cv_center_index(cv,jj)][d]+=cv_gradient_component(cv,jj,d)*cv_force(cv);
+        ds->center_data[cv_center_index(cv,jj)][d]+=cv_gradient_component(cv,jj,d)*cv_force(cv);
       }
     }
 
@@ -102,20 +102,20 @@ static void DataSpace_update_chapeau ( DataSpace * ds, int timestep, double bias
   if (!ds->doAnalyticalCalc) return;
 
   if (timestep>ds->beginaccum) {
-    for (i=0;i<ds->K;i++) {
-      r=ds->restr[i];
-      ch=ds->ch[restraint_chapeau_id(r)];
+    for (i=0;i<ds->restraint_capacity;i++) {
+      r=ds->restraints[i];
+      ch=ds->chapeaus[restraint_chapeau_id(r)];
       chapeau_set_sample(ch,restraint_chapeau_dim(r),restraint_target(r),-restraint_force(r)); // F=k(\theta-z)
     }
-    for (i=0;i<ds->ch_num;i++) {
-      chapeau_accumulate_sample(ds->ch[i],bias);
+    for (i=0;i<ds->chapeau_count;i++) {
+      chapeau_accumulate_sample(ds->chapeaus[i],bias);
     }
   }
 
   if (!ds->evolveAnalyticalParameters) return;
 
-  for (i=0;i<ds->ch_num;i++) {
-    ch=ds->ch[i];
+  for (i=0;i<ds->chapeau_count;i++) {
+    ch=ds->chapeaus[i];
 
     if (chapeau_should_solve(ch,timestep,ds->beginsolve)) {
       chapeau_solve(ch);
@@ -135,8 +135,8 @@ static int DataSpace_evolve_restraints ( DataSpace * ds, int timestep ) {
   int rabort=0;
   restraint * r;
 
-  for (i=0;i<ds->K;i++) {
-    r=ds->restr[i];
+  for (i=0;i<ds->restraint_capacity;i++) {
+    r=ds->restraints[i];
 
     if (restraint_evolve_for_timestep(r,timestep)) {
       ds_saverestrains(ds,ds->filename);
@@ -145,11 +145,11 @@ static int DataSpace_evolve_restraints ( DataSpace * ds, int timestep ) {
     }
   }
 
-  if(ds->K>0) {
-    if (!(timestep % ds->restrsavefreq)) ds_saverestrains(ds,ds->filename);
+  if(ds->restraint_capacity>0) {
+    if (!(timestep % ds->restraint_save_frequency)) ds_saverestrains(ds,ds->filename);
   }
 
-  if(rabort==ds->K) return 2;
+  if(rabort==ds->restraint_capacity) return 2;
   return 0;
 }
 

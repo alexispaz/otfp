@@ -10,12 +10,12 @@
 DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   DataSpace * ds = calloc(1,sizeof(DataSpace));
   int i;
-  ds->N=Nctr;
-  ds->K=Nrstr;
-  ds->iN=0;
-  ds->iK=0;
+  ds->center_capacity=Nctr;
+  ds->restraint_capacity=Nrstr;
+  ds->center_count=0;
+  ds->restraint_count=0;
 
-  ds->ncv=Ncv;   ds->icv=0;
+  ds->cv_capacity=Ncv;   ds->cv_count=0;
 
   // This will not work with numbers less that 16 bits!
   //// Random seed. I deatached this from the data space a do it global
@@ -34,22 +34,22 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   //srand48(kkk);
   //oldptr=seed48(&Xi[0]);
 
-  ds->R=malloc(Nctr*sizeof(double*));
-  for (i=0;i<Nctr;i++) ds->R[i]=calloc(3,sizeof(double));
+  ds->center_data=malloc(Nctr*sizeof(double*));
+  for (i=0;i<Nctr;i++) ds->center_data[i]=calloc(3,sizeof(double));
 
-  ds->ac = calloc(Nctr,sizeof(atomCenterStruct*));
+  ds->centers = calloc(Nctr,sizeof(atomCenterStruct*));
 
-  ds->cv=calloc(Ncv,sizeof(cv*));
-  ds->restr=calloc(Nrstr,sizeof(restraint*));
+  ds->cvs=calloc(Ncv,sizeof(cv*));
+  ds->restraints=calloc(Nrstr,sizeof(restraint*));
 
   ds->doAnalyticalCalc=0;
   ds->evolveAnalyticalParameters=0;
   ds->beginaccum=0;
 
-  ds->ch=NULL;
+  ds->chapeaus=NULL;
 
   sprintf(ds->filename, "checkpoint.rstr");
-  ds->restrsavefreq = 100000;
+  ds->restraint_save_frequency = 100000;
 
   return ds;
 }
@@ -58,31 +58,31 @@ void DataSpace_free ( DataSpace * ds ) {
   int i;
 
   if (!ds) return;
-  if (ds->R) {
-    for (i=0;i<ds->N;i++) free(ds->R[i]);
-    free(ds->R);
+  if (ds->center_data) {
+    for (i=0;i<ds->center_capacity;i++) free(ds->center_data[i]);
+    free(ds->center_data);
   }
-  if (ds->ac) {
-    for (i=0;i<ds->N;i++) atomCenterStruct_free(ds->ac[i]);
-    free(ds->ac);
+  if (ds->centers) {
+    for (i=0;i<ds->center_capacity;i++) atomCenterStruct_free(ds->centers[i]);
+    free(ds->centers);
   }
-  if (ds->cv) {
-    for (i=0;i<ds->ncv;i++) cv_free(ds->cv[i]);
-    free(ds->cv);
+  if (ds->cvs) {
+    for (i=0;i<ds->cv_capacity;i++) cv_free(ds->cvs[i]);
+    free(ds->cvs);
   }
-  if (ds->restr) {
-    for (i=0;i<ds->K;i++) restraint_free(ds->restr[i]);
-    free(ds->restr);
+  if (ds->restraints) {
+    for (i=0;i<ds->restraint_capacity;i++) restraint_free(ds->restraints[i]);
+    free(ds->restraints);
   }
-  if (ds->ch) {
-    for (i=0;i<ds->ch_num;i++) chapeau_free(ds->ch[i]);
-    free(ds->ch);
+  if (ds->chapeaus) {
+    for (i=0;i<ds->chapeau_count;i++) chapeau_free(ds->chapeaus[i]);
+    free(ds->chapeaus);
   }
   free(ds);
 }
 
 chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i ) {
-  return ds->ch[i];
+  return ds->chapeaus[i];
 }
 
 int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, int * nKnots,
@@ -104,15 +104,15 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
   ds->beginsolve=beginsolve;
   if (beginaccum < 0) ds->evolveAnalyticalParameters=0;
 
-  ds->ch_num=numrep;
-  ds->ch=malloc(ds->ch_num*sizeof(chapeau*));
+  ds->chapeau_count=numrep;
+  ds->chapeaus=malloc(ds->chapeau_count*sizeof(chapeau*));
 
-  for (i=0;i<ds->ch_num;i++) {
-    ds->ch[i]=chapeau_alloc(dm,min,max,nKnots,periodic);
+  for (i=0;i<ds->chapeau_count;i++) {
+    ds->chapeaus[i]=chapeau_alloc(dm,min,max,nKnots,periodic);
     sprintf(buf, "%s_ch%d.bsp", outfile,i);
     sprintf(buf2, "%s.ch%d", outfile,i);
-    chapeau_setupoutput(ds->ch[i],buf,buf2,outfreq,outlevel);
-    chapeau_set_update_frequency(ds->ch[i],nupdate);
+    chapeau_setupoutput(ds->chapeaus[i],buf,buf2,outfreq,outlevel);
+    chapeau_set_update_frequency(ds->chapeaus[i],nupdate);
   }
 
   return 0;
@@ -120,13 +120,13 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
 
 int DataSpace_getN ( DataSpace * ds ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  return ds->N;
+  return ds->center_capacity;
 }
 
 double * DataSpace_centerPos ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  if (i>=ds->N) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-  return ds->R[i];
+  if (i>=ds->center_capacity) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  return ds->center_data[i];
 }
 
 int DataSpace_checkdata ( DataSpace * ds ) {
@@ -134,9 +134,9 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 
   if (!ds) return 1;
 
-  for (i=0;i<ds->N;i++) {
+  for (i=0;i<ds->center_capacity;i++) {
     for (j=0;j<3;j++) {
-      if (ds->R[i][j]!=ds->R[i][j]) {
+      if (ds->center_data[i][j]!=ds->center_data[i][j]) {
         return 1;
       }
     }
@@ -148,10 +148,10 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 int DataSpace_dump ( DataSpace * ds ) {
   if (ds) {
     int i,j;
-    for (i=0;i<ds->N;i++) {
+    for (i=0;i<ds->center_capacity;i++) {
       fprintf(stdout,"%i ",i);
       for (j=0;j<3;j++)
-	fprintf(stdout,"%.5f ",ds->R[i][j]);
+	fprintf(stdout,"%.5f ",ds->center_data[i][j]);
       fprintf(stdout,"\n");
       fflush(stdout);
     }
@@ -164,15 +164,15 @@ int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m ) {
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->iN++;
-  if (ds->iN>ds->N) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->center_count++;
+  if (ds->center_count>ds->center_capacity) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->iN-1;
-  ds->ac[i]=New_atomCenterStruct(n);
+  i=ds->center_count-1;
+  ds->centers[i]=New_atomCenterStruct(n);
   for (j=0;j<n;j++) {
-    ds->ac[i]->ind[j]=ind[j];
-    ds->ac[i]->m[j]=m[j];
-    ds->ac[i]->M+=m[j];
+    ds->centers[i]->ind[j]=ind[j];
+    ds->centers[i]->m[j]=m[j];
+    ds->centers[i]->M+=m[j];
   }
 
   return i;
@@ -184,13 +184,13 @@ cv * DataSpace_add_cv ( DataSpace * ds, char * typ, int nind, int * ind,
   int i;
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->icv++;
-  if (ds->icv>ds->ncv) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->cv_count++;
+  if (ds->cv_count>ds->cv_capacity) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->icv-1;
-  ds->cv[i]=cv_init(typ,nind,ind,zmin,zmax,boundf,boundk,outfile,outputFreq);
+  i=ds->cv_count-1;
+  ds->cvs[i]=cv_init(typ,nind,ind,zmin,zmax,boundf,boundk,outfile,outputFreq);
 
-  return ds->cv[i];
+  return ds->cvs[i];
 }
 
 restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, double * cvc, char * rftypstr,
@@ -200,16 +200,16 @@ restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, do
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->iK++;
-  if (ds->iK>ds->K) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->restraint_count++;
+  if (ds->restraint_count>ds->restraint_capacity) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->iK-1;
-  ds->restr[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
+  i=ds->restraint_count-1;
+  ds->restraints[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
 
   //restart
   if (outputFreq>0) {
-    if (outputFreq < ds->restrsavefreq) {ds->restrsavefreq = outputFreq;}
+    if (outputFreq < ds->restraint_save_frequency) {ds->restraint_save_frequency = outputFreq;}
   }
 
-  return ds->restr[i];
+  return ds->restraints[i];
 }

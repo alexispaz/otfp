@@ -45,7 +45,7 @@ FILE * my_fopen ( char * name, char * code ) {
 FILE * my_binfopen ( char * name, char * code, unsigned int outputLevel, DataSpace * ds ) {
   FILE * fp=fopen(name,code);
   fwrite(&outputLevel,sizeof(unsigned int),1,fp);
-  fwrite(&(ds->K),sizeof(int),1,fp);
+  fwrite(&(ds->restraint_capacity),sizeof(int),1,fp);
   return fp;
 }
 
@@ -56,9 +56,9 @@ double DataSpace_ComputeCVs ( DataSpace * ds ) {
  
   bias=0;
   if (!ds) return -1;
-  for (i=0;i<ds->ncv;i++){
-    cv_compute(ds->cv[i],ds->R);
-    bias+=cv_bias_value(ds->cv[i]);
+  for (i=0;i<ds->cv_capacity;i++){
+    cv_compute(ds->cvs[i],ds->center_data);
+    bias+=cv_bias_value(ds->cvs[i]);
   }
  
   return bias;
@@ -69,8 +69,8 @@ double DataSpace_RestraintEnergy ( DataSpace * ds ) {
     double u=0.0;
     int i;
     restraint * r;
-    for (i=0;i<ds->K;i++) {
-      r=ds->restr[i];
+    for (i=0;i<ds->restraint_capacity;i++) {
+      r=ds->restraints[i];
       u+=restr_getu(r);
     }
     return u;
@@ -81,8 +81,8 @@ double DataSpace_RestraintEnergy ( DataSpace * ds ) {
 void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res ) {
   if (ds) {
     int i;
-    for (i=0;i<ds->ncv;i++) {
-      if (active[i]) res[i]=cv_value(ds->cv[i]);
+    for (i=0;i<ds->cv_capacity;i++) {
+      if (active[i]) res[i]=cv_value(ds->cvs[i]);
       else res[i]=0.0;
     }
   }
@@ -92,16 +92,16 @@ void DataSpace_ReportAll ( DataSpace * ds ) {
   if (ds) {
     int i;
     printf("CFACV_OTFP/C) DataSpace: %i Centers, %i CV's, %i Restraints\n",
-	   ds->N, ds->ncv, ds->K);
-    for (i=0;i<ds->N;i++) {
+	   ds->center_capacity, ds->cv_capacity, ds->restraint_capacity);
+    for (i=0;i<ds->center_capacity;i++) {
       printf("CFACV_OTFP/C)  Center %i : %.5f %.5f %.5f\n",
-	     i,ds->R[i][0],ds->R[i][1],ds->R[i][2]);
+	     i,ds->center_data[i][0],ds->center_data[i][1],ds->center_data[i][2]);
     }
-    for (i=0;i<ds->ncv;i++) {
-      cv_report(ds->cv[i],i);
+    for (i=0;i<ds->cv_capacity;i++) {
+      cv_report(ds->cvs[i],i);
     }
-    for (i=0;i<ds->K;i++) {
-      restraint_report(ds->restr[i],i);
+    for (i=0;i<ds->restraint_capacity;i++) {
+      restraint_report(ds->restraints[i],i);
     }
     
   }

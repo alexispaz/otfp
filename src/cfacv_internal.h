@@ -85,21 +85,24 @@ struct restraint {
 };
 
 struct DataSpace {
-  int N,iN;
-  int K,iK;
-  int ch_num;
+  int center_capacity;
+  int center_count;
+  int restraint_capacity;
+  int restraint_count;
+  int chapeau_count;
 
-  atomCenterStruct ** ac;
-  restraint ** restr;
-  chapeau ** ch;
+  atomCenterStruct ** centers;
+  restraint ** restraints;
+  chapeau ** chapeaus;
 
-  int ncv,icv;
-  cv ** cv;
+  int cv_capacity;
+  int cv_count;
+  cv ** cvs;
 
   char filename[16];
-  int restrsavefreq;
+  int restraint_save_frequency;
 
-  double ** R;
+  double ** center_data;
 
   int doAnalyticalCalc;
 
