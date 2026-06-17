@@ -57,7 +57,7 @@ double DataSpace_ComputeCVs ( DataSpace * ds ) {
   bias=0;
   if (!ds) return -1;
   for (i=0;i<ds->cv_total;i++){
-    cv_compute(ds->cvs[i],ds->ctr_data);
+    cv_compute(ds->cvs[i],ds->ctr_positions);
     bias+=cv_bias_value(ds->cvs[i]);
   }
  
@@ -94,7 +94,7 @@ void DataSpace_ReportAll ( DataSpace * ds ) {
     printf("CFACV_OTFP/C) DataSpace: %i Centers, %i CV's, %i Restraints\n",
 	   ds->ctr_total, ds->cv_total, ds->rstr_total);
     for (i=0;i<ds->ctr_total;i++) {
-      double * ctr = DataSpace_ctr_buffer(ds,i);
+      double * ctr = DataSpace_ctr_position(ds,i);
       printf("CFACV_OTFP/C)  Center %i : %.5f %.5f %.5f\n",
 	     i,ctr[0],ctr[1],ctr[2]);
     }

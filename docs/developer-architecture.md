@@ -50,7 +50,8 @@ assumptions out of the core engine boundary.
 NAMD calcforces
   -> loadcoords p
   -> Tcl_UpdateDataSpace
-     -> DataSpace_centerPos copies positions into DataSpace.R
+     -> DataSpace_centerPosition copies driver positions into DataSpace
+     -> DataSpace_centerForce exposes accumulated forces after the force loop
      -> DataSpace_ComputeCVs
         -> cv.calc for every CV
      -> DataSpace_RestrainingForces
@@ -148,7 +149,7 @@ responsibilities:
 | Responsibility | Current fields |
 | --- | --- |
 | Registry/setup | `ctrs`, `cvs`, `rstrs` plus their `_total` and `_count` fields. |
-| Step buffer | `ctr_data`. This is still a shared center buffer: drivers write center positions before CV evaluation, then the force loop clears and reuses the same memory for accumulated center forces. |
+| Step buffer | `ctr_positions` for driver input and CV evaluation; `ctr_forces` for accumulated restraint forces returned to the driver. |
 | FES state | `fes`, `fes_total`, `fes_enabled`, `fes_begin_accum`, `fes_begin_solve`, `fes_evolve_parameters`. |
 | Restart/output | `filename`, `rstr_save_frequency`. |
 
@@ -160,10 +161,10 @@ responsibilities into clearer subobjects:
 - FES state and solve/output scheduling;
 - restart/output policy.
 
-The first migration step is to route center-buffer access through internal
-helpers (`DataSpace_ctr_buffer`, `DataSpace_clear_ctr_forces`, and
-`DataSpace_add_ctr_force`). This keeps current behavior intact while preparing
-for separate `ctr_positions` and `ctr_forces` arrays later.
+The center buffers are now split. Driver-facing code writes positions through
+`DataSpace_centerPosition` and reads forces through `DataSpace_centerForce`.
+Core force code updates the force buffer through `DataSpace_clear_ctr_forces`
+and `DataSpace_add_ctr_force`.
 
 ## High-Value Refactor Targets
 

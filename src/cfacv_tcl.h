@@ -17,7 +17,8 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double * min,
     char * outfile, int outfreq, int outlevel, int nupdate);
 chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i );
 
-double * DataSpace_centerPos ( DataSpace * ds, int i );
+double * DataSpace_centerPosition ( DataSpace * ds, int i );
+double * DataSpace_centerForce ( DataSpace * ds, int i );
 int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m );
 cv * DataSpace_add_cv ( DataSpace * ds, char * typ, int nind, int * ind,
     double zmin, double zmax, char * boundf, double boundk, char * outfile, int outputFreq );

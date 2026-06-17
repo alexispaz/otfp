@@ -51,7 +51,7 @@ int otfp_engine_set_center_position ( otfp_engine * engine, int center, const do
 
   if (!engine || !engine->ds || !xyz) return -1;
 
-  pos=DataSpace_centerPos(engine->ds,center);
+  pos=DataSpace_centerPosition(engine->ds,center);
   pos[0]=xyz[0];
   pos[1]=xyz[1];
   pos[2]=xyz[2];
@@ -61,7 +61,7 @@ int otfp_engine_set_center_position ( otfp_engine * engine, int center, const do
 
 const double * otfp_engine_center_force ( otfp_engine * engine, int center ) {
   if (!engine || !engine->ds) return NULL;
-  return DataSpace_centerPos(engine->ds,center);
+  return DataSpace_centerForce(engine->ds,center);
 }
 
 int otfp_engine_add_cv ( otfp_engine * engine, const char * type, int ncenters, const int * centers,

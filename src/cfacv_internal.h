@@ -102,7 +102,8 @@ struct DataSpace {
   char filename[16];
   int rstr_save_frequency;
 
-  double ** ctr_data;
+  double ** ctr_positions;
+  double ** ctr_forces;
 
   int fes_enabled;
 
@@ -128,7 +129,8 @@ FILE * my_binfopen ( char * name, char * code, unsigned int outputLevel, DataSpa
 int DataSpace_getN ( DataSpace * ds );
 int DataSpace_checkdata ( DataSpace * ds );
 int DataSpace_dump ( DataSpace * ds );
-double * DataSpace_ctr_buffer ( DataSpace * ds, int ctr );
+double * DataSpace_ctr_position ( DataSpace * ds, int ctr );
+double * DataSpace_ctr_force ( DataSpace * ds, int ctr );
 void DataSpace_clear_ctr_forces ( DataSpace * ds );
 void DataSpace_add_ctr_force ( DataSpace * ds, int ctr, int dim, double force );
 
