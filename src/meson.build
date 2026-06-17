@@ -112,6 +112,16 @@ embedding_test = executable(
 
 test('embedding', embedding_test)
 
+restart_test = executable(
+  'test-restart',
+  files('../tests/restart.c'),
+  include_directories: include_directories('.'),
+  link_with: cfacv_lib,
+  dependencies: cfacv_dep,
+)
+
+test('restart', restart_test)
+
 if fortran_enabled
   embedding_fortran_test = executable(
     'test-embedding-fortran',
