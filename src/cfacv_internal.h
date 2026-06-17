@@ -85,30 +85,30 @@ struct restraint {
 };
 
 struct DataSpace {
-  int center_capacity;
-  int center_count;
-  int restraint_capacity;
-  int restraint_count;
-  int chapeau_count;
+  int ctr_total;
+  int ctr_count;
+  int rstr_total;
+  int rstr_count;
+  int fes_total;
 
-  atomCenterStruct ** centers;
-  restraint ** restraints;
-  chapeau ** chapeaus;
+  atomCenterStruct ** ctrs;
+  restraint ** rstrs;
+  chapeau ** fes;
 
-  int cv_capacity;
+  int cv_total;
   int cv_count;
   cv ** cvs;
 
   char filename[16];
-  int restraint_save_frequency;
+  int rstr_save_frequency;
 
-  double ** center_data;
+  double ** ctr_data;
 
-  int doAnalyticalCalc;
+  int fes_enabled;
 
-  int evolveAnalyticalParameters;
-  int beginaccum;
-  int beginsolve;
+  int fes_evolve_parameters;
+  int fes_begin_accum;
+  int fes_begin_solve;
 };
 
 tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);

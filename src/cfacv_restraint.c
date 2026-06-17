@@ -169,9 +169,9 @@ void ds_saverestrains ( DataSpace * ds, char * filename ) {
   FILE * ofs;
 
   ofs=fopen(filename,"w");
-  fwrite(&ds->restraint_capacity,sizeof(int),1,ofs);
-  for (i=0;i<ds->restraint_capacity;i++) {
-    r=ds->restraints[i];
+  fwrite(&ds->rstr_total,sizeof(int),1,ofs);
+  for (i=0;i<ds->rstr_total;i++) {
+    r=ds->rstrs[i];
     fwrite(&(r->z),sizeof(double),1,ofs);
     fwrite(&(r->val),sizeof(double),1,ofs);
   }
@@ -188,13 +188,13 @@ void ds_loadrestrains ( DataSpace * ds, char * filename ) {
 
   fread(&i,sizeof(int),1,ofs);
   fprintf(stdout,"CFACV) Recovering restraint state of step %i of some previous simulation\n",i);
-  if ( i!=ds->restraint_capacity ) {
+  if ( i!=ds->rstr_total ) {
     fprintf(stderr,"CFACV) ERROR restraint restart because holding object has not the proper size\n");
     exit(-1);
   }
 
-  for (i=0;i<ds->restraint_capacity;i++) {
-    r=ds->restraints[i];
+  for (i=0;i<ds->rstr_total;i++) {
+    r=ds->rstrs[i];
     fread(&(r->z),sizeof(double),1,ofs);
     fread(&(r->val),sizeof(double),1,ofs);
     printf("OTFP: Recovering restraint %i, z=%.5f; val=%.5f \n",i,r->z,r->val);
@@ -472,7 +472,7 @@ int uniformvelocity ( restraint * r ) {
 int restr_set_rchid ( restraint * r, DataSpace * ds, int chid) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
   if (!r) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  if (chid>=ds->chapeau_count) return -1;
+  if (chid>=ds->fes_total) return -1;
   r->chid = chid;
   return 0;
 }

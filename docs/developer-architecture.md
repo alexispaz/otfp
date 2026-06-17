@@ -12,10 +12,10 @@ scientific behavior unless a feature is explicitly removed.
 | Tcl setup | `cfacv.tcl`, `cvs.tcl`, `restraints.tcl`, `chapeau.tcl`, `data.tcl` | Parse user variables, allocate C objects through SWIG, and prepare runtime state. |
 | SWIG API | `cfacv.i`, `cvs.i`, `cfacv_tcl.h`, `cvs_tcl.h` | Expose a deliberate Tcl-facing C API. |
 | Runtime public API | `cfacv.h` | Expose opaque runtime, restraint, and optimizer types plus user/SWIG-facing setup and update functions. |
-| Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and expose runtime helpers for CV computation, energy, and reporting. `DataSpace` fields use explicit capacity/count/ownership names for core readability. |
-| Runtime force loop | `cfacv_force.c` | Orchestrate per-step force clearing, restraint values, restraint forces, CV boundary forces, chapeau updates, and target evolution. |
+| Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and expose runtime helpers for CV computation, energy, and reporting. `DataSpace` fields use explicit total/count/ownership names for core readability. |
+| Runtime force loop | `cfacv_force.c` | Orchestrate per-step force clearing, restraint values, restraint forces, CV boundary forces, FES/chapeau updates, and target evolution. |
 | Driver embedding facade | `otfp_engine.h`, `otfp_engine.c` | Provide a small C API for non-Tcl drivers such as GEMS. |
-| DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and chapeau objects. |
+| DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and FES/chapeau objects. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV public API | `cvs.h` | Expose the opaque `cv` type and user/SWIG-facing CV lifecycle, type, reference, and setup helpers. |
 | CV internals | `cvs_internal.h`, `cvs.c`, `measurements.c` | Define the concrete `cv` layout, CV descriptors, boundary functions, and value/gradient calculations. |
@@ -35,7 +35,7 @@ it is not the engine model. The desired architecture is:
 
 | Boundary | Responsibility |
 | --- | --- |
-| Core engine | Own `DataSpace`, CVs, restraints, chapeau state, per-step force/energy calculation, and restart/output scheduling. |
+| Core engine | Own `DataSpace`, CVs, restraints, FES/chapeau state, per-step force/energy calculation, and restart/output scheduling. |
 | NAMD/Tcl adapter | Translate NAMD TclForces callbacks and user Tcl variables into core engine calls. |
 | Mock adapter | Emulate enough of NAMD TclForces for fast regression tests. |
 | Future GEMS adapter | Bind the `otfp_engine` C facade from Fortran with `iso_c_binding`, without going through Tcl or SWIG. |

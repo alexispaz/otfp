@@ -10,12 +10,12 @@
 DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   DataSpace * ds = calloc(1,sizeof(DataSpace));
   int i;
-  ds->center_capacity=Nctr;
-  ds->restraint_capacity=Nrstr;
-  ds->center_count=0;
-  ds->restraint_count=0;
+  ds->ctr_total=Nctr;
+  ds->rstr_total=Nrstr;
+  ds->ctr_count=0;
+  ds->rstr_count=0;
 
-  ds->cv_capacity=Ncv;   ds->cv_count=0;
+  ds->cv_total=Ncv;   ds->cv_count=0;
 
   // This will not work with numbers less that 16 bits!
   //// Random seed. I deatached this from the data space a do it global
@@ -34,22 +34,22 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   //srand48(kkk);
   //oldptr=seed48(&Xi[0]);
 
-  ds->center_data=malloc(Nctr*sizeof(double*));
-  for (i=0;i<Nctr;i++) ds->center_data[i]=calloc(3,sizeof(double));
+  ds->ctr_data=malloc(Nctr*sizeof(double*));
+  for (i=0;i<Nctr;i++) ds->ctr_data[i]=calloc(3,sizeof(double));
 
-  ds->centers = calloc(Nctr,sizeof(atomCenterStruct*));
+  ds->ctrs = calloc(Nctr,sizeof(atomCenterStruct*));
 
   ds->cvs=calloc(Ncv,sizeof(cv*));
-  ds->restraints=calloc(Nrstr,sizeof(restraint*));
+  ds->rstrs=calloc(Nrstr,sizeof(restraint*));
 
-  ds->doAnalyticalCalc=0;
-  ds->evolveAnalyticalParameters=0;
-  ds->beginaccum=0;
+  ds->fes_enabled=0;
+  ds->fes_evolve_parameters=0;
+  ds->fes_begin_accum=0;
 
-  ds->chapeaus=NULL;
+  ds->fes=NULL;
 
   sprintf(ds->filename, "checkpoint.rstr");
-  ds->restraint_save_frequency = 100000;
+  ds->rstr_save_frequency = 100000;
 
   return ds;
 }
@@ -58,61 +58,60 @@ void DataSpace_free ( DataSpace * ds ) {
   int i;
 
   if (!ds) return;
-  if (ds->center_data) {
-    for (i=0;i<ds->center_capacity;i++) free(ds->center_data[i]);
-    free(ds->center_data);
+  if (ds->ctr_data) {
+    for (i=0;i<ds->ctr_total;i++) free(ds->ctr_data[i]);
+    free(ds->ctr_data);
   }
-  if (ds->centers) {
-    for (i=0;i<ds->center_capacity;i++) atomCenterStruct_free(ds->centers[i]);
-    free(ds->centers);
+  if (ds->ctrs) {
+    for (i=0;i<ds->ctr_total;i++) atomCenterStruct_free(ds->ctrs[i]);
+    free(ds->ctrs);
   }
   if (ds->cvs) {
-    for (i=0;i<ds->cv_capacity;i++) cv_free(ds->cvs[i]);
+    for (i=0;i<ds->cv_total;i++) cv_free(ds->cvs[i]);
     free(ds->cvs);
   }
-  if (ds->restraints) {
-    for (i=0;i<ds->restraint_capacity;i++) restraint_free(ds->restraints[i]);
-    free(ds->restraints);
+  if (ds->rstrs) {
+    for (i=0;i<ds->rstr_total;i++) restraint_free(ds->rstrs[i]);
+    free(ds->rstrs);
   }
-  if (ds->chapeaus) {
-    for (i=0;i<ds->chapeau_count;i++) chapeau_free(ds->chapeaus[i]);
-    free(ds->chapeaus);
+  if (ds->fes) {
+    for (i=0;i<ds->fes_total;i++) chapeau_free(ds->fes[i]);
+    free(ds->fes);
   }
   free(ds);
 }
 
 chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i ) {
-  return ds->chapeaus[i];
+  return ds->fes[i];
 }
 
 int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, int * nKnots,
-    double * max, int * periodic, int beginaccum, int beginsolve, char * outfile,
+    double * max, int * periodic, int fes_begin_accum, int fes_begin_solve, char * outfile,
     int outfreq, int outlevel, int nupdate) {
-  // Initialize chapeaus objects in DataSpace. Since Data space might not have
-  // any chapeau allocated, the number of chapeaus is not indicated in the
-  // dataspace constructor.
+  // Initialize FES state. The current implementation stores each FES state in
+  // a chapeau object because chapeau is the active basis/kernel.
   int i;
   char buf[80], buf2[80];
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->doAnalyticalCalc=1;
+  ds->fes_enabled=1;
 
   // This is to let the system equilibrate
-  ds->evolveAnalyticalParameters=1;
-  ds->beginaccum=beginaccum;
-  ds->beginsolve=beginsolve;
-  if (beginaccum < 0) ds->evolveAnalyticalParameters=0;
+  ds->fes_evolve_parameters=1;
+  ds->fes_begin_accum=fes_begin_accum;
+  ds->fes_begin_solve=fes_begin_solve;
+  if (fes_begin_accum < 0) ds->fes_evolve_parameters=0;
 
-  ds->chapeau_count=numrep;
-  ds->chapeaus=malloc(ds->chapeau_count*sizeof(chapeau*));
+  ds->fes_total=numrep;
+  ds->fes=malloc(ds->fes_total*sizeof(chapeau*));
 
-  for (i=0;i<ds->chapeau_count;i++) {
-    ds->chapeaus[i]=chapeau_alloc(dm,min,max,nKnots,periodic);
+  for (i=0;i<ds->fes_total;i++) {
+    ds->fes[i]=chapeau_alloc(dm,min,max,nKnots,periodic);
     sprintf(buf, "%s_ch%d.bsp", outfile,i);
     sprintf(buf2, "%s.ch%d", outfile,i);
-    chapeau_setupoutput(ds->chapeaus[i],buf,buf2,outfreq,outlevel);
-    chapeau_set_update_frequency(ds->chapeaus[i],nupdate);
+    chapeau_setupoutput(ds->fes[i],buf,buf2,outfreq,outlevel);
+    chapeau_set_update_frequency(ds->fes[i],nupdate);
   }
 
   return 0;
@@ -120,13 +119,13 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
 
 int DataSpace_getN ( DataSpace * ds ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  return ds->center_capacity;
+  return ds->ctr_total;
 }
 
 double * DataSpace_centerPos ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  if (i>=ds->center_capacity) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-  return ds->center_data[i];
+  if (i>=ds->ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  return ds->ctr_data[i];
 }
 
 int DataSpace_checkdata ( DataSpace * ds ) {
@@ -134,9 +133,9 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 
   if (!ds) return 1;
 
-  for (i=0;i<ds->center_capacity;i++) {
+  for (i=0;i<ds->ctr_total;i++) {
     for (j=0;j<3;j++) {
-      if (ds->center_data[i][j]!=ds->center_data[i][j]) {
+      if (ds->ctr_data[i][j]!=ds->ctr_data[i][j]) {
         return 1;
       }
     }
@@ -148,10 +147,10 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 int DataSpace_dump ( DataSpace * ds ) {
   if (ds) {
     int i,j;
-    for (i=0;i<ds->center_capacity;i++) {
+    for (i=0;i<ds->ctr_total;i++) {
       fprintf(stdout,"%i ",i);
       for (j=0;j<3;j++)
-	fprintf(stdout,"%.5f ",ds->center_data[i][j]);
+	fprintf(stdout,"%.5f ",ds->ctr_data[i][j]);
       fprintf(stdout,"\n");
       fflush(stdout);
     }
@@ -164,15 +163,15 @@ int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m ) {
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->center_count++;
-  if (ds->center_count>ds->center_capacity) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->ctr_count++;
+  if (ds->ctr_count>ds->ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->center_count-1;
-  ds->centers[i]=New_atomCenterStruct(n);
+  i=ds->ctr_count-1;
+  ds->ctrs[i]=New_atomCenterStruct(n);
   for (j=0;j<n;j++) {
-    ds->centers[i]->ind[j]=ind[j];
-    ds->centers[i]->m[j]=m[j];
-    ds->centers[i]->M+=m[j];
+    ds->ctrs[i]->ind[j]=ind[j];
+    ds->ctrs[i]->m[j]=m[j];
+    ds->ctrs[i]->M+=m[j];
   }
 
   return i;
@@ -185,7 +184,7 @@ cv * DataSpace_add_cv ( DataSpace * ds, char * typ, int nind, int * ind,
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
   ds->cv_count++;
-  if (ds->cv_count>ds->cv_capacity) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  if (ds->cv_count>ds->cv_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
   i=ds->cv_count-1;
   ds->cvs[i]=cv_init(typ,nind,ind,zmin,zmax,boundf,boundk,outfile,outputFreq);
@@ -200,16 +199,16 @@ restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, do
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->restraint_count++;
-  if (ds->restraint_count>ds->restraint_capacity) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->rstr_count++;
+  if (ds->rstr_count>ds->rstr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->restraint_count-1;
-  ds->restraints[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
+  i=ds->rstr_count-1;
+  ds->rstrs[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
 
   //restart
   if (outputFreq>0) {
-    if (outputFreq < ds->restraint_save_frequency) {ds->restraint_save_frequency = outputFreq;}
+    if (outputFreq < ds->rstr_save_frequency) {ds->rstr_save_frequency = outputFreq;}
   }
 
-  return ds->restraints[i];
+  return ds->rstrs[i];
 }
