@@ -166,6 +166,11 @@ The center buffers are now split. Driver-facing code writes positions through
 Core force code updates the force buffer through `DataSpace_clear_ctr_forces`
 and `DataSpace_add_ctr_force`.
 
+The arrays owned by `DataSpace` are now private to `cfacv_dataspace.c`.
+Runtime modules use internal accessors such as `DataSpace_cv`,
+`DataSpace_rstr`, `DataSpace_fes`, and the count helpers. This makes the next
+split into registry, step state, and FES state mechanical instead of invasive.
+
 ## High-Value Refactor Targets
 
 | Target | Problem | Suggested direction |

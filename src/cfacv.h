@@ -18,7 +18,7 @@ void DataSpace_free ( DataSpace * ds );
 int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double * min,
     int * nKnots, double * max, int * periodic, int beginaccum, int beginsolve,
     char * outfile, int outfreq, int outlevel, int nupdate);
-chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i );
+chapeau * DataSpace_chapeau ( DataSpace * ds, int i );
 double * DataSpace_centerPosition ( DataSpace * ds, int i );
 double * DataSpace_centerForce ( DataSpace * ds, int i );
 int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m );

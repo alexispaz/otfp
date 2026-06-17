@@ -89,7 +89,7 @@ void DataSpace_free ( DataSpace * ds ) {
   free(ds);
 }
 
-chapeau * DataSpace_get_chapeauadress ( DataSpace * ds, int i ) {
+chapeau * DataSpace_chapeau ( DataSpace * ds, int i ) {
   return ds->fes[i];
 }
 
@@ -128,6 +128,62 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
 int DataSpace_getN ( DataSpace * ds ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
   return ds->ctr_total;
+}
+
+int DataSpace_ctr_count ( DataSpace * ds ) {
+  return ds->ctr_total;
+}
+
+int DataSpace_cv_count ( DataSpace * ds ) {
+  return ds->cv_total;
+}
+
+int DataSpace_rstr_count ( DataSpace * ds ) {
+  return ds->rstr_total;
+}
+
+int DataSpace_fes_count ( DataSpace * ds ) {
+  return ds->fes_total;
+}
+
+int DataSpace_fes_is_enabled ( DataSpace * ds ) {
+  return ds->fes_enabled;
+}
+
+int DataSpace_fes_evolves ( DataSpace * ds ) {
+  return ds->fes_evolve_parameters;
+}
+
+int DataSpace_fes_accum_begin ( DataSpace * ds ) {
+  return ds->fes_begin_accum;
+}
+
+int DataSpace_fes_solve_begin ( DataSpace * ds ) {
+  return ds->fes_begin_solve;
+}
+
+int DataSpace_rstr_save_frequency ( DataSpace * ds ) {
+  return ds->rstr_save_frequency;
+}
+
+char * DataSpace_rstr_checkpoint_file ( DataSpace * ds ) {
+  return ds->filename;
+}
+
+cv * DataSpace_cv ( DataSpace * ds, int index ) {
+  return ds->cvs[index];
+}
+
+restraint * DataSpace_rstr ( DataSpace * ds, int index ) {
+  return ds->rstrs[index];
+}
+
+chapeau * DataSpace_fes ( DataSpace * ds, int index ) {
+  return ds->fes[index];
+}
+
+double ** DataSpace_ctr_positions ( DataSpace * ds ) {
+  return ds->ctr_positions;
 }
 
 double * DataSpace_centerPosition ( DataSpace * ds, int i ) {

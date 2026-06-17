@@ -46,11 +46,11 @@ The current public C calls that match this model are:
 | Stage | Current C API |
 | --- | --- |
 | Allocate/free | `NewDataSpace`, `DataSpace_free` |
-| Register centers | `DataSpace_AddAtomCenter`, `DataSpace_centerPosition` |
+| Register centers | `DataSpace_AddAtomCenter` |
 | Register CVs | `DataSpace_add_cv`, `set_zsd_circle`, `set_zsd_ring`, `set_d2chap`, `set_line`, `cv_access_ref`, `cv_access_ref2` |
 | Register restraints | `DataSpace_AddRestr`, `restr_AddTamdOpt`, `restr_AddSmdOpt`, `restr_AddAdamOpt` |
-| Register FES | `DataSpace_SetupChapeau`, `DataSpace_get_chapeauadress` |
-| Step update | `DataSpace_ComputeCVs`, `DataSpace_RestrainingForces` |
+| Register FES | `DataSpace_SetupChapeau`, `DataSpace_chapeau` |
+| Step update | `DataSpace_centerPosition`, `DataSpace_ComputeCVs`, `DataSpace_RestrainingForces` |
 | Read results | `DataSpace_centerForce`, `DataSpace_RestraintEnergy`, `restr_getz`, `restr_getu` |
 | Restart hooks | `chapeau_savestate`, `chapeau_loadstate`, `chapeau_loadlambda` |
 

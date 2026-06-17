@@ -25,12 +25,12 @@ static void DataSpace_compute_restraint_values ( DataSpace * ds, int first ) {
   cv * cv;
   restraint * r;
 
-  for (i=0;i<ds->rstr_total;i++) {
-    r=ds->rstrs[i];
+  for (i=0;i<DataSpace_rstr_count(ds);i++) {
+    r=DataSpace_rstr(ds,i);
     nCV=restraint_cv_count(r);
     restraint_reset_value(r);
     for (j=0;j<nCV;j++) {
-      cv=ds->cvs[j];
+      cv=DataSpace_cv(ds,j);
       restraint_add_cv_value(r,j,cv_value(cv));
     }
 
@@ -45,15 +45,15 @@ static void DataSpace_apply_restraint_forces ( DataSpace * ds, int timestep ) {
   cv * cv;
   restraint * r;
 
-  for (i=0;i<ds->rstr_total;i++) {
-    r=ds->rstrs[i];
+  for (i=0;i<DataSpace_rstr_count(ds);i++) {
+    r=DataSpace_rstr(ds,i);
     nCV=restraint_cv_count(r);
 
     restraint_compute_energy(r);
     if (restraint_should_output(r,timestep)) restr_output(r);
 
     for (j=0;j<nCV;j++) {
-      cv=ds->cvs[j];
+      cv=DataSpace_cv(ds,j);
       coefficient=restraint_cv_coefficient(r,j);
       if (!coefficient) continue;
 
@@ -71,8 +71,8 @@ static void DataSpace_apply_cv_boundary_forces ( DataSpace * ds, int timestep ) 
   int j,jj,d;
   cv * cv;
 
-  for (j=0;j<ds->cv_total;j++) {
-    cv=ds->cvs[j];
+  for (j=0;j<DataSpace_cv_count(ds);j++) {
+    cv=DataSpace_cv(ds,j);
 
     cv_reset_force_energy(cv);
     cv_apply_boundary(cv);
@@ -93,25 +93,25 @@ static void DataSpace_update_fes ( DataSpace * ds, int timestep, double bias ) {
   restraint * r;
   chapeau * ch;
 
-  if (!ds->fes_enabled) return;
+  if (!DataSpace_fes_is_enabled(ds)) return;
 
-  if (timestep>ds->fes_begin_accum) {
-    for (i=0;i<ds->rstr_total;i++) {
-      r=ds->rstrs[i];
-      ch=ds->fes[restraint_chapeau_id(r)];
+  if (timestep>DataSpace_fes_accum_begin(ds)) {
+    for (i=0;i<DataSpace_rstr_count(ds);i++) {
+      r=DataSpace_rstr(ds,i);
+      ch=DataSpace_fes(ds,restraint_chapeau_id(r));
       chapeau_set_sample(ch,restraint_chapeau_dim(r),restraint_target(r),-restraint_force(r)); // F=k(\theta-z)
     }
-    for (i=0;i<ds->fes_total;i++) {
-      chapeau_accumulate_sample(ds->fes[i],bias);
+    for (i=0;i<DataSpace_fes_count(ds);i++) {
+      chapeau_accumulate_sample(DataSpace_fes(ds,i),bias);
     }
   }
 
-  if (!ds->fes_evolve_parameters) return;
+  if (!DataSpace_fes_evolves(ds)) return;
 
-  for (i=0;i<ds->fes_total;i++) {
-    ch=ds->fes[i];
+  for (i=0;i<DataSpace_fes_count(ds);i++) {
+    ch=DataSpace_fes(ds,i);
 
-    if (chapeau_should_solve(ch,timestep,ds->fes_begin_solve)) {
+    if (chapeau_should_solve(ch,timestep,DataSpace_fes_solve_begin(ds))) {
       chapeau_solve(ch);
     }
 
@@ -129,21 +129,23 @@ static int DataSpace_evolve_rstrs ( DataSpace * ds, int timestep ) {
   int rabort=0;
   restraint * r;
 
-  for (i=0;i<ds->rstr_total;i++) {
-    r=ds->rstrs[i];
+  for (i=0;i<DataSpace_rstr_count(ds);i++) {
+    r=DataSpace_rstr(ds,i);
 
     if (restraint_evolve_for_timestep(r,timestep)) {
-      ds_saverestrains(ds,ds->filename);
+      ds_saverestrains(ds,DataSpace_rstr_checkpoint_file(ds));
       restraint_stop_evolution(r);
       rabort++;
     }
   }
 
-  if(ds->rstr_total>0) {
-    if (!(timestep % ds->rstr_save_frequency)) ds_saverestrains(ds,ds->filename);
+  if(DataSpace_rstr_count(ds)>0) {
+    if (!(timestep % DataSpace_rstr_save_frequency(ds))) {
+      ds_saverestrains(ds,DataSpace_rstr_checkpoint_file(ds));
+    }
   }
 
-  if(rabort==ds->rstr_total) return 2;
+  if(rabort==DataSpace_rstr_count(ds)) return 2;
   return 0;
 }
 

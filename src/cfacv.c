@@ -45,7 +45,10 @@ FILE * my_fopen ( char * name, char * code ) {
 FILE * my_binfopen ( char * name, char * code, unsigned int outputLevel, DataSpace * ds ) {
   FILE * fp=fopen(name,code);
   fwrite(&outputLevel,sizeof(unsigned int),1,fp);
-  fwrite(&(ds->rstr_total),sizeof(int),1,fp);
+  {
+    int nrestr=DataSpace_rstr_count(ds);
+    fwrite(&nrestr,sizeof(int),1,fp);
+  }
   return fp;
 }
 
@@ -56,9 +59,10 @@ double DataSpace_ComputeCVs ( DataSpace * ds ) {
  
   bias=0;
   if (!ds) return -1;
-  for (i=0;i<ds->cv_total;i++){
-    cv_compute(ds->cvs[i],ds->ctr_positions);
-    bias+=cv_bias_value(ds->cvs[i]);
+  for (i=0;i<DataSpace_cv_count(ds);i++){
+    cv * c=DataSpace_cv(ds,i);
+    cv_compute(c,DataSpace_ctr_positions(ds));
+    bias+=cv_bias_value(c);
   }
  
   return bias;
@@ -69,8 +73,8 @@ double DataSpace_RestraintEnergy ( DataSpace * ds ) {
     double u=0.0;
     int i;
     restraint * r;
-    for (i=0;i<ds->rstr_total;i++) {
-      r=ds->rstrs[i];
+    for (i=0;i<DataSpace_rstr_count(ds);i++) {
+      r=DataSpace_rstr(ds,i);
       u+=restr_getu(r);
     }
     return u;
@@ -81,8 +85,8 @@ double DataSpace_RestraintEnergy ( DataSpace * ds ) {
 void DataSpace_ReportCV ( DataSpace * ds, int * active, double * res ) {
   if (ds) {
     int i;
-    for (i=0;i<ds->cv_total;i++) {
-      if (active[i]) res[i]=cv_value(ds->cvs[i]);
+    for (i=0;i<DataSpace_cv_count(ds);i++) {
+      if (active[i]) res[i]=cv_value(DataSpace_cv(ds,i));
       else res[i]=0.0;
     }
   }
@@ -92,17 +96,17 @@ void DataSpace_ReportAll ( DataSpace * ds ) {
   if (ds) {
     int i;
     printf("CFACV_OTFP/C) DataSpace: %i Centers, %i CV's, %i Restraints\n",
-	   ds->ctr_total, ds->cv_total, ds->rstr_total);
-    for (i=0;i<ds->ctr_total;i++) {
+	   DataSpace_ctr_count(ds), DataSpace_cv_count(ds), DataSpace_rstr_count(ds));
+    for (i=0;i<DataSpace_ctr_count(ds);i++) {
       double * ctr = DataSpace_ctr_position(ds,i);
       printf("CFACV_OTFP/C)  Center %i : %.5f %.5f %.5f\n",
 	     i,ctr[0],ctr[1],ctr[2]);
     }
-    for (i=0;i<ds->cv_total;i++) {
-      cv_report(ds->cvs[i],i);
+    for (i=0;i<DataSpace_cv_count(ds);i++) {
+      cv_report(DataSpace_cv(ds,i),i);
     }
-    for (i=0;i<ds->rstr_total;i++) {
-      restraint_report(ds->rstrs[i],i);
+    for (i=0;i<DataSpace_rstr_count(ds);i++) {
+      restraint_report(DataSpace_rstr(ds,i),i);
     }
     
   }

@@ -18,8 +18,7 @@ proc chapeau_setup { NUMREP ds DIMEN min N max periodic begin_evolve begin_solve
 
     # Get the adress of the chapeaus
     for {set i 0} {$i<$NUMREP} {incr i} {
-      set chape($i.address) [DataSpace_get_chapeauadress $ds $i]
+      set chape($i.address) [DataSpace_chapeau $ds $i]
     }
 
 }
-
