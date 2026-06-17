@@ -123,9 +123,25 @@ int DataSpace_getN ( DataSpace * ds ) {
 }
 
 double * DataSpace_centerPos ( DataSpace * ds, int i ) {
+  return DataSpace_ctr_buffer(ds,i);
+}
+
+double * DataSpace_ctr_buffer ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
   if (i>=ds->ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
   return ds->ctr_data[i];
+}
+
+void DataSpace_clear_ctr_forces ( DataSpace * ds ) {
+  int i,d;
+
+  for (i=0;i<ds->ctr_total;i++) {
+    for (d=0;d<3;d++) ds->ctr_data[i][d]=0.0;
+  }
+}
+
+void DataSpace_add_ctr_force ( DataSpace * ds, int ctr, int dim, double force ) {
+  ds->ctr_data[ctr][dim]+=force;
 }
 
 int DataSpace_checkdata ( DataSpace * ds ) {

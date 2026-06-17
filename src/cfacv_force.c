@@ -19,14 +19,6 @@ static void handler(int sig) {
   exit(1);
 }
 
-static void DataSpace_clear_forces ( DataSpace * ds ) {
-  int i,d;
-
-  for (i=0;i<ds->ctr_total;i++) {
-    for (d=0;d<3;d++) ds->ctr_data[i][d]=0.0;
-  }
-}
-
 static void DataSpace_compute_restraint_values ( DataSpace * ds, int first ) {
   int i,j;
   int nCV;
@@ -67,7 +59,8 @@ static void DataSpace_apply_restraint_forces ( DataSpace * ds, int timestep ) {
 
       for (jj=0;jj<cv_center_count(cv);jj++) {
         for (d=0;d<3;d++) {
-          ds->ctr_data[cv_center_index(cv,jj)][d]+=coefficient*cv_gradient_component(cv,jj,d)*restraint_force(r);
+          DataSpace_add_ctr_force(ds,cv_center_index(cv,jj),d,
+              coefficient*cv_gradient_component(cv,jj,d)*restraint_force(r));
         }
       }
     }
@@ -86,7 +79,8 @@ static void DataSpace_apply_cv_boundary_forces ( DataSpace * ds, int timestep ) 
 
     for (jj=0;jj<cv_center_count(cv);jj++) {
       for (d=0;d<3;d++) {
-        ds->ctr_data[cv_center_index(cv,jj)][d]+=cv_gradient_component(cv,jj,d)*cv_force(cv);
+        DataSpace_add_ctr_force(ds,cv_center_index(cv,jj),d,
+            cv_gradient_component(cv,jj,d)*cv_force(cv));
       }
     }
 
@@ -157,7 +151,7 @@ int DataSpace_RestrainingForces ( DataSpace * ds, int first, int timestep, doubl
   signal(SIGINT, handler);
   if (!ds) return -1;
 
-  DataSpace_clear_forces(ds);
+  DataSpace_clear_ctr_forces(ds);
   DataSpace_compute_restraint_values(ds,first);
   DataSpace_apply_restraint_forces(ds,timestep);
   DataSpace_apply_cv_boundary_forces(ds,timestep);

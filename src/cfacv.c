@@ -94,8 +94,9 @@ void DataSpace_ReportAll ( DataSpace * ds ) {
     printf("CFACV_OTFP/C) DataSpace: %i Centers, %i CV's, %i Restraints\n",
 	   ds->ctr_total, ds->cv_total, ds->rstr_total);
     for (i=0;i<ds->ctr_total;i++) {
+      double * ctr = DataSpace_ctr_buffer(ds,i);
       printf("CFACV_OTFP/C)  Center %i : %.5f %.5f %.5f\n",
-	     i,ds->ctr_data[i][0],ds->ctr_data[i][1],ds->ctr_data[i][2]);
+	     i,ctr[0],ctr[1],ctr[2]);
     }
     for (i=0;i<ds->cv_total;i++) {
       cv_report(ds->cvs[i],i);

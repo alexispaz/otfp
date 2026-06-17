@@ -140,6 +140,31 @@ The `lifecycle` Meson test exercises the basic constructor/destructor path for
 `DataSpace`, atom centers, one CV, and one restraint. Broader ownership tests
 should be added as modules are split.
 
+## DataSpace Direction
+
+`DataSpace` is the current core context object. It still combines several
+responsibilities:
+
+| Responsibility | Current fields |
+| --- | --- |
+| Registry/setup | `ctrs`, `cvs`, `rstrs` plus their `_total` and `_count` fields. |
+| Step buffer | `ctr_data`. This is still a shared center buffer: drivers write center positions before CV evaluation, then the force loop clears and reuses the same memory for accumulated center forces. |
+| FES state | `fes`, `fes_total`, `fes_enabled`, `fes_begin_accum`, `fes_begin_solve`, `fes_evolve_parameters`. |
+| Restart/output | `filename`, `rstr_save_frequency`. |
+
+The target organization is to keep a single engine/context object but split its
+responsibilities into clearer subobjects:
+
+- registry/setup state for centers, CVs, and restraints;
+- step state for center positions, center forces, and bias energy;
+- FES state and solve/output scheduling;
+- restart/output policy.
+
+The first migration step is to route center-buffer access through internal
+helpers (`DataSpace_ctr_buffer`, `DataSpace_clear_ctr_forces`, and
+`DataSpace_add_ctr_force`). This keeps current behavior intact while preparing
+for separate `ctr_positions` and `ctr_forces` arrays later.
+
 ## High-Value Refactor Targets
 
 | Target | Problem | Suggested direction |
