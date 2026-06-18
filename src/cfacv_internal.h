@@ -95,12 +95,17 @@ typedef struct OtfpRegistry {
   int ctr_count;
   int cv_total;
   int cv_count;
-  int rstr_total;
-  int rstr_count;
   atomCenterStruct ** ctrs;
   cv ** cvs;
-  restraint ** rstrs;
 } OtfpRegistry;
+
+typedef struct OtfpRestraintSet {
+  int total;
+  int count;
+  restraint ** items;
+  char checkpoint_file[16];
+  int save_frequency;
+} OtfpRestraintSet;
 
 typedef struct OtfpFesState {
   int total;
@@ -112,10 +117,8 @@ typedef struct OtfpFesState {
 } OtfpFesState;
 
 struct DataSpace {
-  char filename[16];
-  int rstr_save_frequency;
-
   OtfpRegistry registry;
+  OtfpRestraintSet restraints;
   OtfpStepState step;
   OtfpFesState fes;
 };

@@ -52,17 +52,14 @@ static void OtfpStepState_add_force ( OtfpStepState * step, int ctr, int dim, do
   step->ctr_forces[ctr][dim]+=force;
 }
 
-static void OtfpRegistry_init ( OtfpRegistry * registry, int nctr, int ncv, int nrstr ) {
+static void OtfpRegistry_init ( OtfpRegistry * registry, int nctr, int ncv ) {
   registry->ctr_total=nctr;
   registry->cv_total=ncv;
-  registry->rstr_total=nrstr;
   registry->ctr_count=0;
   registry->cv_count=0;
-  registry->rstr_count=0;
 
   registry->ctrs=calloc(nctr,sizeof(atomCenterStruct*));
   registry->cvs=calloc(ncv,sizeof(cv*));
-  registry->rstrs=calloc(nrstr,sizeof(restraint*));
 }
 
 static void OtfpRegistry_free ( OtfpRegistry * registry ) {
@@ -76,10 +73,44 @@ static void OtfpRegistry_free ( OtfpRegistry * registry ) {
     for (i=0;i<registry->cv_total;i++) cv_free(registry->cvs[i]);
     free(registry->cvs);
   }
-  if (registry->rstrs) {
-    for (i=0;i<registry->rstr_total;i++) restraint_free(registry->rstrs[i]);
-    free(registry->rstrs);
+}
+
+static void OtfpRestraintSet_init ( OtfpRestraintSet * restraints, int nrstr ) {
+  restraints->total=nrstr;
+  restraints->count=0;
+  restraints->items=calloc(nrstr,sizeof(restraint*));
+  sprintf(restraints->checkpoint_file, "checkpoint.rstr");
+  restraints->save_frequency=100000;
+}
+
+static void OtfpRestraintSet_free ( OtfpRestraintSet * restraints ) {
+  int i;
+
+  if (restraints->items) {
+    for (i=0;i<restraints->total;i++) restraint_free(restraints->items[i]);
+    free(restraints->items);
   }
+}
+
+static restraint * OtfpRestraintSet_add (
+    OtfpRestraintSet * restraints,
+    double k, double z, int nCV, double * cvc, char * rftypstr,
+    double zmin, double zmax, char * boundf, double boundk,
+    char * outfile, int outputFreq
+    ) {
+  int i;
+
+  restraints->count++;
+  if (restraints->count>restraints->total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+
+  i=restraints->count-1;
+  restraints->items[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
+
+  if (outputFreq>0) {
+    if (outputFreq < restraints->save_frequency) restraints->save_frequency = outputFreq;
+  }
+
+  return restraints->items[i];
 }
 
 static void OtfpFesState_init ( OtfpFesState * fes ) {
@@ -120,12 +151,10 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   //srand48(kkk);
   //oldptr=seed48(&Xi[0]);
 
-  OtfpRegistry_init(&ds->registry,Nctr,Ncv,Nrstr);
+  OtfpRegistry_init(&ds->registry,Nctr,Ncv);
+  OtfpRestraintSet_init(&ds->restraints,Nrstr);
   OtfpStepState_init(&ds->step,Nctr);
   OtfpFesState_init(&ds->fes);
-
-  sprintf(ds->filename, "checkpoint.rstr");
-  ds->rstr_save_frequency = 100000;
 
   return ds;
 }
@@ -134,6 +163,7 @@ void DataSpace_free ( DataSpace * ds ) {
   if (!ds) return;
   OtfpStepState_free(&ds->step);
   OtfpRegistry_free(&ds->registry);
+  OtfpRestraintSet_free(&ds->restraints);
   OtfpFesState_free(&ds->fes);
   free(ds);
 }
@@ -188,7 +218,7 @@ int DataSpace_cv_count ( DataSpace * ds ) {
 }
 
 int DataSpace_rstr_count ( DataSpace * ds ) {
-  return ds->registry.rstr_total;
+  return ds->restraints.total;
 }
 
 int DataSpace_fes_count ( DataSpace * ds ) {
@@ -212,11 +242,11 @@ int DataSpace_fes_solve_begin ( DataSpace * ds ) {
 }
 
 int DataSpace_rstr_save_frequency ( DataSpace * ds ) {
-  return ds->rstr_save_frequency;
+  return ds->restraints.save_frequency;
 }
 
 char * DataSpace_rstr_checkpoint_file ( DataSpace * ds ) {
-  return ds->filename;
+  return ds->restraints.checkpoint_file;
 }
 
 cv * DataSpace_cv ( DataSpace * ds, int index ) {
@@ -224,7 +254,7 @@ cv * DataSpace_cv ( DataSpace * ds, int index ) {
 }
 
 restraint * DataSpace_rstr ( DataSpace * ds, int index ) {
-  return ds->registry.rstrs[index];
+  return ds->restraints.items[index];
 }
 
 chapeau * DataSpace_fes ( DataSpace * ds, int index ) {
@@ -336,20 +366,8 @@ cv * DataSpace_add_cv ( DataSpace * ds, char * typ, int nind, int * ind,
 restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, double * cvc, char * rftypstr,
 			 double zmin, double zmax,char * boundf, double boundk, char * outfile, int outputFreq )
 {
-  int i;
-
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->registry.rstr_count++;
-  if (ds->registry.rstr_count>ds->registry.rstr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-
-  i=ds->registry.rstr_count-1;
-  ds->registry.rstrs[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
-
-  //restart
-  if (outputFreq>0) {
-    if (outputFreq < ds->rstr_save_frequency) {ds->rstr_save_frequency = outputFreq;}
-  }
-
-  return ds->registry.rstrs[i];
+  return OtfpRestraintSet_add(&ds->restraints,k,z,nCV,cvc,rftypstr,
+      zmin,zmax,boundf,boundk,outfile,outputFreq);
 }

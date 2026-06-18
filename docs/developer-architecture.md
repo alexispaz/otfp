@@ -15,7 +15,7 @@ scientific behavior unless a feature is explicitly removed.
 | Runtime internals | `cfacv_internal.h`, `cfacv.c` | Define `DataSpace`, `restraint`, optimizer structs, and expose runtime helpers for CV computation, energy, and reporting. `DataSpace` fields use explicit total/count/ownership names for core readability. |
 | Runtime force loop | `cfacv_force.c` | Orchestrate per-step force clearing, restraint values, restraint forces, CV boundary forces, FES/chapeau updates, and target evolution. |
 | Driver embedding facade | `otfp_engine.h`, `otfp_engine.c` | Provide a small C API for non-Tcl drivers such as GEMS. |
-| DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and FES/chapeau objects. |
+| DataSpace ownership | `cfacv_dataspace.c` | Allocate/free `DataSpace`, register atom centers, CVs, restraints, and FES/chapeau objects through focused state owners. |
 | Restraints | `cfacv_restraint.c` | Restraint construction, restart state, energy functions, boundary functions, and TAMD/SMD/ADAM target evolution. |
 | CV public API | `cvs.h` | Expose the opaque `cv` type and user/SWIG-facing CV lifecycle, type, reference, and setup helpers. |
 | CV internals | `cvs_internal.h`, `cvs.c`, `measurements.c` | Define the concrete `cv` layout, CV descriptors, boundary functions, and value/gradient calculations. |
@@ -150,29 +150,32 @@ transitional container while the state is split into clearer objects.
 
 | Responsibility | Current fields |
 | --- | --- |
-| Registry/setup | `registry`, an `OtfpRegistry` with centers, CVs, and restraints plus their `_total` and `_count` fields. |
+| Registry/setup | `registry`, an `OtfpRegistry` with centers and CVs plus their `_total` and `_count` fields. |
+| Restraints | `restraints`, an `OtfpRestraintSet` with restraints, checkpoint filename, and save frequency. |
 | Step state | `step`, an `OtfpStepState` with center positions for driver input and center forces returned to the driver. |
 | FES state | `fes`, an `OtfpFesState` with chapeaux and accumulate/solve scheduling. |
-| Restart/output | `filename`, `rstr_save_frequency`. |
+| Restart/output | Restraint restart policy lives in `OtfpRestraintSet`; chapeau output policy lives in each chapeau. |
 
 The target organization is to keep a single engine/context object but split its
 responsibilities into clearer subobjects:
 
-- registry/setup state for centers, CVs, and restraints;
+- registry/setup state for centers and CVs;
+- restraint state and restart policy;
 - step state for center positions, center forces, and bias energy;
 - FES state and solve/output scheduling;
-- restart/output policy.
+- restart/output policy tied to the state it persists.
 
 The center buffers are owned by `OtfpStepState`. Driver-facing code writes
 positions through `DataSpace_centerPosition` and reads forces through
 `DataSpace_centerForce`. Core force code updates the force buffer through
 `DataSpace_clear_ctr_forces` and `DataSpace_add_ctr_force`.
 
-The center/CV/restraint registry is owned by `OtfpRegistry`, and the FES state
-is owned by `OtfpFesState`. Runtime modules use internal accessors such as
-`DataSpace_cv`, `DataSpace_rstr`, `DataSpace_fes`, and the count helpers. These
-accessors are a migration aid, not the target architecture: the target is to
-keep moving runtime state into objects with clearer names and responsibilities.
+The center/CV registry is owned by `OtfpRegistry`, restraints are owned by
+`OtfpRestraintSet`, and the FES state is owned by `OtfpFesState`. Runtime
+modules use internal accessors such as `DataSpace_cv`, `DataSpace_rstr`,
+`DataSpace_fes`, and the count helpers. These accessors are a migration aid,
+not the target architecture: the target is to keep moving runtime behavior
+toward the objects with clearer names and responsibilities.
 
 ## High-Value Refactor Targets
 
