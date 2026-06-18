@@ -7,7 +7,7 @@
 #include "cvs.h"
 #include "measurements.h"
 
-static void OtfpCenterStepState_init ( OtfpCenterStepState * step, int nctr ) {
+static void center_step_init ( CenterStepState * step, int nctr ) {
   int i;
 
   step->ctr_count=nctr;
@@ -19,7 +19,7 @@ static void OtfpCenterStepState_init ( OtfpCenterStepState * step, int nctr ) {
   }
 }
 
-static void OtfpCenterStepState_free ( OtfpCenterStepState * step ) {
+static void center_step_free ( CenterStepState * step ) {
   int i;
 
   if (step->ctr_positions) {
@@ -32,15 +32,15 @@ static void OtfpCenterStepState_free ( OtfpCenterStepState * step ) {
   }
 }
 
-static double * OtfpCenterStepState_position ( OtfpCenterStepState * step, int ctr ) {
+static double * center_step_position ( CenterStepState * step, int ctr ) {
   return step->ctr_positions[ctr];
 }
 
-static double * OtfpCenterStepState_force ( OtfpCenterStepState * step, int ctr ) {
+static double * center_step_force ( CenterStepState * step, int ctr ) {
   return step->ctr_forces[ctr];
 }
 
-static void OtfpCenterStepState_clear_forces ( OtfpCenterStepState * step ) {
+static void center_step_clear_forces ( CenterStepState * step ) {
   int i,d;
 
   for (i=0;i<step->ctr_count;i++) {
@@ -48,18 +48,18 @@ static void OtfpCenterStepState_clear_forces ( OtfpCenterStepState * step ) {
   }
 }
 
-static void OtfpCenterStepState_add_force ( OtfpCenterStepState * step, int ctr, int dim, double force ) {
+static void center_step_add_force ( CenterStepState * step, int ctr, int dim, double force ) {
   step->ctr_forces[ctr][dim]+=force;
 }
 
-static void OtfpCenterSet_init ( OtfpCenterSet * centers, int nctr ) {
+static void center_set_init ( CenterSet * centers, int nctr ) {
   centers->ctr_total=nctr;
   centers->ctr_count=0;
 
   centers->ctrs=calloc(nctr,sizeof(atomCenterStruct*));
 }
 
-static void OtfpCenterSet_free ( OtfpCenterSet * centers ) {
+static void center_set_free ( CenterSet * centers ) {
   int i;
 
   if (centers->ctrs) {
@@ -68,13 +68,13 @@ static void OtfpCenterSet_free ( OtfpCenterSet * centers ) {
   }
 }
 
-static void OtfpCvSet_init ( OtfpCvSet * cvs, int ncv ) {
+static void cv_set_init ( CvSet * cvs, int ncv ) {
   cvs->total=ncv;
   cvs->count=0;
   cvs->cvs=calloc(ncv,sizeof(cv*));
 }
 
-static void OtfpCvSet_free ( OtfpCvSet * cvs ) {
+static void cv_set_free ( CvSet * cvs ) {
   int i;
 
   if (cvs->cvs) {
@@ -83,7 +83,7 @@ static void OtfpCvSet_free ( OtfpCvSet * cvs ) {
   }
 }
 
-static void OtfpRestraintSet_init ( OtfpRestraintSet * restraints, int nrstr ) {
+static void restraint_set_init ( RestraintSet * restraints, int nrstr ) {
   restraints->total=nrstr;
   restraints->count=0;
   restraints->items=calloc(nrstr,sizeof(restraint*));
@@ -91,7 +91,7 @@ static void OtfpRestraintSet_init ( OtfpRestraintSet * restraints, int nrstr ) {
   restraints->save_frequency=100000;
 }
 
-static void OtfpRestraintSet_free ( OtfpRestraintSet * restraints ) {
+static void restraint_set_free ( RestraintSet * restraints ) {
   int i;
 
   if (restraints->items) {
@@ -100,8 +100,8 @@ static void OtfpRestraintSet_free ( OtfpRestraintSet * restraints ) {
   }
 }
 
-static restraint * OtfpRestraintSet_add (
-    OtfpRestraintSet * restraints,
+static restraint * restraint_set_add (
+    RestraintSet * restraints,
     double k, double z, int nCV, double * cvc, char * rftypstr,
     double zmin, double zmax, char * boundf, double boundk,
     char * outfile, int outputFreq
@@ -121,7 +121,7 @@ static restraint * OtfpRestraintSet_add (
   return restraints->items[i];
 }
 
-static void OtfpFesState_init ( OtfpFesState * fes ) {
+static void fes_state_init ( FesState * fes ) {
   fes->total=0;
   fes->enabled=0;
   fes->evolve_parameters=0;
@@ -130,7 +130,7 @@ static void OtfpFesState_init ( OtfpFesState * fes ) {
   fes->chapeaux=NULL;
 }
 
-static void OtfpFesState_free ( OtfpFesState * fes ) {
+static void fes_state_free ( FesState * fes ) {
   int i;
 
   if (fes->chapeaux) {
@@ -159,22 +159,22 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   //srand48(kkk);
   //oldptr=seed48(&Xi[0]);
 
-  OtfpCenterSet_init(&ds->centers,Nctr);
-  OtfpCvSet_init(&ds->cvs,Ncv);
-  OtfpRestraintSet_init(&ds->restraints,Nrstr);
-  OtfpCenterStepState_init(&ds->center_step,Nctr);
-  OtfpFesState_init(&ds->fes);
+  center_set_init(&ds->centers,Nctr);
+  cv_set_init(&ds->cvs,Ncv);
+  restraint_set_init(&ds->restraints,Nrstr);
+  center_step_init(&ds->center_step,Nctr);
+  fes_state_init(&ds->fes);
 
   return ds;
 }
 
 void DataSpace_free ( DataSpace * ds ) {
   if (!ds) return;
-  OtfpCenterStepState_free(&ds->center_step);
-  OtfpCenterSet_free(&ds->centers);
-  OtfpCvSet_free(&ds->cvs);
-  OtfpRestraintSet_free(&ds->restraints);
-  OtfpFesState_free(&ds->fes);
+  center_step_free(&ds->center_step);
+  center_set_free(&ds->centers);
+  cv_set_free(&ds->cvs);
+  restraint_set_free(&ds->restraints);
+  fes_state_free(&ds->fes);
   free(ds);
 }
 
@@ -286,21 +286,21 @@ double * DataSpace_centerForce ( DataSpace * ds, int i ) {
 double * DataSpace_ctr_position ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
   if (i>=ds->centers.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-  return OtfpCenterStepState_position(&ds->center_step,i);
+  return center_step_position(&ds->center_step,i);
 }
 
 double * DataSpace_ctr_force ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
   if (i>=ds->centers.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-  return OtfpCenterStepState_force(&ds->center_step,i);
+  return center_step_force(&ds->center_step,i);
 }
 
 void DataSpace_clear_ctr_forces ( DataSpace * ds ) {
-  OtfpCenterStepState_clear_forces(&ds->center_step);
+  center_step_clear_forces(&ds->center_step);
 }
 
 void DataSpace_add_ctr_force ( DataSpace * ds, int ctr, int dim, double force ) {
-  OtfpCenterStepState_add_force(&ds->center_step,ctr,dim,force);
+  center_step_add_force(&ds->center_step,ctr,dim,force);
 }
 
 int DataSpace_checkdata ( DataSpace * ds ) {
@@ -378,6 +378,6 @@ restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, do
 {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  return OtfpRestraintSet_add(&ds->restraints,k,z,nCV,cvc,rftypstr,
+  return restraint_set_add(&ds->restraints,k,z,nCV,cvc,rftypstr,
       zmin,zmax,boundf,boundk,outfile,outputFreq);
 }

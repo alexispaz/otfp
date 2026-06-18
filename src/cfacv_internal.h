@@ -84,47 +84,47 @@ struct restraint {
   int boutput;
 };
 
-typedef struct OtfpCenterStepState {
+typedef struct CenterStepState {
   int ctr_count;
   double ** ctr_positions;
   double ** ctr_forces;
-} OtfpCenterStepState;
+} CenterStepState;
 
-typedef struct OtfpCenterSet {
+typedef struct CenterSet {
   int ctr_total;
   int ctr_count;
   atomCenterStruct ** ctrs;
-} OtfpCenterSet;
+} CenterSet;
 
-typedef struct OtfpCvSet {
+typedef struct CvSet {
   int total;
   int count;
   cv ** cvs;
-} OtfpCvSet;
+} CvSet;
 
-typedef struct OtfpRestraintSet {
+typedef struct RestraintSet {
   int total;
   int count;
   restraint ** items;
   char checkpoint_file[16];
   int save_frequency;
-} OtfpRestraintSet;
+} RestraintSet;
 
-typedef struct OtfpFesState {
+typedef struct FesState {
   int total;
   int enabled;
   int evolve_parameters;
   int begin_accum;
   int begin_solve;
   chapeau ** chapeaux;
-} OtfpFesState;
+} FesState;
 
 struct DataSpace {
-  OtfpCenterSet centers;
-  OtfpCvSet cvs;
-  OtfpRestraintSet restraints;
-  OtfpCenterStepState center_step;
-  OtfpFesState fes;
+  CenterSet centers;
+  CvSet cvs;
+  RestraintSet restraints;
+  CenterStepState center_step;
+  FesState fes;
 };
 
 tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);
