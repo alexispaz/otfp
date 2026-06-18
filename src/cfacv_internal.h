@@ -90,24 +90,27 @@ typedef struct OtfpStepState {
   double ** ctr_forces;
 } OtfpStepState;
 
-struct DataSpace {
+typedef struct OtfpRegistry {
   int ctr_total;
   int ctr_count;
-  int rstr_total;
-  int rstr_count;
-  int fes_total;
-
-  atomCenterStruct ** ctrs;
-  restraint ** rstrs;
-  chapeau ** fes;
-
   int cv_total;
   int cv_count;
+  int rstr_total;
+  int rstr_count;
+  atomCenterStruct ** ctrs;
   cv ** cvs;
+  restraint ** rstrs;
+} OtfpRegistry;
+
+struct DataSpace {
+  int fes_total;
+
+  chapeau ** fes;
 
   char filename[16];
   int rstr_save_frequency;
 
+  OtfpRegistry registry;
   OtfpStepState step;
 
   int fes_enabled;

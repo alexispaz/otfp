@@ -52,14 +52,38 @@ static void OtfpStepState_add_force ( OtfpStepState * step, int ctr, int dim, do
   step->ctr_forces[ctr][dim]+=force;
 }
 
+static void OtfpRegistry_init ( OtfpRegistry * registry, int nctr, int ncv, int nrstr ) {
+  registry->ctr_total=nctr;
+  registry->cv_total=ncv;
+  registry->rstr_total=nrstr;
+  registry->ctr_count=0;
+  registry->cv_count=0;
+  registry->rstr_count=0;
+
+  registry->ctrs=calloc(nctr,sizeof(atomCenterStruct*));
+  registry->cvs=calloc(ncv,sizeof(cv*));
+  registry->rstrs=calloc(nrstr,sizeof(restraint*));
+}
+
+static void OtfpRegistry_free ( OtfpRegistry * registry ) {
+  int i;
+
+  if (registry->ctrs) {
+    for (i=0;i<registry->ctr_total;i++) atomCenterStruct_free(registry->ctrs[i]);
+    free(registry->ctrs);
+  }
+  if (registry->cvs) {
+    for (i=0;i<registry->cv_total;i++) cv_free(registry->cvs[i]);
+    free(registry->cvs);
+  }
+  if (registry->rstrs) {
+    for (i=0;i<registry->rstr_total;i++) restraint_free(registry->rstrs[i]);
+    free(registry->rstrs);
+  }
+}
+
 DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   DataSpace * ds = calloc(1,sizeof(DataSpace));
-  ds->ctr_total=Nctr;
-  ds->rstr_total=Nrstr;
-  ds->ctr_count=0;
-  ds->rstr_count=0;
-
-  ds->cv_total=Ncv;   ds->cv_count=0;
 
   // This will not work with numbers less that 16 bits!
   //// Random seed. I deatached this from the data space a do it global
@@ -78,12 +102,8 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   //srand48(kkk);
   //oldptr=seed48(&Xi[0]);
 
+  OtfpRegistry_init(&ds->registry,Nctr,Ncv,Nrstr);
   OtfpStepState_init(&ds->step,Nctr);
-
-  ds->ctrs = calloc(Nctr,sizeof(atomCenterStruct*));
-
-  ds->cvs=calloc(Ncv,sizeof(cv*));
-  ds->rstrs=calloc(Nrstr,sizeof(restraint*));
 
   ds->fes_enabled=0;
   ds->fes_evolve_parameters=0;
@@ -102,18 +122,7 @@ void DataSpace_free ( DataSpace * ds ) {
 
   if (!ds) return;
   OtfpStepState_free(&ds->step);
-  if (ds->ctrs) {
-    for (i=0;i<ds->ctr_total;i++) atomCenterStruct_free(ds->ctrs[i]);
-    free(ds->ctrs);
-  }
-  if (ds->cvs) {
-    for (i=0;i<ds->cv_total;i++) cv_free(ds->cvs[i]);
-    free(ds->cvs);
-  }
-  if (ds->rstrs) {
-    for (i=0;i<ds->rstr_total;i++) restraint_free(ds->rstrs[i]);
-    free(ds->rstrs);
-  }
+  OtfpRegistry_free(&ds->registry);
   if (ds->fes) {
     for (i=0;i<ds->fes_total;i++) chapeau_free(ds->fes[i]);
     free(ds->fes);
@@ -159,19 +168,19 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
 
 int DataSpace_getN ( DataSpace * ds ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  return ds->ctr_total;
+  return ds->registry.ctr_total;
 }
 
 int DataSpace_ctr_count ( DataSpace * ds ) {
-  return ds->ctr_total;
+  return ds->registry.ctr_total;
 }
 
 int DataSpace_cv_count ( DataSpace * ds ) {
-  return ds->cv_total;
+  return ds->registry.cv_total;
 }
 
 int DataSpace_rstr_count ( DataSpace * ds ) {
-  return ds->rstr_total;
+  return ds->registry.rstr_total;
 }
 
 int DataSpace_fes_count ( DataSpace * ds ) {
@@ -203,11 +212,11 @@ char * DataSpace_rstr_checkpoint_file ( DataSpace * ds ) {
 }
 
 cv * DataSpace_cv ( DataSpace * ds, int index ) {
-  return ds->cvs[index];
+  return ds->registry.cvs[index];
 }
 
 restraint * DataSpace_rstr ( DataSpace * ds, int index ) {
-  return ds->rstrs[index];
+  return ds->registry.rstrs[index];
 }
 
 chapeau * DataSpace_fes ( DataSpace * ds, int index ) {
@@ -228,13 +237,13 @@ double * DataSpace_centerForce ( DataSpace * ds, int i ) {
 
 double * DataSpace_ctr_position ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  if (i>=ds->ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  if (i>=ds->registry.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
   return OtfpStepState_position(&ds->step,i);
 }
 
 double * DataSpace_ctr_force ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  if (i>=ds->ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  if (i>=ds->registry.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
   return OtfpStepState_force(&ds->step,i);
 }
 
@@ -251,7 +260,7 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 
   if (!ds) return 1;
 
-  for (i=0;i<ds->ctr_total;i++) {
+  for (i=0;i<ds->registry.ctr_total;i++) {
     for (j=0;j<3;j++) {
       if (ds->step.ctr_positions[i][j]!=ds->step.ctr_positions[i][j]) {
         return 1;
@@ -268,7 +277,7 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 int DataSpace_dump ( DataSpace * ds ) {
   if (ds) {
     int i,j;
-    for (i=0;i<ds->ctr_total;i++) {
+    for (i=0;i<ds->registry.ctr_total;i++) {
       fprintf(stdout,"%i ",i);
       for (j=0;j<3;j++)
 	fprintf(stdout,"%.5f ",ds->step.ctr_positions[i][j]);
@@ -287,15 +296,15 @@ int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m ) {
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->ctr_count++;
-  if (ds->ctr_count>ds->ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->registry.ctr_count++;
+  if (ds->registry.ctr_count>ds->registry.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->ctr_count-1;
-  ds->ctrs[i]=New_atomCenterStruct(n);
+  i=ds->registry.ctr_count-1;
+  ds->registry.ctrs[i]=New_atomCenterStruct(n);
   for (j=0;j<n;j++) {
-    ds->ctrs[i]->ind[j]=ind[j];
-    ds->ctrs[i]->m[j]=m[j];
-    ds->ctrs[i]->M+=m[j];
+    ds->registry.ctrs[i]->ind[j]=ind[j];
+    ds->registry.ctrs[i]->m[j]=m[j];
+    ds->registry.ctrs[i]->M+=m[j];
   }
 
   return i;
@@ -307,13 +316,13 @@ cv * DataSpace_add_cv ( DataSpace * ds, char * typ, int nind, int * ind,
   int i;
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->cv_count++;
-  if (ds->cv_count>ds->cv_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->registry.cv_count++;
+  if (ds->registry.cv_count>ds->registry.cv_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->cv_count-1;
-  ds->cvs[i]=cv_init(typ,nind,ind,zmin,zmax,boundf,boundk,outfile,outputFreq);
+  i=ds->registry.cv_count-1;
+  ds->registry.cvs[i]=cv_init(typ,nind,ind,zmin,zmax,boundf,boundk,outfile,outputFreq);
 
-  return ds->cvs[i];
+  return ds->registry.cvs[i];
 }
 
 restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, double * cvc, char * rftypstr,
@@ -323,16 +332,16 @@ restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, do
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->rstr_count++;
-  if (ds->rstr_count>ds->rstr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->registry.rstr_count++;
+  if (ds->registry.rstr_count>ds->registry.rstr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->rstr_count-1;
-  ds->rstrs[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
+  i=ds->registry.rstr_count-1;
+  ds->registry.rstrs[i]=New_restraint(k,z,nCV,cvc,rftypstr,zmin,zmax,boundf,boundk,outfile, outputFreq);
 
   //restart
   if (outputFreq>0) {
     if (outputFreq < ds->rstr_save_frequency) {ds->rstr_save_frequency = outputFreq;}
   }
 
-  return ds->rstrs[i];
+  return ds->registry.rstrs[i];
 }
