@@ -26,6 +26,11 @@ The original background and citations are kept in the repository
 `README.md`; this documentation focuses on build, testing, examples, and code
 maintenance.
 
+If you are new to the method or reading the code for the first time, start with
+the [User guide](user-guide.md). It explains centers, CVs, restraints, chapeau
+functions, and the per-step data flow without assuming prior knowledge of the
+implementation.
+
 ## Integration direction
 
 OTFP is being prepared so its C core can be used as an engine by other

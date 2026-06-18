@@ -16,12 +16,43 @@ The installed `otfp_engine.h` header is the supported C embedding facade for
 external drivers. The lower-level C headers are still internal refactor
 surfaces unless documented otherwise.
 
+## Documentation site
+
+The documentation is built with MkDocs from the repository root:
+
+```sh
+mkdocs build
+```
+
+This writes the HTML site to `site/`. The directory is generated output and is
+ignored by git.
+
+For local reading while editing:
+
+```sh
+mkdocs serve
+```
+
+Then open the URL printed by MkDocs, usually `http://127.0.0.1:8000/`.
+
+For stricter checks before committing documentation changes:
+
+```sh
+mkdocs build --strict --site-dir /tmp/otfp-mkdocs-site
+```
+
+If MkDocs fails before building pages, check that `mkdocs` and the
+`readthedocs` theme are available in the active Python environment. The theme
+is part of a normal MkDocs installation, but minimal or isolated environments
+may need MkDocs installed explicitly.
+
 ## Dependencies
 
 Required build tools and libraries:
 
 - C compiler.
 - Meson and Ninja.
+- MkDocs for documentation builds.
 - SWIG.
 - Tcl development package.
 - BLAS, LAPACK, and LAPACKE with pkg-config metadata.
