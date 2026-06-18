@@ -152,7 +152,7 @@ transitional container while the state is split into clearer objects.
 | --- | --- |
 | Registry/setup | `registry`, an `OtfpRegistry` with centers, CVs, and restraints plus their `_total` and `_count` fields. |
 | Step state | `step`, an `OtfpStepState` with center positions for driver input and center forces returned to the driver. |
-| FES state | `fes`, `fes_total`, `fes_enabled`, `fes_begin_accum`, `fes_begin_solve`, `fes_evolve_parameters`. |
+| FES state | `fes`, an `OtfpFesState` with chapeaux and accumulate/solve scheduling. |
 | Restart/output | `filename`, `rstr_save_frequency`. |
 
 The target organization is to keep a single engine/context object but split its
@@ -168,12 +168,11 @@ positions through `DataSpace_centerPosition` and reads forces through
 `DataSpace_centerForce`. Core force code updates the force buffer through
 `DataSpace_clear_ctr_forces` and `DataSpace_add_ctr_force`.
 
-The center/CV/restraint registry is owned by `OtfpRegistry`. The FES array
-still lives directly in `DataSpace`, but it is private to `cfacv_dataspace.c`.
-Runtime modules use internal accessors such as `DataSpace_cv`,
-`DataSpace_rstr`, `DataSpace_fes`, and the count helpers. These accessors are a
-migration aid, not the target architecture: the target is to keep moving
-runtime state into objects with clearer names and responsibilities.
+The center/CV/restraint registry is owned by `OtfpRegistry`, and the FES state
+is owned by `OtfpFesState`. Runtime modules use internal accessors such as
+`DataSpace_cv`, `DataSpace_rstr`, `DataSpace_fes`, and the count helpers. These
+accessors are a migration aid, not the target architecture: the target is to
+keep moving runtime state into objects with clearer names and responsibilities.
 
 ## High-Value Refactor Targets
 

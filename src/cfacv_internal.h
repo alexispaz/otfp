@@ -102,22 +102,22 @@ typedef struct OtfpRegistry {
   restraint ** rstrs;
 } OtfpRegistry;
 
+typedef struct OtfpFesState {
+  int total;
+  int enabled;
+  int evolve_parameters;
+  int begin_accum;
+  int begin_solve;
+  chapeau ** chapeaux;
+} OtfpFesState;
+
 struct DataSpace {
-  int fes_total;
-
-  chapeau ** fes;
-
   char filename[16];
   int rstr_save_frequency;
 
   OtfpRegistry registry;
   OtfpStepState step;
-
-  int fes_enabled;
-
-  int fes_evolve_parameters;
-  int fes_begin_accum;
-  int fes_begin_solve;
+  OtfpFesState fes;
 };
 
 tamdOptStruct * New_tamdOptStruct ( double g, double kt, double dt, int riftyp);

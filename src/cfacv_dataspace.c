@@ -82,6 +82,24 @@ static void OtfpRegistry_free ( OtfpRegistry * registry ) {
   }
 }
 
+static void OtfpFesState_init ( OtfpFesState * fes ) {
+  fes->total=0;
+  fes->enabled=0;
+  fes->evolve_parameters=0;
+  fes->begin_accum=0;
+  fes->begin_solve=0;
+  fes->chapeaux=NULL;
+}
+
+static void OtfpFesState_free ( OtfpFesState * fes ) {
+  int i;
+
+  if (fes->chapeaux) {
+    for (i=0;i<fes->total;i++) chapeau_free(fes->chapeaux[i]);
+    free(fes->chapeaux);
+  }
+}
+
 DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   DataSpace * ds = calloc(1,sizeof(DataSpace));
 
@@ -104,12 +122,7 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
 
   OtfpRegistry_init(&ds->registry,Nctr,Ncv,Nrstr);
   OtfpStepState_init(&ds->step,Nctr);
-
-  ds->fes_enabled=0;
-  ds->fes_evolve_parameters=0;
-  ds->fes_begin_accum=0;
-
-  ds->fes=NULL;
+  OtfpFesState_init(&ds->fes);
 
   sprintf(ds->filename, "checkpoint.rstr");
   ds->rstr_save_frequency = 100000;
@@ -118,20 +131,15 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
 }
 
 void DataSpace_free ( DataSpace * ds ) {
-  int i;
-
   if (!ds) return;
   OtfpStepState_free(&ds->step);
   OtfpRegistry_free(&ds->registry);
-  if (ds->fes) {
-    for (i=0;i<ds->fes_total;i++) chapeau_free(ds->fes[i]);
-    free(ds->fes);
-  }
+  OtfpFesState_free(&ds->fes);
   free(ds);
 }
 
 chapeau * DataSpace_get_chapeau ( DataSpace * ds, int i ) {
-  return ds->fes[i];
+  return ds->fes.chapeaux[i];
 }
 
 int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, int * nKnots,
@@ -144,23 +152,23 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->fes_enabled=1;
+  ds->fes.enabled=1;
 
   // This is to let the system equilibrate
-  ds->fes_evolve_parameters=1;
-  ds->fes_begin_accum=fes_begin_accum;
-  ds->fes_begin_solve=fes_begin_solve;
-  if (fes_begin_accum < 0) ds->fes_evolve_parameters=0;
+  ds->fes.evolve_parameters=1;
+  ds->fes.begin_accum=fes_begin_accum;
+  ds->fes.begin_solve=fes_begin_solve;
+  if (fes_begin_accum < 0) ds->fes.evolve_parameters=0;
 
-  ds->fes_total=numrep;
-  ds->fes=malloc(ds->fes_total*sizeof(chapeau*));
+  ds->fes.total=numrep;
+  ds->fes.chapeaux=malloc(ds->fes.total*sizeof(chapeau*));
 
-  for (i=0;i<ds->fes_total;i++) {
-    ds->fes[i]=chapeau_alloc(dm,min,max,nKnots,periodic);
+  for (i=0;i<ds->fes.total;i++) {
+    ds->fes.chapeaux[i]=chapeau_alloc(dm,min,max,nKnots,periodic);
     sprintf(buf, "%s_ch%d.bsp", outfile,i);
     sprintf(buf2, "%s.ch%d", outfile,i);
-    chapeau_setupoutput(ds->fes[i],buf,buf2,outfreq,outlevel);
-    chapeau_set_update_frequency(ds->fes[i],nupdate);
+    chapeau_setupoutput(ds->fes.chapeaux[i],buf,buf2,outfreq,outlevel);
+    chapeau_set_update_frequency(ds->fes.chapeaux[i],nupdate);
   }
 
   return 0;
@@ -184,23 +192,23 @@ int DataSpace_rstr_count ( DataSpace * ds ) {
 }
 
 int DataSpace_fes_count ( DataSpace * ds ) {
-  return ds->fes_total;
+  return ds->fes.total;
 }
 
 int DataSpace_fes_is_enabled ( DataSpace * ds ) {
-  return ds->fes_enabled;
+  return ds->fes.enabled;
 }
 
 int DataSpace_fes_evolves ( DataSpace * ds ) {
-  return ds->fes_evolve_parameters;
+  return ds->fes.evolve_parameters;
 }
 
 int DataSpace_fes_accum_begin ( DataSpace * ds ) {
-  return ds->fes_begin_accum;
+  return ds->fes.begin_accum;
 }
 
 int DataSpace_fes_solve_begin ( DataSpace * ds ) {
-  return ds->fes_begin_solve;
+  return ds->fes.begin_solve;
 }
 
 int DataSpace_rstr_save_frequency ( DataSpace * ds ) {
@@ -220,7 +228,7 @@ restraint * DataSpace_rstr ( DataSpace * ds, int index ) {
 }
 
 chapeau * DataSpace_fes ( DataSpace * ds, int index ) {
-  return ds->fes[index];
+  return ds->fes.chapeaux[index];
 }
 
 double ** DataSpace_ctr_positions ( DataSpace * ds ) {
