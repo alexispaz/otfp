@@ -150,32 +150,34 @@ transitional container while the state is split into clearer objects.
 
 | Responsibility | Current fields |
 | --- | --- |
-| Registry/setup | `registry`, an `OtfpRegistry` with centers and CVs plus their `_total` and `_count` fields. |
+| Centers | `centers`, an `OtfpCenterSet` with atom-center definitions plus their `_total` and `_count` fields. |
+| CVs | `cvs`, an `OtfpCvSet` with collective variables plus their `total` and `count` fields. |
 | Restraints | `restraints`, an `OtfpRestraintSet` with restraints, checkpoint filename, and save frequency. |
-| Step state | `step`, an `OtfpStepState` with center positions for driver input and center forces returned to the driver. |
+| Center step state | `center_step`, an `OtfpCenterStepState` with center positions for driver input and center forces returned to the driver. |
 | FES state | `fes`, an `OtfpFesState` with chapeaux and accumulate/solve scheduling. |
 | Restart/output | Restraint restart policy lives in `OtfpRestraintSet`; chapeau output policy lives in each chapeau. |
 
 The target organization is to keep a single engine/context object but split its
 responsibilities into clearer subobjects:
 
-- registry/setup state for centers and CVs;
+- center definitions;
+- CV definitions;
 - restraint state and restart policy;
 - step state for center positions, center forces, and bias energy;
 - FES state and solve/output scheduling;
 - restart/output policy tied to the state it persists.
 
-The center buffers are owned by `OtfpStepState`. Driver-facing code writes
-positions through `DataSpace_centerPosition` and reads forces through
+The center buffers are owned by `OtfpCenterStepState`. Driver-facing code
+writes positions through `DataSpace_centerPosition` and reads forces through
 `DataSpace_centerForce`. Core force code updates the force buffer through
 `DataSpace_clear_ctr_forces` and `DataSpace_add_ctr_force`.
 
-The center/CV registry is owned by `OtfpRegistry`, restraints are owned by
-`OtfpRestraintSet`, and the FES state is owned by `OtfpFesState`. Runtime
-modules use internal accessors such as `DataSpace_cv`, `DataSpace_rstr`,
-`DataSpace_fes`, and the count helpers. These accessors are a migration aid,
-not the target architecture: the target is to keep moving runtime behavior
-toward the objects with clearer names and responsibilities.
+Center definitions are owned by `OtfpCenterSet`, CV definitions by `OtfpCvSet`,
+restraints by `OtfpRestraintSet`, and the FES state by `OtfpFesState`.
+Runtime modules use internal accessors such as `DataSpace_cv`,
+`DataSpace_rstr`, `DataSpace_fes`, and the count helpers. These accessors are a
+migration aid, not the target architecture: the target is to keep moving
+runtime behavior toward the objects with clearer names and responsibilities.
 
 ## High-Value Refactor Targets
 

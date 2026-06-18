@@ -7,7 +7,7 @@
 #include "cvs.h"
 #include "measurements.h"
 
-static void OtfpStepState_init ( OtfpStepState * step, int nctr ) {
+static void OtfpCenterStepState_init ( OtfpCenterStepState * step, int nctr ) {
   int i;
 
   step->ctr_count=nctr;
@@ -19,7 +19,7 @@ static void OtfpStepState_init ( OtfpStepState * step, int nctr ) {
   }
 }
 
-static void OtfpStepState_free ( OtfpStepState * step ) {
+static void OtfpCenterStepState_free ( OtfpCenterStepState * step ) {
   int i;
 
   if (step->ctr_positions) {
@@ -32,15 +32,15 @@ static void OtfpStepState_free ( OtfpStepState * step ) {
   }
 }
 
-static double * OtfpStepState_position ( OtfpStepState * step, int ctr ) {
+static double * OtfpCenterStepState_position ( OtfpCenterStepState * step, int ctr ) {
   return step->ctr_positions[ctr];
 }
 
-static double * OtfpStepState_force ( OtfpStepState * step, int ctr ) {
+static double * OtfpCenterStepState_force ( OtfpCenterStepState * step, int ctr ) {
   return step->ctr_forces[ctr];
 }
 
-static void OtfpStepState_clear_forces ( OtfpStepState * step ) {
+static void OtfpCenterStepState_clear_forces ( OtfpCenterStepState * step ) {
   int i,d;
 
   for (i=0;i<step->ctr_count;i++) {
@@ -48,30 +48,38 @@ static void OtfpStepState_clear_forces ( OtfpStepState * step ) {
   }
 }
 
-static void OtfpStepState_add_force ( OtfpStepState * step, int ctr, int dim, double force ) {
+static void OtfpCenterStepState_add_force ( OtfpCenterStepState * step, int ctr, int dim, double force ) {
   step->ctr_forces[ctr][dim]+=force;
 }
 
-static void OtfpRegistry_init ( OtfpRegistry * registry, int nctr, int ncv ) {
-  registry->ctr_total=nctr;
-  registry->cv_total=ncv;
-  registry->ctr_count=0;
-  registry->cv_count=0;
+static void OtfpCenterSet_init ( OtfpCenterSet * centers, int nctr ) {
+  centers->ctr_total=nctr;
+  centers->ctr_count=0;
 
-  registry->ctrs=calloc(nctr,sizeof(atomCenterStruct*));
-  registry->cvs=calloc(ncv,sizeof(cv*));
+  centers->ctrs=calloc(nctr,sizeof(atomCenterStruct*));
 }
 
-static void OtfpRegistry_free ( OtfpRegistry * registry ) {
+static void OtfpCenterSet_free ( OtfpCenterSet * centers ) {
   int i;
 
-  if (registry->ctrs) {
-    for (i=0;i<registry->ctr_total;i++) atomCenterStruct_free(registry->ctrs[i]);
-    free(registry->ctrs);
+  if (centers->ctrs) {
+    for (i=0;i<centers->ctr_total;i++) atomCenterStruct_free(centers->ctrs[i]);
+    free(centers->ctrs);
   }
-  if (registry->cvs) {
-    for (i=0;i<registry->cv_total;i++) cv_free(registry->cvs[i]);
-    free(registry->cvs);
+}
+
+static void OtfpCvSet_init ( OtfpCvSet * cvs, int ncv ) {
+  cvs->total=ncv;
+  cvs->count=0;
+  cvs->cvs=calloc(ncv,sizeof(cv*));
+}
+
+static void OtfpCvSet_free ( OtfpCvSet * cvs ) {
+  int i;
+
+  if (cvs->cvs) {
+    for (i=0;i<cvs->total;i++) cv_free(cvs->cvs[i]);
+    free(cvs->cvs);
   }
 }
 
@@ -151,9 +159,10 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   //srand48(kkk);
   //oldptr=seed48(&Xi[0]);
 
-  OtfpRegistry_init(&ds->registry,Nctr,Ncv);
+  OtfpCenterSet_init(&ds->centers,Nctr);
+  OtfpCvSet_init(&ds->cvs,Ncv);
   OtfpRestraintSet_init(&ds->restraints,Nrstr);
-  OtfpStepState_init(&ds->step,Nctr);
+  OtfpCenterStepState_init(&ds->center_step,Nctr);
   OtfpFesState_init(&ds->fes);
 
   return ds;
@@ -161,8 +170,9 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
 
 void DataSpace_free ( DataSpace * ds ) {
   if (!ds) return;
-  OtfpStepState_free(&ds->step);
-  OtfpRegistry_free(&ds->registry);
+  OtfpCenterStepState_free(&ds->center_step);
+  OtfpCenterSet_free(&ds->centers);
+  OtfpCvSet_free(&ds->cvs);
   OtfpRestraintSet_free(&ds->restraints);
   OtfpFesState_free(&ds->fes);
   free(ds);
@@ -206,15 +216,15 @@ int DataSpace_SetupChapeau ( DataSpace * ds, int numrep, int dm, double*  min, i
 
 int DataSpace_getN ( DataSpace * ds ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  return ds->registry.ctr_total;
+  return ds->centers.ctr_total;
 }
 
 int DataSpace_ctr_count ( DataSpace * ds ) {
-  return ds->registry.ctr_total;
+  return ds->centers.ctr_total;
 }
 
 int DataSpace_cv_count ( DataSpace * ds ) {
-  return ds->registry.cv_total;
+  return ds->cvs.total;
 }
 
 int DataSpace_rstr_count ( DataSpace * ds ) {
@@ -250,7 +260,7 @@ char * DataSpace_rstr_checkpoint_file ( DataSpace * ds ) {
 }
 
 cv * DataSpace_cv ( DataSpace * ds, int index ) {
-  return ds->registry.cvs[index];
+  return ds->cvs.cvs[index];
 }
 
 restraint * DataSpace_rstr ( DataSpace * ds, int index ) {
@@ -262,7 +272,7 @@ chapeau * DataSpace_fes ( DataSpace * ds, int index ) {
 }
 
 double ** DataSpace_ctr_positions ( DataSpace * ds ) {
-  return ds->step.ctr_positions;
+  return ds->center_step.ctr_positions;
 }
 
 double * DataSpace_centerPosition ( DataSpace * ds, int i ) {
@@ -275,22 +285,22 @@ double * DataSpace_centerForce ( DataSpace * ds, int i ) {
 
 double * DataSpace_ctr_position ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  if (i>=ds->registry.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-  return OtfpStepState_position(&ds->step,i);
+  if (i>=ds->centers.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  return OtfpCenterStepState_position(&ds->center_step,i);
 }
 
 double * DataSpace_ctr_force ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
-  if (i>=ds->registry.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-  return OtfpStepState_force(&ds->step,i);
+  if (i>=ds->centers.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  return OtfpCenterStepState_force(&ds->center_step,i);
 }
 
 void DataSpace_clear_ctr_forces ( DataSpace * ds ) {
-  OtfpStepState_clear_forces(&ds->step);
+  OtfpCenterStepState_clear_forces(&ds->center_step);
 }
 
 void DataSpace_add_ctr_force ( DataSpace * ds, int ctr, int dim, double force ) {
-  OtfpStepState_add_force(&ds->step,ctr,dim,force);
+  OtfpCenterStepState_add_force(&ds->center_step,ctr,dim,force);
 }
 
 int DataSpace_checkdata ( DataSpace * ds ) {
@@ -298,12 +308,12 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 
   if (!ds) return 1;
 
-  for (i=0;i<ds->registry.ctr_total;i++) {
+  for (i=0;i<ds->centers.ctr_total;i++) {
     for (j=0;j<3;j++) {
-      if (ds->step.ctr_positions[i][j]!=ds->step.ctr_positions[i][j]) {
+      if (ds->center_step.ctr_positions[i][j]!=ds->center_step.ctr_positions[i][j]) {
         return 1;
       }
-      if (ds->step.ctr_forces[i][j]!=ds->step.ctr_forces[i][j]) {
+      if (ds->center_step.ctr_forces[i][j]!=ds->center_step.ctr_forces[i][j]) {
         return 1;
       }
     }
@@ -315,13 +325,13 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 int DataSpace_dump ( DataSpace * ds ) {
   if (ds) {
     int i,j;
-    for (i=0;i<ds->registry.ctr_total;i++) {
+    for (i=0;i<ds->centers.ctr_total;i++) {
       fprintf(stdout,"%i ",i);
       for (j=0;j<3;j++)
-	fprintf(stdout,"%.5f ",ds->step.ctr_positions[i][j]);
+	fprintf(stdout,"%.5f ",ds->center_step.ctr_positions[i][j]);
       fprintf(stdout,"| ");
       for (j=0;j<3;j++)
-	fprintf(stdout,"%.5f ",ds->step.ctr_forces[i][j]);
+	fprintf(stdout,"%.5f ",ds->center_step.ctr_forces[i][j]);
       fprintf(stdout,"\n");
       fflush(stdout);
     }
@@ -334,15 +344,15 @@ int DataSpace_AddAtomCenter ( DataSpace * ds, int n, int * ind, double * m ) {
 
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->registry.ctr_count++;
-  if (ds->registry.ctr_count>ds->registry.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->centers.ctr_count++;
+  if (ds->centers.ctr_count>ds->centers.ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->registry.ctr_count-1;
-  ds->registry.ctrs[i]=New_atomCenterStruct(n);
+  i=ds->centers.ctr_count-1;
+  ds->centers.ctrs[i]=New_atomCenterStruct(n);
   for (j=0;j<n;j++) {
-    ds->registry.ctrs[i]->ind[j]=ind[j];
-    ds->registry.ctrs[i]->m[j]=m[j];
-    ds->registry.ctrs[i]->M+=m[j];
+    ds->centers.ctrs[i]->ind[j]=ind[j];
+    ds->centers.ctrs[i]->m[j]=m[j];
+    ds->centers.ctrs[i]->M+=m[j];
   }
 
   return i;
@@ -354,13 +364,13 @@ cv * DataSpace_add_cv ( DataSpace * ds, char * typ, int nind, int * ind,
   int i;
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
 
-  ds->registry.cv_count++;
-  if (ds->registry.cv_count>ds->registry.cv_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
+  ds->cvs.count++;
+  if (ds->cvs.count>ds->cvs.total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
 
-  i=ds->registry.cv_count-1;
-  ds->registry.cvs[i]=cv_init(typ,nind,ind,zmin,zmax,boundf,boundk,outfile,outputFreq);
+  i=ds->cvs.count-1;
+  ds->cvs.cvs[i]=cv_init(typ,nind,ind,zmin,zmax,boundf,boundk,outfile,outputFreq);
 
-  return ds->registry.cvs[i];
+  return ds->cvs.cvs[i];
 }
 
 restraint * DataSpace_AddRestr ( DataSpace * ds, double k, double z, int nCV, double * cvc, char * rftypstr,

@@ -84,20 +84,23 @@ struct restraint {
   int boutput;
 };
 
-typedef struct OtfpStepState {
+typedef struct OtfpCenterStepState {
   int ctr_count;
   double ** ctr_positions;
   double ** ctr_forces;
-} OtfpStepState;
+} OtfpCenterStepState;
 
-typedef struct OtfpRegistry {
+typedef struct OtfpCenterSet {
   int ctr_total;
   int ctr_count;
-  int cv_total;
-  int cv_count;
   atomCenterStruct ** ctrs;
+} OtfpCenterSet;
+
+typedef struct OtfpCvSet {
+  int total;
+  int count;
   cv ** cvs;
-} OtfpRegistry;
+} OtfpCvSet;
 
 typedef struct OtfpRestraintSet {
   int total;
@@ -117,9 +120,10 @@ typedef struct OtfpFesState {
 } OtfpFesState;
 
 struct DataSpace {
-  OtfpRegistry registry;
+  OtfpCenterSet centers;
+  OtfpCvSet cvs;
   OtfpRestraintSet restraints;
-  OtfpStepState step;
+  OtfpCenterStepState center_step;
   OtfpFesState fes;
 };
 
