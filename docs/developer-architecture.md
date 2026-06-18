@@ -143,13 +143,15 @@ should be added as modules are split.
 
 ## DataSpace Direction
 
-`DataSpace` is the current core context object. It still combines several
-responsibilities:
+`DataSpace` is the current legacy core context object. It is not a physical
+model object like a center, CV, restraint, or chapeau. It owns the runtime
+state that a driver needs for one OTFP calculation, and should be treated as a
+transitional container while the state is split into clearer objects.
 
 | Responsibility | Current fields |
 | --- | --- |
 | Registry/setup | `ctrs`, `cvs`, `rstrs` plus their `_total` and `_count` fields. |
-| Step buffer | `ctr_positions` for driver input and CV evaluation; `ctr_forces` for accumulated restraint forces returned to the driver. |
+| Step state | `step`, an `OtfpStepState` with center positions for driver input and center forces returned to the driver. |
 | FES state | `fes`, `fes_total`, `fes_enabled`, `fes_begin_accum`, `fes_begin_solve`, `fes_evolve_parameters`. |
 | Restart/output | `filename`, `rstr_save_frequency`. |
 
@@ -161,15 +163,16 @@ responsibilities into clearer subobjects:
 - FES state and solve/output scheduling;
 - restart/output policy.
 
-The center buffers are now split. Driver-facing code writes positions through
-`DataSpace_centerPosition` and reads forces through `DataSpace_centerForce`.
-Core force code updates the force buffer through `DataSpace_clear_ctr_forces`
-and `DataSpace_add_ctr_force`.
+The center buffers are owned by `OtfpStepState`. Driver-facing code writes
+positions through `DataSpace_centerPosition` and reads forces through
+`DataSpace_centerForce`. Core force code updates the force buffer through
+`DataSpace_clear_ctr_forces` and `DataSpace_add_ctr_force`.
 
-The arrays owned by `DataSpace` are now private to `cfacv_dataspace.c`.
-Runtime modules use internal accessors such as `DataSpace_cv`,
-`DataSpace_rstr`, `DataSpace_fes`, and the count helpers. This makes the next
-split into registry, step state, and FES state mechanical instead of invasive.
+The registry and FES arrays still live in `DataSpace`, but they are private to
+`cfacv_dataspace.c`. Runtime modules use internal accessors such as
+`DataSpace_cv`, `DataSpace_rstr`, `DataSpace_fes`, and the count helpers. These
+accessors are a migration aid, not the target architecture: the target is to
+move those arrays into objects with clearer names and responsibilities.
 
 ## High-Value Refactor Targets
 

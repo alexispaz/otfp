@@ -84,6 +84,12 @@ struct restraint {
   int boutput;
 };
 
+typedef struct OtfpStepState {
+  int ctr_count;
+  double ** ctr_positions;
+  double ** ctr_forces;
+} OtfpStepState;
+
 struct DataSpace {
   int ctr_total;
   int ctr_count;
@@ -102,8 +108,7 @@ struct DataSpace {
   char filename[16];
   int rstr_save_frequency;
 
-  double ** ctr_positions;
-  double ** ctr_forces;
+  OtfpStepState step;
 
   int fes_enabled;
 

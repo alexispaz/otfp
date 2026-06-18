@@ -7,9 +7,53 @@
 #include "cvs.h"
 #include "measurements.h"
 
+static void OtfpStepState_init ( OtfpStepState * step, int nctr ) {
+  int i;
+
+  step->ctr_count=nctr;
+  step->ctr_positions=malloc(nctr*sizeof(double*));
+  step->ctr_forces=malloc(nctr*sizeof(double*));
+  for (i=0;i<nctr;i++) {
+    step->ctr_positions[i]=calloc(3,sizeof(double));
+    step->ctr_forces[i]=calloc(3,sizeof(double));
+  }
+}
+
+static void OtfpStepState_free ( OtfpStepState * step ) {
+  int i;
+
+  if (step->ctr_positions) {
+    for (i=0;i<step->ctr_count;i++) free(step->ctr_positions[i]);
+    free(step->ctr_positions);
+  }
+  if (step->ctr_forces) {
+    for (i=0;i<step->ctr_count;i++) free(step->ctr_forces[i]);
+    free(step->ctr_forces);
+  }
+}
+
+static double * OtfpStepState_position ( OtfpStepState * step, int ctr ) {
+  return step->ctr_positions[ctr];
+}
+
+static double * OtfpStepState_force ( OtfpStepState * step, int ctr ) {
+  return step->ctr_forces[ctr];
+}
+
+static void OtfpStepState_clear_forces ( OtfpStepState * step ) {
+  int i,d;
+
+  for (i=0;i<step->ctr_count;i++) {
+    for (d=0;d<3;d++) step->ctr_forces[i][d]=0.0;
+  }
+}
+
+static void OtfpStepState_add_force ( OtfpStepState * step, int ctr, int dim, double force ) {
+  step->ctr_forces[ctr][dim]+=force;
+}
+
 DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   DataSpace * ds = calloc(1,sizeof(DataSpace));
-  int i;
   ds->ctr_total=Nctr;
   ds->rstr_total=Nrstr;
   ds->ctr_count=0;
@@ -34,12 +78,7 @@ DataSpace * NewDataSpace ( int Nctr, int Ncv, int Nrstr, long int seed ) {
   //srand48(kkk);
   //oldptr=seed48(&Xi[0]);
 
-  ds->ctr_positions=malloc(Nctr*sizeof(double*));
-  ds->ctr_forces=malloc(Nctr*sizeof(double*));
-  for (i=0;i<Nctr;i++) {
-    ds->ctr_positions[i]=calloc(3,sizeof(double));
-    ds->ctr_forces[i]=calloc(3,sizeof(double));
-  }
+  OtfpStepState_init(&ds->step,Nctr);
 
   ds->ctrs = calloc(Nctr,sizeof(atomCenterStruct*));
 
@@ -62,14 +101,7 @@ void DataSpace_free ( DataSpace * ds ) {
   int i;
 
   if (!ds) return;
-  if (ds->ctr_positions) {
-    for (i=0;i<ds->ctr_total;i++) free(ds->ctr_positions[i]);
-    free(ds->ctr_positions);
-  }
-  if (ds->ctr_forces) {
-    for (i=0;i<ds->ctr_total;i++) free(ds->ctr_forces[i]);
-    free(ds->ctr_forces);
-  }
+  OtfpStepState_free(&ds->step);
   if (ds->ctrs) {
     for (i=0;i<ds->ctr_total;i++) atomCenterStruct_free(ds->ctrs[i]);
     free(ds->ctrs);
@@ -89,7 +121,7 @@ void DataSpace_free ( DataSpace * ds ) {
   free(ds);
 }
 
-chapeau * DataSpace_chapeau ( DataSpace * ds, int i ) {
+chapeau * DataSpace_get_chapeau ( DataSpace * ds, int i ) {
   return ds->fes[i];
 }
 
@@ -183,7 +215,7 @@ chapeau * DataSpace_fes ( DataSpace * ds, int index ) {
 }
 
 double ** DataSpace_ctr_positions ( DataSpace * ds ) {
-  return ds->ctr_positions;
+  return ds->step.ctr_positions;
 }
 
 double * DataSpace_centerPosition ( DataSpace * ds, int i ) {
@@ -197,25 +229,21 @@ double * DataSpace_centerForce ( DataSpace * ds, int i ) {
 double * DataSpace_ctr_position ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
   if (i>=ds->ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-  return ds->ctr_positions[i];
+  return OtfpStepState_position(&ds->step,i);
 }
 
 double * DataSpace_ctr_force ( DataSpace * ds, int i ) {
   if (!ds) {fprintf(stderr,"CFACV) null argument\n"); exit(-1);}
   if (i>=ds->ctr_total) {fprintf(stderr,"CFACV) out of size\n"); exit(-1);}
-  return ds->ctr_forces[i];
+  return OtfpStepState_force(&ds->step,i);
 }
 
 void DataSpace_clear_ctr_forces ( DataSpace * ds ) {
-  int i,d;
-
-  for (i=0;i<ds->ctr_total;i++) {
-    for (d=0;d<3;d++) ds->ctr_forces[i][d]=0.0;
-  }
+  OtfpStepState_clear_forces(&ds->step);
 }
 
 void DataSpace_add_ctr_force ( DataSpace * ds, int ctr, int dim, double force ) {
-  ds->ctr_forces[ctr][dim]+=force;
+  OtfpStepState_add_force(&ds->step,ctr,dim,force);
 }
 
 int DataSpace_checkdata ( DataSpace * ds ) {
@@ -225,10 +253,10 @@ int DataSpace_checkdata ( DataSpace * ds ) {
 
   for (i=0;i<ds->ctr_total;i++) {
     for (j=0;j<3;j++) {
-      if (ds->ctr_positions[i][j]!=ds->ctr_positions[i][j]) {
+      if (ds->step.ctr_positions[i][j]!=ds->step.ctr_positions[i][j]) {
         return 1;
       }
-      if (ds->ctr_forces[i][j]!=ds->ctr_forces[i][j]) {
+      if (ds->step.ctr_forces[i][j]!=ds->step.ctr_forces[i][j]) {
         return 1;
       }
     }
@@ -243,10 +271,10 @@ int DataSpace_dump ( DataSpace * ds ) {
     for (i=0;i<ds->ctr_total;i++) {
       fprintf(stdout,"%i ",i);
       for (j=0;j<3;j++)
-	fprintf(stdout,"%.5f ",ds->ctr_positions[i][j]);
+	fprintf(stdout,"%.5f ",ds->step.ctr_positions[i][j]);
       fprintf(stdout,"| ");
       for (j=0;j<3;j++)
-	fprintf(stdout,"%.5f ",ds->ctr_forces[i][j]);
+	fprintf(stdout,"%.5f ",ds->step.ctr_forces[i][j]);
       fprintf(stdout,"\n");
       fflush(stdout);
     }
