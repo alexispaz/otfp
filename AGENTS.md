@@ -34,12 +34,30 @@ on OTFP.
   the same change.
 - Split large C files into ownership-focused modules:
   - `cfacv_dataspace.c`: `DataSpace` allocation, registration, accessors, and
-    cleanup.
-  - `cfacv_restraint.c`: restraint construction, restart state, energy,
-    boundaries, and target evolution.
-  - `cfacv.c`: force-loop orchestration and reporting.
+    cleanup. `DataSpace` is a legacy runtime context, not the final conceptual
+    model object.
+  - `cfacv_force.c`: per-step force-loop orchestration, restraint values,
+    restraint forces, CV boundary forces, FES/chapeau updates, restart
+    scheduling, and target evolution.
+  - `cfacv_restraint.c`: restraint construction, energy functions, boundary
+    functions, and TAMD/SMD/ADAM target evolution.
+  - `cfacv_restart.c`: restraint restart save/load persistence.
+  - `cfacv.c`: banner, file helpers, CV computation, energy reads, and
+    reporting.
   - Future chapeau splits should separate IO/serialization, solver, evaluation,
     and accumulation.
+- Keep internal state names tied to the scientific/domain concept. Current
+  `DataSpace` subobjects are:
+  - `CenterSet`: static atom-center definitions.
+  - `CvSet`: collective variables.
+  - `RestraintSet`: restraints plus restraint restart policy.
+  - `CenterStepState`: per-step center positions and accumulated forces.
+  - `FesState`: chapeau/FES state and accumulate/solve scheduling.
+- Do not reintroduce generic names such as `Registry` or ambiguous names such
+  as `AtomSet` for center definitions. A center is a group/weighted position,
+  not a raw atom.
+- Keep `otfp_engine_*` prefixed because it is public embedding API intended for
+  vendoring in GEMS. Internal `static` helpers do not need an OTFP prefix.
 - Prefer descriptor tables over large factory switches for extensible
   registries such as CV types.
 - Add destructors and ownership tests before moving code that allocates memory.
@@ -52,6 +70,9 @@ Run these after each meaningful C refactor:
 meson setup build --prefix=$PWD/usr --reconfigure
 meson compile -C build
 meson test -C build lifecycle
+meson test -C build embedding
+meson test -C build embedding-fortran
+meson test -C build restart
 meson install -C build
 meson test -C build examples
 ```
@@ -65,14 +86,27 @@ mkdocs build --strict --site-dir /tmp/otfp-mkdocs-site
 The `examples` test depends on the installed local prefix under `usr/`, so run
 `meson install -C build` before it.
 
+If SWIG-visible headers change (`cfacv_tcl.h`, `cvs_tcl.h`, or a header they
+include), stale generated wrappers can survive an incremental build. If the
+wrapper references a removed symbol, clean and regenerate the build directory:
+
+```sh
+rm -rf build
+meson setup build --prefix=$PWD/usr --reconfigure
+meson compile -C build
+```
+
 ## Documentation
 
+- Keep beginner-facing explanations in `docs/user-guide.md`.
 - Keep user-facing features documented in `docs/features.md`.
 - Keep developer architecture and refactor status in
   `docs/developer-architecture.md`.
 - Keep GEMS and driver-embedding context in `docs/integration-gems.md`.
 - Keep the standalone C embedding example in `examples/embedding`.
 - Keep test commands and coverage notes in `docs/testing.md`.
+- Keep MkDocs usage in `docs/build.md`; generated `site/` output should remain
+  ignored.
 - If a user-visible configuration key, feature, tool, or workflow changes,
   update docs in the same commit.
 
@@ -83,6 +117,8 @@ The `examples` test depends on the installed local prefix under `usr/`, so run
   Tcl and the NAMD mock adapter.
 - `meson test -C build embedding-fortran`: optional Fortran `iso_c_binding`
   smoke test when a Fortran compiler is available.
+- `meson test -C build restart`: C restart round-trip smoke test for restraint
+  target persistence.
 - `meson test -C build examples`: mock-driven Tcl/NAMD example regression
   suite.
 
@@ -103,6 +139,9 @@ The `examples` test depends on the installed local prefix under `usr/`, so run
 - OTFP is being prepared as a vendored engine for GEMS. Do not make new core
   code depend on Tcl, SWIG, or NAMD concepts. New driver-facing code should use
   `otfp_engine.h`.
+- `otfp_engine.h` is the supported external C facade. Lower-level
+  `DataSpace_*` functions remain the historical C/Tcl API and should not be the
+  preferred integration target for GEMS.
 - Sparse/MKL chapeau support exists in source but is marked under construction
   in the build logic.
 - Restart files serialize raw structs in places; be careful when changing
