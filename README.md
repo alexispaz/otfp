@@ -5,59 +5,27 @@ hosted in Cameron Abrams' [github](https://github.com/cameronabrams/otfp).
 
 OTFP computes free-energy surfaces (FES) in MD simulations via temperature-acceleration. 
  
-It is written in C and use [SWIG](http://www.swig.org) to provida a TCL
-interface to be used with [NAMD](www.ks.uiuc.edu/Research/namd) via TCLforce.
+It is written in C and uses [SWIG](http://www.swig.org) to provide a Tcl
+interface to be used with [NAMD](https://www.ks.uiuc.edu/Research/namd) via
+TclForces.
+
+The user and developer documentation is built with MkDocs. When published, the
+site is available at https://alexispaz.github.io/otfp/. For local reading while
+editing this repository, run:
+
+    mkdocs serve
  
-# Build system
+# Build and documentation
 
-There is a `src/makefile` file that can be used to build libraries and
-executables. It is also posible to compile using meson, e.g.:
+OTFP builds libraries and executables with Meson. The full build instructions,
+dependencies, debug builds, example test workflow, and MkDocs commands are in
+the [User Guide build page](https://alexispaz.github.io/otfp/build/).
 
-    git clone https://github.com/alexispaz/otfp.git
-    cd otfp
-    meson setup build 
-    meson compile -vC build
+A typical local build installs into `usr/` inside the repository:
 
-Then, run `meson install` or `meson dist` to create a distribution.
-
-Type `meson configure` to see possible setup options. For instance, to change
-the default `/usr` prefix for the installation:
-
-    meson setup build --prefix=$(realpath ./usr)
-
-or with debug flags (run with gdb --args namd3 +p1 job0.namd):
-  
-    meson setup build --prefix=$(realpath ./usr) --buildtype=debug \
-      -Dc_args='-g3 -O0 -fno-omit-frame-pointer' -Dc_std=gnu11
-
-or adding sanitize:
-  
-    meson setup build --prefix=$(realpath ./usr) --buildtype=debug \
-      -Db_sanitize=address,undefined \
-      -Dc_args='-g3 -O0 -fno-omit-frame-pointer' -Dc_std=gnu11
-
-Run with `LD_PRELOAD=$(gcc -print-file-name=libasan.so) namd3 +p1 job0.namd`
-
-Also optimization might be given:
-
-    meson setup build --prefix=$(realpath ./usr) --buildtype=release \
-      -Doptimization=3 \
-      -Dwarning_level=0 -Dwerror=false \
-      -Db_ndebug=true -Dstrip=true 
-
-## Using sparse solvers
-
-To improve efficiency in solving periodicity in FES, Direct Sparse Solvers of
-Intel Math Kernel Library can be use. Intel oneAPI MKL (oneMKL) provides
-pkg-config metadata files that can be used by meson build system. Check them
-with:
-
-    pkg-config --list-all | grep mkl
-
-The setup will be something like
-
-    meson setup build --prefix=$(realpath ./usr) \
-      -Dblas=mkl-dynamic-lp64-gomp -Dlapack=mkl-dynamic-lp64-gomp
+    meson setup build --prefix="$PWD/usr"
+    meson compile -C build
+    meson install -C build
 
 # Citations
 
@@ -99,7 +67,8 @@ Computation, 6(2) (2018) 27.  https://doi.org/10.3390/computation6020027
 
 # License
 
-It mantains the same BSD-2-Clause license of the original code at [repo](https://github.com/cameronabrams/otfp).
+It maintains the same BSD-2-Clause license of the original code at
+[repo](https://github.com/cameronabrams/otfp).
 
 Original code was developed with support of the National Science Foundation
 through grant DMR-1207389.
@@ -133,14 +102,10 @@ If the tcl library is not found by ldd, it is probably linked static. In that
 case `nm ./namd2 | grep Tcl` will show the common symbols defined in the tcl
 library (e.g. `Tcl_AppendResult`). This make difficult to known which tcl
 version was used to compile NAMD. If using the tcl library of the actual system
-gives segmentation fault, sometimes the issue disappears if the user compile
-its own TCL library from source and use that one to compile of `cfacv.so`.
+gives segmentation fault, sometimes the issue disappears if the user compiles
+their own Tcl library from source and uses that one to compile `cfacv.so`.
 
 # Additional tools to handle chapeau object files
-
-Convert old format of chapeau object files, create `converted.ch`
-
-    ./chapconv run12.ch0 
 
 Cropping or expanding the CV space, create `croped.ch`
 
@@ -153,7 +118,3 @@ Attempt to add chapeau object files together.
 If attempt fail, it might be needed to adjust the size of
 chapeau objects to have the same number of knots using
 `chapcrop`
-
-
-
-

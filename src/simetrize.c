@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h> 
-#include "chapeau_obj.h"
+#include "chapeau_internal.h"
 #include "chapeau.h"
 // Este programa lee un .bsp.restart para un chapeau 2D y simetriza
 // la estadistica en linea y=x (sirve para cuando se ve la posicion de 2 cosas

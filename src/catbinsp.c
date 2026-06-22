@@ -9,7 +9,7 @@ int main ( int argc, char * argv[] ) {
   FILE * fp=NULL;
   unsigned int fileOutputLevel;
   unsigned int desiredOutputLevel=1;
-  int n,i,ln,timestep,n0,j;
+  int n,i,timestep,n0,j;
   int reading;
   double * data[4];
   int * intdata;
@@ -46,7 +46,6 @@ int main ( int argc, char * argv[] ) {
   if (fileOutputLevel & 1) reading=fread(data[0],sizeof(double),n,fp);
   if (fileOutputLevel & 2) reading=fread(intdata,sizeof(int),n,fp);
 
-  ln=0;
   while (reading) {
 
     if (desiredOutputLevel & 1) {
@@ -63,8 +62,6 @@ int main ( int argc, char * argv[] ) {
         fprintf(stdout,"\n");
       }
     } 
-    ln++;
-
     fread(&timestep,sizeof(int),1,fp);
     if (fileOutputLevel & 1) reading=fread(data[0],sizeof(double),n,fp);
     if (fileOutputLevel & 2) reading=fread(intdata,sizeof(int),n,fp);

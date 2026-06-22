@@ -16,10 +16,9 @@ proc chapeau_setup { NUMREP ds DIMEN min N max periodic begin_evolve begin_solve
     delete_array $a3
     delete_arrayint $a4
 
-    # Get the adress of the chapeaus
+    # Get the chapeau handles
     for {set i 0} {$i<$NUMREP} {incr i} {
-      set chape($i.address) [DataSpace_get_chapeauadress $ds $i]
+      set chape($i.address) [DataSpace_get_chapeau $ds $i]
     }
 
 }
-

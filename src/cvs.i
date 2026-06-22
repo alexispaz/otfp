@@ -11,9 +11,8 @@ double get_double(double *a, int index) {
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "cvs_obj.h"
 #include "chapeau.h"
 #include "cvs.h"
+#include "cvs_tcl.h"
 %}
-%include "chapeau.h"
-%include "cvs.h"
+%include "cvs_tcl.h"

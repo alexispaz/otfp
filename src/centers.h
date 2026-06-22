@@ -13,6 +13,7 @@ typedef struct ATOMCENTERSTRUCT {
 
 
 extern atomCenterStruct * New_atomCenterStruct ( int n );
+extern void atomCenterStruct_free ( atomCenterStruct * ac );
 
 typedef struct CENTERSTRUCT * pcenterStruct;
 typedef struct CENTERSTRUCT { 
@@ -27,6 +28,7 @@ typedef struct CENTERSTRUCT {
 } centerStruct;
 
 extern centerStruct * New_centerStruct ( int id, int maxN );
+extern void centerStruct_free ( centerStruct * c );
 extern void centerStuct_addMember ( centerStruct * c, int i );
 
 extern void center_rg ( centerStruct * c, double * x, double * y, double * z );
@@ -36,6 +38,5 @@ extern int rgyr_sort ( centerStruct * c, int * bin, double * x, double * y, doub
 extern centerStruct * Null_centerStruct ( void );
 extern int bin_sort ( int * bin, double * x, double * y, double * z, int nAtoms, int nCenters, int nCycles, 
 	       unsigned int Seed );
-
 
 

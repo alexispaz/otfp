@@ -64,7 +64,7 @@ proc Tcl_UpdateDataSpace { ds lC groups first timestep bias } {
     # Move group center positions to dataspace
     set i 0
     foreach g $groups {
-      ListToArray_Data [DataSpace_centerPos $ds $i] $p($g)
+      ListToArray_Data [DataSpace_centerPosition $ds $i] $p($g)
       incr i
     }
 
@@ -90,10 +90,10 @@ proc Tcl_UpdateDataSpace { ds lC groups first timestep bias } {
     # Transmit forces back to groups
     set i 0
     foreach g $groups {
-        addforce $g [ArrayToList [DataSpace_centerPos $ds $i] 3]
+        addforce $g [ArrayToList [DataSpace_centerForce $ds $i] 3]
         incr i
     }
-    # puts "FUERZAS g1 [ArrayToList [DataSpace_centerPos $ds 0] 3]" 
+    # puts "FUERZAS g1 [ArrayToList [DataSpace_centerForce $ds 0] 3]"
 
     # Add restraint energy to NAMD energy structure
     addenergy [DataSpace_RestraintEnergy $ds]
@@ -104,7 +104,7 @@ proc Tcl_ObserveDataSpace { ds cntrSel frame } {
     foreach sel $cntrSel {
 	$sel frame $frame
 #	print "DB: Tcl_ObserveDataSpace center $i [measure center $sel weight mass]"
-	ListToArray_Data [DataSpace_centerPos $ds $i] [measure center $sel weight mass]
+	ListToArray_Data [DataSpace_centerPosition $ds $i] [measure center $sel weight mass]
 	incr i
     }
     DataSpace_ComputeCVs $ds
@@ -173,5 +173,3 @@ if [info exists FES] {
 
 # Some default values regarding output
 if {![info exists TAMDoutputlevel]} {set TAMDoutputlevel 3}
-
-

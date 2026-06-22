@@ -17,15 +17,13 @@ swig_gen = generator(
 blas_name = get_option('blas')
 lapacke_name = get_option('lapacke')
 lapack_name = get_option('lapack')
-dss_name = get_option('dss')
   
 blas = dependency(blas_name)
 lapack = dependency(lapack_name)
-dss = dependency(dss_name, required : get_option('sparse'))
 
 # LAPACKE dependency only if provieder need it
 if lapacke_name == 'mkl_lapacke'
-    add_project_arguments('-DUSE_MKL', language: 'c')
+    add_project_arguments('-DUSE_MKL_LAPACKE', language: 'c')
     lapacke = dependency('mkl_lapacke', required: true)
 else
     lapacke = dependency(lapacke_name, method: 'pkg-config', required: true)
@@ -38,47 +36,54 @@ install_headers('cvs.tcl')
 install_headers('data.tcl')
 install_headers('restraints.tcl')
 install_headers('mock.tcl')
+install_headers('otfp_engine.h')
 
 # CFACV Shared Library
  
 cfacv_dep = [lapacke, lapack, blas, m, tcl]
+
+chapeau_headers = files(
+  'chapeau.h',
+  'chapeau_internal.h',
+)
+
+chapeau_dense_src = files(
+  'chapeau.c',
+  'chapeau_io.c',
+  'chapeau_solver.c',
+  'chapeau_eval.c',
+  'chapeau_accumulate.c',
+  'chapeau_grid.c',
+)
  
 cfacv_src = files(
   'measurements.c',
   'measurements.h',
-  'chapeau.h',
   'centers.c',
   'centers.h',
   'cfacv.c',
+  'cfacv_dataspace.c',
+  'cfacv_force.c',
+  'cfacv_restart.c',
+  'cfacv_restraint.c',
   'cfacv.h',
-  'cfacv_obj.h',
+  'cfacv_tcl.h',
+  'cfacv_internal.h',
+  'otfp_engine.c',
+  'otfp_engine.h',
   'cvs.c',
   'cvs.h',
-  'cvs_obj.h',
+  'cvs_tcl.h',
+  'cvs_internal.h',
   )
  
-# Using sparse matrix requires MKL DSS
-cfacv_src += files('chapeau_obj.h')
-if get_option('sparse').enabled()
-  
-  if dss.found()
-    cfacv_dep += dss
-    # message('Using MKL ', mkl_name)
-    add_project_arguments('-DUSE_MKL', language: 'c')
-  else
-    error('Intel MKL Direct Sparse Solver is required.')
-  endif
+cfacv_src += chapeau_headers
 
-  cfacv_src += files('chapeau_sparse.c')
-  error('Direct Sparse Solver implementation is under construction.')
-
-else
-  cfacv_src += files('chapeau.c')
-endif
+cfacv_src += chapeau_dense_src
                  
 cfacv_src += swig_gen.process('cfacv.i')
 
-shared_library(
+cfacv_lib = shared_library(
   'cfacv',
   cfacv_src,
   dependencies: cfacv_dep,
@@ -87,6 +92,48 @@ shared_library(
   install_dir: 'lib/',
 )
 
+lifecycle_test = executable(
+  'test-lifecycle',
+  files('../tests/lifecycle.c'),
+  include_directories: include_directories('.'),
+  link_with: cfacv_lib,
+  dependencies: cfacv_dep,
+)
+
+test('lifecycle', lifecycle_test)
+
+embedding_test = executable(
+  'test-embedding',
+  files('../tests/embedding.c'),
+  include_directories: include_directories('.'),
+  link_with: cfacv_lib,
+  dependencies: cfacv_dep,
+)
+
+test('embedding', embedding_test)
+
+restart_test = executable(
+  'test-restart',
+  files('../tests/restart.c'),
+  include_directories: include_directories('.'),
+  link_with: cfacv_lib,
+  dependencies: cfacv_dep,
+)
+
+test('restart', restart_test)
+
+if fortran_enabled
+  embedding_fortran_test = executable(
+    'test-embedding-fortran',
+    files('../tests/embedding_fortran.f90'),
+    include_directories: include_directories('.'),
+    link_with: cfacv_lib,
+    dependencies: cfacv_dep,
+  )
+
+  test('embedding-fortran', embedding_fortran_test)
+endif
+
 
 
 cvs_src = files(
@@ -94,11 +141,12 @@ cvs_src = files(
   'measurements.h',
   'cvs.c',
   'cvs.h',
-  'cvs_obj.h',
-  'chapeau.c',
-  'chapeau.h',
-  'chapeau_obj.h',
+  'cvs_tcl.h',
+  'cvs_internal.h',
 )
+
+cvs_src += chapeau_dense_src
+cvs_src += chapeau_headers
 
 cvs_src += swig_gen.process('cvs.i')
 
@@ -123,65 +171,18 @@ executable('catbinsp',
  
 
 
-chapsim_src = files(
-  'simetrize.c',
-  'chapeau.c',
-  'chapeau.h',
-  'chapeau_obj.h',
-)
+chapeau_tool_dep = [lapacke, lapack, blas, m]
+chapeau_tools = {
+  'chapsim': 'simetrize.c',
+  'chapadd': 'addchapeaus.c',
+  'chapcrop': 'cropchapeaus.c',
+}
 
-
-executable('chapsim', 
-  chapsim_src, 
-  dependencies: [lapacke, lapack, blas, m],
-  install: true,
-)
- 
-
-
-chapconv_src = files(
-  'convchapeau.c',
-  'chapeau.c',
-  'chapeau.h',
-  'chapeau_obj.h',
-  'chapeau_old.h',
-  ) 
-
-executable('chapconv', 
-  chapconv_src, 
-  dependencies: [lapacke, lapack, blas, m],
-  install: true,
+foreach tool_name, tool_source : chapeau_tools
+  executable(
+    tool_name,
+    files(tool_source) + chapeau_dense_src + chapeau_headers,
+    dependencies: chapeau_tool_dep,
+    install: true,
   )
-
-
-
-chapadd_src = files(
-  'addchapeaus.c',
-  'chapeau.c',
-  'chapeau.h',
-  'chapeau_obj.h',
-  )
-
-executable('chapadd', 
-  chapadd_src, 
-  dependencies: [lapacke, lapack, blas, m],
-  install: true,
-  )
-
-
-
-chapcrop_src = files(
-  'cropchapeaus.c',
-  'chapeau.c',
-  'chapeau.h',
-  'chapeau_obj.h',
-  )
-
-executable('chapcrop', 
-  chapcrop_src, 
-  dependencies: [lapacke, lapack, blas, m],
-  install: true,
-  )
-
-
-
+endforeach
