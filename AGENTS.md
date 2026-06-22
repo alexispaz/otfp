@@ -100,8 +100,7 @@ meson compile -C build
 
 - Keep beginner-facing explanations in `docs/user-guide.md`.
 - Keep user-facing features documented in `docs/features.md`.
-- Keep developer architecture and refactor status in
-  `docs/developer-architecture.md`.
+- Keep developer architecture and refactor status in `docs/architecture.md`.
 - Keep GEMS and driver-embedding context in `docs/integration-gems.md`.
 - Keep the standalone C embedding example in `examples/embedding`.
 - Keep test commands and coverage notes in `docs/testing.md`.

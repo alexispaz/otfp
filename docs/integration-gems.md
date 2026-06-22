@@ -173,7 +173,7 @@ and checks that force and energy values are finite.
 
 ## Work To Do Before Asking Another Agent To Integrate
 
-1. Keep `docs/developer-architecture.md` current with core/adapter boundaries.
+1. Keep `docs/architecture.md` current with core/adapter boundaries.
 2. Extend the C embedding facade as GEMS needs more setup features.
 3. Expand the C embedding example toward GEMS-like repeated-step setup.
 4. Expand the Fortran `iso_c_binding` example toward the setup patterns GEMS

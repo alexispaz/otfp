@@ -5,8 +5,15 @@ hosted in Cameron Abrams' [github](https://github.com/cameronabrams/otfp).
 
 OTFP computes free-energy surfaces (FES) in MD simulations via temperature-acceleration. 
  
-It is written in C and use [SWIG](http://www.swig.org) to provida a TCL
-interface to be used with [NAMD](www.ks.uiuc.edu/Research/namd) via TCLforce.
+It is written in C and uses [SWIG](http://www.swig.org) to provide a Tcl
+interface to be used with [NAMD](https://www.ks.uiuc.edu/Research/namd) via
+TclForces.
+
+The user and developer documentation is built with MkDocs. When published, the
+site is available at https://alexispaz.github.io/otfp/. For local reading while
+editing this repository, run:
+
+    mkdocs serve
  
 # Build system
 
@@ -84,7 +91,8 @@ Computation, 6(2) (2018) 27.  https://doi.org/10.3390/computation6020027
 
 # License
 
-It mantains the same BSD-2-Clause license of the original code at [repo](https://github.com/cameronabrams/otfp).
+It maintains the same BSD-2-Clause license of the original code at
+[repo](https://github.com/cameronabrams/otfp).
 
 Original code was developed with support of the National Science Foundation
 through grant DMR-1207389.
@@ -118,8 +126,8 @@ If the tcl library is not found by ldd, it is probably linked static. In that
 case `nm ./namd2 | grep Tcl` will show the common symbols defined in the tcl
 library (e.g. `Tcl_AppendResult`). This make difficult to known which tcl
 version was used to compile NAMD. If using the tcl library of the actual system
-gives segmentation fault, sometimes the issue disappears if the user compile
-its own TCL library from source and use that one to compile of `cfacv.so`.
+gives segmentation fault, sometimes the issue disappears if the user compiles
+their own Tcl library from source and uses that one to compile `cfacv.so`.
 
 # Additional tools to handle chapeau object files
 
@@ -134,5 +142,3 @@ Attempt to add chapeau object files together.
 If attempt fail, it might be needed to adjust the size of
 chapeau objects to have the same number of knots using
 `chapcrop`
-
-

@@ -1,8 +1,10 @@
-# Developer Architecture
+# Architecture
 
-This page documents the current architecture during refactoring. The refactor
-branch does not need to preserve backward compatibility, but it should preserve
-scientific behavior unless a feature is explicitly removed.
+This page documents the current architecture during refactoring. It is meant
+for readers who need to understand the code shape before changing it or
+embedding OTFP in another driver. The refactor branch does not need to preserve
+backward compatibility, but it should preserve scientific behavior unless a
+feature is explicitly removed.
 
 ## Current Layers
 

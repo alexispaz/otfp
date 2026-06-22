@@ -1,7 +1,9 @@
-# User guide
+# User Guide
 
-This page is a gentle introduction for students or new users who want to
-understand what OTFP does before reading the C code.
+This section is for users who need to build OTFP, install it into a local
+prefix, and run the examples. It assumes basic command-line familiarity, but it
+does not assume that the reader has worked with NAMD TclForces or the OTFP C
+code before.
 
 ## What problem does OTFP solve?
 
@@ -32,10 +34,38 @@ method:
 | Chapeau | The basis/kernel function used to accumulate free-energy statistics on a grid. |
 | FES | Free-energy surface reconstructed from accumulated statistics. |
 
-## Minimal workflow
+## What should a new user run first?
 
-The NAMD/Tcl workflow and the GEMS embedding workflow use the same conceptual
-steps:
+Start by building and installing OTFP into `usr/` inside the repository:
+
+```sh
+meson setup build --prefix="$PWD/usr"
+meson compile -C build
+meson install -C build
+```
+
+Then run the fast example suite:
+
+```sh
+meson test -C build examples
+```
+
+The examples use a mock Tcl/NAMD adapter, so they are useful for checking the
+OTFP setup quickly without launching a full NAMD calculation.
+
+## Reading the examples
+
+Most user-facing examples are Tcl scripts that configure centers, collective
+variables, restraints, and optional FES reconstruction before the driver starts
+the force loop. Read them in this order:
+
+1. `docs/build.md` for compiler, Meson, and installation steps.
+2. `docs/examples.md` for runnable examples and the mock regression workflow.
+3. `docs/tcl-reference.md` for the Tcl variables used by OTFP.
+4. `docs/features.md` for the complete list of supported CVs, restraints,
+   chapeau/FES settings, restarts, and tools.
+
+The NAMD/Tcl workflow follows these conceptual steps:
 
 1. Define centers.
 2. Define CVs from those centers.
@@ -45,35 +75,7 @@ steps:
 6. Ask OTFP to compute CVs, bias forces, target evolution, and FES updates.
 7. Copy the returned center forces back into the driver.
 
-The exact API depends on the driver. Existing NAMD examples use Tcl scripts.
-New integrations, including GEMS, should prefer the C facade documented in
-[GEMS integration](integration-gems.md).
-
-## A small mental model
-
-It can help to think of the runtime state as five boxes:
-
-```text
-centers       static definitions of atom groups
-cvs           functions of centers
-restraints    bias potentials and evolving targets
-center_step   positions in, forces out, for the current step
-fes           chapeau grids and solve/output scheduling
-```
-
-The old code calls the whole runtime context `DataSpace`. That name is kept for
-the historical C/Tcl API, but the internals are being split into the clearer
-boxes shown above.
-
-## What should a new user run first?
-
-After building and installing into `usr/`, run the fast examples:
-
-```sh
-meson test -C build examples
-```
-
-To see the driver-facing API without NAMD, run the C embedding example:
+To see the driver-facing API without Tcl or NAMD, run the C embedding example:
 
 ```sh
 cc examples/embedding/embedding.c \

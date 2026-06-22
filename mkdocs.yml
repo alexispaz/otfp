@@ -7,14 +7,19 @@ theme:
 
 nav:
   - Home: index.md
-  - User guide: user-guide.md
-  - Build: build.md
-  - Features: features.md
-  - Examples: examples.md
-  - GEMS integration: integration-gems.md
-  - Testing: testing.md
-  - Code audit: audit.md
-  - Developer architecture: developer-architecture.md
+  - User Guide:
+      - Overview: user-guide.md
+      - Build: build.md
+      - Examples: examples.md
+      - Tcl configuration reference: tcl-reference.md
+      - Feature reference: features.md
+  - Architecture:
+      - Code design: architecture.md
+  - Extending OTFP:
+      - Overview: extending.md
+      - GEMS integration: integration-gems.md
+      - Testing: testing.md
+      - Code audit: audit.md
 
 markdown_extensions:
   - admonition
