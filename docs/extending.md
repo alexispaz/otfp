@@ -35,6 +35,18 @@ the default integration target for new drivers.
 - Keep the Tcl/SWIG adapter narrow. Do not expose internal helpers through Tcl
   unless the supported workflow requires them.
 
+## AI-Assisted Development
+
+This refactor branch may include code and documentation changes prepared with
+AI coding assistants under human direction. Treat AI output like any other
+contribution: review the diff, run the relevant fast tests, keep commits
+coherent, and make the scientific or architectural intent explicit in the
+commit message.
+
+Do not rely on AI-generated text as a source for scientific claims, licensing
+claims, or citations. Those claims should remain traceable to the repository
+history, source publications, license files, or primary documentation.
+
 ## Good Extension Targets
 
 - Add focused tests for geometry routines, chapeau restart/load paths, and

@@ -15,41 +15,17 @@ editing this repository, run:
 
     mkdocs serve
  
-# Build system
+# Build and documentation
 
-OTFP builds libraries and executables with Meson, e.g.:
+OTFP builds libraries and executables with Meson. The full build instructions,
+dependencies, debug builds, example test workflow, and MkDocs commands are in
+the [User Guide build page](https://alexispaz.github.io/otfp/build/).
 
-    git clone https://github.com/alexispaz/otfp.git
-    cd otfp
-    meson setup build 
+A typical local build installs into `usr/` inside the repository:
+
+    meson setup build --prefix="$PWD/usr"
     meson compile -C build
-
-Then, run `meson install` or `meson dist` to create a distribution.
-
-Type `meson configure` to see possible setup options. For instance, to change
-the default `/usr` prefix for the installation:
-
-    meson setup build --prefix=$(realpath ./usr)
-
-or with debug flags (run with gdb --args namd3 +p1 job0.namd):
-  
-    meson setup build --prefix=$(realpath ./usr) --buildtype=debug \
-      -Dc_args='-g3 -O0 -fno-omit-frame-pointer' -Dc_std=gnu11
-
-or adding sanitize:
-  
-    meson setup build --prefix=$(realpath ./usr) --buildtype=debug \
-      -Db_sanitize=address,undefined \
-      -Dc_args='-g3 -O0 -fno-omit-frame-pointer' -Dc_std=gnu11
-
-Run with `LD_PRELOAD=$(gcc -print-file-name=libasan.so) namd3 +p1 job0.namd`
-
-Also optimization might be given:
-
-    meson setup build --prefix=$(realpath ./usr) --buildtype=release \
-      -Doptimization=3 \
-      -Dwarning_level=0 -Dwerror=false \
-      -Db_ndebug=true -Dstrip=true 
+    meson install -C build
 
 # Citations
 

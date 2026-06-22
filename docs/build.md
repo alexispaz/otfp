@@ -16,6 +16,9 @@ The installed `otfp_engine.h` header is the supported C embedding facade for
 external drivers. The lower-level C headers are still internal refactor
 surfaces unless documented otherwise.
 
+Use `meson configure build` after setup to inspect available project options.
+Use `meson dist -C build` when you need a source distribution.
+
 ## Documentation site
 
 The documentation is built with MkDocs from the repository root:
@@ -83,4 +86,20 @@ meson setup build --prefix="$PWD/usr" --buildtype=debug \
   -Db_sanitize=address,undefined \
   -Dc_args='-g3 -O0 -fno-omit-frame-pointer' \
   -Dc_std=gnu11
+```
+
+When running NAMD with AddressSanitizer, the sanitizer runtime may need to be
+preloaded:
+
+```sh
+LD_PRELOAD="$(gcc -print-file-name=libasan.so)" namd3 +p1 job0.namd
+```
+
+For optimized local builds:
+
+```sh
+meson setup build --prefix="$PWD/usr" --buildtype=release \
+  -Doptimization=3 \
+  -Dwarning_level=0 -Dwerror=false \
+  -Db_ndebug=true -Dstrip=true
 ```
