@@ -1,0 +1,1220 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="On-the-fly free-energy parameterization tools for NAMD/TclForce workflows">
+      
+      
+      
+      
+        <link rel="prev" href="../extending/">
+      
+      
+        <link rel="next" href="../testing/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>GEMS integration - OTFP</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#gems-integration-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="OTFP" class="md-header__button md-logo" aria-label="OTFP" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OTFP
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GEMS integration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alexispaz/otfp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="OTFP" class="md-nav__button md-logo" aria-label="OTFP" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    OTFP
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alexispaz/otfp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tcl-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tcl configuration reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../features/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extending OTFP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Extending OTFP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GEMS integration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GEMS integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Shape
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engine-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engine Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-gems-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended GEMS Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#embedding-facade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Embedding Facade
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fortran-binding-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fortran Binding Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#work-to-do-before-asking-another-agent-to-integrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work To Do Before Asking Another Agent To Integrate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-not-to-do-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Not To Do Yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#current-shape" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Current Shape
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#engine-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Engine Model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-gems-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended GEMS Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#embedding-facade" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Embedding Facade
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fortran-binding-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fortran Binding Notes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#work-to-do-before-asking-another-agent-to-integrate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Work To Do Before Asking Another Agent To Integrate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-not-to-do-yet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What Not To Do Yet
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="gems-integration-plan">GEMS Integration Plan<a class="headerlink" href="#gems-integration-plan" title="Permanent link">&para;</a></h1>
+<p>This page describes how to prepare OTFP for integration into
+<a href="https://github.com/alexispaz/GEMS">GEMS</a> as an in-tree free-energy engine.</p>
+<p>The goal is not to preserve OTFP as a standalone community dependency. OTFP is
+stable laboratory code, while GEMS is the active experimentation environment for
+free-energy methods and non-NAMD potentials such as DFTB and tight-binding
+models. The practical integration path is to vendor the OTFP core into GEMS and
+drive it from GEMS, while keeping the NAMD/Tcl path as an adapter.</p>
+<h2 id="current-shape">Current Shape<a class="headerlink" href="#current-shape" title="Permanent link">&para;</a></h2>
+<p>OTFP currently has four conceptual parts:</p>
+<table>
+<thead>
+<tr>
+<th>Part</th>
+<th>Current files</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core engine</td>
+<td><code>cfacv*.c</code>, <code>cvs*.c</code>, <code>chapeau*.c</code>, public/internal headers</td>
+<td>Owns CVs, restraints, chapeau accumulation, solve scheduling, restart state, and force/energy calculation.</td>
+</tr>
+<tr>
+<td>NAMD adapter</td>
+<td><code>calcforces.tcl</code>, <code>cfacv.tcl</code>, <code>cvs.tcl</code>, <code>restraints.tcl</code>, <code>chapeau.tcl</code>, <code>data.tcl</code></td>
+<td>Converts NAMD TclForces data and user Tcl variables into core engine calls.</td>
+</tr>
+<tr>
+<td>Tcl/SWIG boundary</td>
+<td><code>cfacv.i</code>, <code>cvs.i</code>, <code>cfacv_tcl.h</code>, <code>cvs_tcl.h</code></td>
+<td>Exposes the selected C API to Tcl. This is an adapter boundary, not the engine model.</td>
+</tr>
+<tr>
+<td>Mock adapter</td>
+<td><code>mock.tcl</code>, <code>examples/test.sh</code>, selected examples</td>
+<td>Emulates enough NAMD TclForces behavior to run fast regression tests without a full NAMD calculation.</td>
+</tr>
+</tbody>
+</table>
+<p>For GEMS, the core engine is the useful part. The Tcl/SWIG and NAMD layers are
+reference adapters and regression tools.</p>
+<h2 id="engine-model">Engine Model<a class="headerlink" href="#engine-model" title="Permanent link">&para;</a></h2>
+<p>A molecular driver does not need to know about Tcl or NAMD. It needs a
+step-level OTFP engine with this lifecycle:</p>
+<ol>
+<li>Allocate one <code>DataSpace</code>.</li>
+<li>Register atom centers with masses and atom indices.</li>
+<li>Register CVs.</li>
+<li>Register restraints.</li>
+<li>Optionally register chapeau/FES state.</li>
+<li>On each step, copy current center positions into <code>DataSpace</code>.</li>
+<li>Compute CV values.</li>
+<li>Compute restraint forces, chapeau accumulation, target evolution, and
+   restart/output scheduling.</li>
+<li>Read forces from <code>DataSpace</code> center buffers and add them to the driver.</li>
+<li>Read restraint energy and add it to the driver energy accounting.</li>
+<li>Free the <code>DataSpace</code> and owned objects at shutdown.</li>
+</ol>
+<p>The current public C calls that match this model are:</p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>Current C API</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Allocate/free</td>
+<td><code>NewDataSpace</code>, <code>DataSpace_free</code></td>
+</tr>
+<tr>
+<td>Register centers</td>
+<td><code>DataSpace_AddAtomCenter</code></td>
+</tr>
+<tr>
+<td>Register CVs</td>
+<td><code>DataSpace_add_cv</code>, <code>set_zsd_circle</code>, <code>set_zsd_ring</code>, <code>set_d2chap</code>, <code>set_line</code>, <code>cv_access_ref</code>, <code>cv_access_ref2</code></td>
+</tr>
+<tr>
+<td>Register restraints</td>
+<td><code>DataSpace_AddRestr</code>, <code>restr_AddTamdOpt</code>, <code>restr_AddSmdOpt</code>, <code>restr_AddAdamOpt</code></td>
+</tr>
+<tr>
+<td>Register FES</td>
+<td><code>DataSpace_SetupChapeau</code>, <code>DataSpace_get_chapeau</code></td>
+</tr>
+<tr>
+<td>Step update</td>
+<td><code>DataSpace_centerPosition</code>, <code>DataSpace_ComputeCVs</code>, <code>DataSpace_RestrainingForces</code></td>
+</tr>
+<tr>
+<td>Read results</td>
+<td><code>DataSpace_centerForce</code>, <code>DataSpace_RestraintEnergy</code>, <code>restr_getz</code>, <code>restr_getu</code></td>
+</tr>
+<tr>
+<td>Restart hooks</td>
+<td><code>DataSpace_save_restraints</code>, <code>DataSpace_load_restraints</code>, <code>chapeau_savestate</code>, <code>chapeau_loadstate</code>, <code>chapeau_loadlambda</code></td>
+</tr>
+</tbody>
+</table>
+<p>This API is usable, but it still reflects the historical Tcl/NAMD workflow.
+New driver code should prefer the embedding facade in <code>otfp_engine.h</code> instead
+of teaching GEMS every historical function.</p>
+<h2 id="recommended-gems-strategy">Recommended GEMS Strategy<a class="headerlink" href="#recommended-gems-strategy" title="Permanent link">&para;</a></h2>
+<p>Use OTFP as vendored source inside GEMS, not as an external installed
+dependency:</p>
+<ul>
+<li>GEMS is the active laboratory for the methods.</li>
+<li>OTFP has limited standalone maintenance pressure.</li>
+<li>Keeping the code in-tree makes it easier to couple OTFP with GEMS potentials,
+  integrators, restart formats, and future free-energy experiments.</li>
+<li>The NAMD adapter can remain as an optional compatibility path or regression
+  reference.</li>
+</ul>
+<p>Do not translate the whole OTFP codebase to Fortran before integration. The
+lower-risk path is:</p>
+<ol>
+<li>Keep the numerical core in C.</li>
+<li>Add a small C embedding facade with stable names and ownership rules.</li>
+<li>Bind that facade from Fortran using <code>iso_c_binding</code>.</li>
+<li>Translate or rewrite pieces later only when the integration shows a clear
+   benefit.</li>
+</ol>
+<p>This avoids mixing language conversion, build-system migration, memory
+ownership changes, and scientific validation in one step.</p>
+<h2 id="embedding-facade">Embedding Facade<a class="headerlink" href="#embedding-facade" title="Permanent link">&para;</a></h2>
+<p>The first driver-oriented facade lives in <code>otfp_engine.h</code> and <code>otfp_engine.c</code>.
+It is intentionally thin: it wraps <code>DataSpace</code> without changing numerical
+behavior. Its purpose is to give GEMS one stable dependency point while the
+Tcl/NAMD-facing internals continue to be refactored.</p>
+<p>Meson installs <code>otfp_engine.h</code> next to the Tcl adapter scripts under the
+configured include directory. Consumers should include only this header for the
+embedding path.</p>
+<p>See <code>examples/embedding</code> for a minimal C driver that uses this facade without
+Tcl, SWIG, NAMD, or the mock adapter.</p>
+<p>Current API:</p>
+<div class="highlight"><pre><span></span><code><span class="k">typedef</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">otfp_engine</span><span class="w"> </span><span class="n">otfp_engine</span><span class="p">;</span>
+
+<span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="nf">otfp_engine_create</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">ncenters</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ncvs</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">nrestr</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">seed</span><span class="p">);</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">otfp_engine_free</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">);</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">otfp_engine_add_center</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">natoms</span><span class="p">,</span>
+<span class="w">                           </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">indices</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">masses</span><span class="p">);</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">otfp_engine_set_center_position</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">center</span><span class="p">,</span>
+<span class="w">                                    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">xyz</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="nf">otfp_engine_center_force</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">center</span><span class="p">);</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">otfp_engine_add_cv</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">type</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">ncenters</span><span class="p">,</span>
+<span class="w">                       </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="o">*</span><span class="n">centers</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">zmin</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">zmax</span><span class="p">,</span>
+<span class="w">                       </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">boundary</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">boundary_k</span><span class="p">);</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">otfp_engine_add_restraint</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">target</span><span class="p">,</span>
+<span class="w">                              </span><span class="kt">int</span><span class="w"> </span><span class="n">ncvs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">*</span><span class="n">coefficients</span><span class="p">,</span>
+<span class="w">                              </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">function</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">zmin</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">zmax</span><span class="p">,</span>
+<span class="w">                              </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="w"> </span><span class="o">*</span><span class="n">boundary</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">boundary_k</span><span class="p">);</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">otfp_engine_add_tamd</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">restraint</span><span class="p">,</span>
+<span class="w">                         </span><span class="kt">double</span><span class="w"> </span><span class="n">gamma</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">kt</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dt</span><span class="p">,</span>
+<span class="w">                         </span><span class="kt">int</span><span class="w"> </span><span class="n">chapeau_id</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">chapeau_dim</span><span class="p">);</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">otfp_engine_add_smd</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">restraint</span><span class="p">,</span>
+<span class="w">                        </span><span class="kt">double</span><span class="w"> </span><span class="n">target</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">first_step</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">last_step</span><span class="p">);</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">otfp_engine_add_adam</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">restraint</span><span class="p">,</span>
+<span class="w">                         </span><span class="kt">double</span><span class="w"> </span><span class="n">step_size</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">beta1</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">beta2</span><span class="p">,</span>
+<span class="w">                         </span><span class="kt">double</span><span class="w"> </span><span class="n">epsilon</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">decay</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">kt</span><span class="p">,</span>
+<span class="w">                         </span><span class="kt">double</span><span class="w"> </span><span class="n">min_step</span><span class="p">);</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">otfp_engine_compute</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">first_step</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">step</span><span class="p">,</span>
+<span class="w">                        </span><span class="kt">double</span><span class="w"> </span><span class="n">external_bias</span><span class="p">);</span>
+<span class="kt">double</span><span class="w"> </span><span class="nf">otfp_engine_bias_energy</span><span class="p">(</span><span class="n">otfp_engine</span><span class="w"> </span><span class="o">*</span><span class="n">engine</span><span class="p">);</span>
+</code></pre></div>
+<p>Ownership and data rules:</p>
+<ul>
+<li><code>otfp_engine_create</code> allocates the engine and owned OTFP state.</li>
+<li><code>otfp_engine_free</code> releases all owned state and accepts <code>NULL</code>.</li>
+<li>Center, CV, and restraint setup arrays are copied by the underlying OTFP
+  constructors; callers do not need to keep those temporary arrays alive after
+  setup.</li>
+<li><code>otfp_engine_add_restraint</code> returns the zero-based restraint index, or <code>-1</code>
+  on failure. Use that index to attach TAMD, SMD, or ADAM evolution options.</li>
+<li><code>otfp_engine_set_center_position</code> writes the current position for one center.</li>
+<li><code>otfp_engine_compute</code> computes CVs, restraint forces, chapeau updates, target
+  evolution, and bias energy for one step.</li>
+<li><code>otfp_engine_center_force</code> returns a pointer to the internal force buffer for
+  one center after <code>otfp_engine_compute</code>; callers must copy it before the next
+  position update or compute call.</li>
+<li>Center and CV indices are C-style zero-based indices.</li>
+</ul>
+<h2 id="fortran-binding-notes">Fortran Binding Notes<a class="headerlink" href="#fortran-binding-notes" title="Permanent link">&para;</a></h2>
+<p>The first GEMS integration should use <code>iso_c_binding</code> against the embedding
+facade. The repository now includes <code>tests/embedding_fortran.f90</code> as a minimal
+working example.</p>
+<ul>
+<li>Store the opaque C handle as <code>type(c_ptr)</code>.</li>
+<li>Pass scalar integers as <code>integer(c_int)</code> or the exact width chosen by the C
+  facade.</li>
+<li>Pass coordinates and forces as contiguous <code>real(c_double)</code> arrays.</li>
+<li>Keep allocation and destruction on the C side.</li>
+<li>Convert Fortran strings to C strings only at setup time; avoid string-heavy
+  calls in the per-step path.</li>
+<li>Document index base rules explicitly. OTFP internals use C-style indices in
+  the C API; Tcl scripts often translate from user-facing 1-based data.</li>
+</ul>
+<p>The initial Fortran layer should be thin. Its job is to map GEMS data
+structures into the C facade and return forces/energies to GEMS. The smoke test
+constructs the same two-center <code>BOND</code> CV and harmonic/SMD restraint as the C
+embedding test, computes one step, reads a force pointer with <code>c_f_pointer</code>,
+and checks that force and energy values are finite.</p>
+<h2 id="work-to-do-before-asking-another-agent-to-integrate">Work To Do Before Asking Another Agent To Integrate<a class="headerlink" href="#work-to-do-before-asking-another-agent-to-integrate" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Keep <code>docs/architecture.md</code> current with core/adapter boundaries.</li>
+<li>Extend the C embedding facade as GEMS needs more setup features.</li>
+<li>Expand the C embedding example toward GEMS-like repeated-step setup.</li>
+<li>Expand the Fortran <code>iso_c_binding</code> example toward the setup patterns GEMS
+   will need.</li>
+<li>Expand the embedding tests beyond lifecycle/finite-value checks.</li>
+<li>Decide how OTFP will be vendored in GEMS: subtree under <code>lib/</code>, direct source
+   import under a free-energy module, or a temporary development copy.</li>
+<li>Only after the C/Fortran boundary is working, evaluate whether any C modules
+   should be rewritten in Fortran.</li>
+</ol>
+<h2 id="what-not-to-do-yet">What Not To Do Yet<a class="headerlink" href="#what-not-to-do-yet" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Do not make GEMS call the SWIG/Tcl API.</li>
+<li>Do not require NAMD concepts in the engine-facing API.</li>
+<li>Do not translate all CV/chapeau code to Fortran before integration.</li>
+<li>Do not change numerical behavior while only moving adapter boundaries.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

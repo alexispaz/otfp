@@ -1,0 +1,1373 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="On-the-fly free-energy parameterization tools for NAMD/TclForce workflows">
+      
+      
+      
+      
+        <link rel="prev" href="../tcl-reference/">
+      
+      
+        <link rel="next" href="../architecture/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Feature reference - OTFP</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#features" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="OTFP" class="md-header__button md-logo" aria-label="OTFP" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            OTFP
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Feature reference
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alexispaz/otfp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="OTFP" class="md-nav__button md-logo" aria-label="OTFP" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    OTFP
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alexispaz/otfp" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../user-guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../build/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Build
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tcl-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tcl configuration reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature reference
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Feature reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#namdtclforce-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NAMD/TclForce Integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#collective-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collective Variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#otfpfes-reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTFP/FES Reconstruction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restarts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restarts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#replica-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replica Workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-line-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-Line Tools
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fast-test-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fast Test Coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code design
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Extending OTFP
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Extending OTFP
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../extending/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integration-gems/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GEMS integration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../testing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Testing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Code audit
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#namdtclforce-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NAMD/TclForce Integration
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#collective-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collective Variables
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restraints" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restraints
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#otfpfes-reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OTFP/FES Reconstruction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#restarts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restarts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#replica-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Replica Workflows
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#command-line-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Command-Line Tools
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fast-test-coverage" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fast Test Coverage
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="features">Features<a class="headerlink" href="#features" title="Permanent link">&para;</a></h1>
+<p>This page describes the functional surface that should be preserved or
+intentionally replaced during refactoring.</p>
+<h2 id="namdtclforce-integration">NAMD/TclForce Integration<a class="headerlink" href="#namdtclforce-integration" title="Permanent link">&para;</a></h2>
+<p>OTFP is loaded from a NAMD input script through:</p>
+<div class="highlight"><pre><span></span><code><span class="nv">tclforcesscript</span><span class="w"> </span><span class="nv">$CFACV_BASEDIR</span><span class="o">/</span>include<span class="o">/</span>calcforces.tcl
+<span class="nb">source</span><span class="w"> </span><span class="nv">$CFACV_BASEDIR</span><span class="o">/</span>include<span class="o">/</span>cfacv.tcl
+</code></pre></div>
+<p>Runtime flow:</p>
+<ol>
+<li><code>cfacv.tcl</code> loads <code>libcfacv.so</code> and the Tcl helper files.</li>
+<li><code>parse_pdb</code> reads <code>labelPDB</code>; atom occupancy stores mass and beta stores
+   the 1-based center id.</li>
+<li><code>NewDataSpace</code> allocates the C-side state.</li>
+<li><code>cvs_setup</code> registers collective variables.</li>
+<li><code>rlist_setup</code> registers restraints.</li>
+<li><code>chapeau_setup</code> registers OTFP/FES state when <code>FES(...)</code> is defined.</li>
+<li>NAMD calls <code>calcforces</code> every step.</li>
+<li><code>Tcl_UpdateDataSpace</code> copies group positions into C, computes CVs,
+   computes restraint forces, copies forces back to NAMD groups, and adds
+   restraint energy.</li>
+</ol>
+<p>The test runner uses <code>src/mock.tcl</code> to simulate enough NAMD behavior for fast
+regression tests.</p>
+<h2 id="collective-variables">Collective Variables<a class="headerlink" href="#collective-variables" title="Permanent link">&para;</a></h2>
+<p>Configured with:</p>
+<div class="highlight"><pre><span></span><code><span class="k">set</span><span class="w"> </span>cv<span class="k">(</span><span class="nv">num</span><span class="k">)</span><span class="w"> </span><span class="mi">1</span>
+<span class="k">set</span><span class="w"> </span>cv<span class="k">(</span><span class="nv">1.type</span><span class="k">)</span><span class="w"> </span>BOND
+<span class="k">set</span><span class="w"> </span>cv<span class="k">(</span><span class="nv">1.centers</span><span class="k">)</span><span class="w"> </span><span class="k">{</span><span class="nv">1</span><span class="w"> </span><span class="mi">2</span><span class="k">}</span>
+</code></pre></div>
+<p>Supported C CV types:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th style="text-align: right;">Centers</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BOND</code></td>
+<td style="text-align: right;">2</td>
+<td>Distance between two centers.</td>
+</tr>
+<tr>
+<td><code>HALFBOND</code></td>
+<td style="text-align: right;">2</td>
+<td>Distance with force only on the first center.</td>
+</tr>
+<tr>
+<td><code>BONDS</code></td>
+<td style="text-align: right;">even number</td>
+<td>Sum of pair distances.</td>
+</tr>
+<tr>
+<td><code>ANGLE</code></td>
+<td style="text-align: right;">3</td>
+<td>Angle over three centers.</td>
+</tr>
+<tr>
+<td><code>DIHED</code></td>
+<td style="text-align: right;">4</td>
+<td>Dihedral angle.</td>
+</tr>
+<tr>
+<td><code>S</code></td>
+<td style="text-align: right;">even number</td>
+<td>Bond-network switching CV.</td>
+</tr>
+<tr>
+<td><code>CARTESIAN_X</code></td>
+<td style="text-align: right;">1</td>
+<td>X coordinate of one center.</td>
+</tr>
+<tr>
+<td><code>CARTESIAN_Y</code></td>
+<td style="text-align: right;">1</td>
+<td>Y coordinate of one center.</td>
+</tr>
+<tr>
+<td><code>CARTESIAN_Z</code></td>
+<td style="text-align: right;">1</td>
+<td>Z coordinate of one center.</td>
+</tr>
+<tr>
+<td><code>COGX</code></td>
+<td style="text-align: right;">one or more</td>
+<td>Average x coordinate of centers.</td>
+</tr>
+<tr>
+<td><code>COGY</code></td>
+<td style="text-align: right;">one or more</td>
+<td>Average y coordinate of centers.</td>
+</tr>
+<tr>
+<td><code>COGZ</code></td>
+<td style="text-align: right;">one or more</td>
+<td>Average z coordinate of centers.</td>
+</tr>
+<tr>
+<td><code>LINE</code></td>
+<td style="text-align: right;">one or more</td>
+<td>Projection between two reference PDB states.</td>
+</tr>
+<tr>
+<td><code>RMSD</code></td>
+<td style="text-align: right;">one or more</td>
+<td>Mean squared displacement from a reference PDB.</td>
+</tr>
+<tr>
+<td><code>CHARMMD</code></td>
+<td style="text-align: right;">4</td>
+<td>CHARMM-style dihedral energy CV using <code>n</code>, <code>k</code>, and <code>d</code>.</td>
+</tr>
+<tr>
+<td><code>GAUSS2D</code></td>
+<td style="text-align: right;">5</td>
+<td>Two-dihedral Gaussian function.</td>
+</tr>
+<tr>
+<td><code>D2CHAP</code></td>
+<td style="text-align: right;">5</td>
+<td>Two-dihedral CV evaluated from a chapeau file.</td>
+</tr>
+<tr>
+<td><code>ZSDCIRCLE</code></td>
+<td style="text-align: right;">one or more</td>
+<td>Z-spread in a cylindrical selection. Uses global setup state.</td>
+</tr>
+<tr>
+<td><code>ZSDXRANGE</code></td>
+<td style="text-align: right;">one or more</td>
+<td>Z-spread in an x range. Uses global setup state.</td>
+</tr>
+<tr>
+<td><code>ZSDRING</code></td>
+<td style="text-align: right;">one or more</td>
+<td>Z-spread in a ring. Uses global setup state.</td>
+</tr>
+</tbody>
+</table>
+<p>CV output:</p>
+<div class="highlight"><pre><span></span><code><span class="k">set</span><span class="w"> </span>cv<span class="k">(</span><span class="nv">1.outfile</span><span class="k">)</span><span class="w"> </span><span class="s2">&quot;phi.x&quot;</span>
+<span class="k">set</span><span class="w"> </span>cv<span class="k">(</span><span class="nv">1.outfreq</span><span class="k">)</span><span class="w"> </span><span class="mi">100</span>
+</code></pre></div>
+<p>CV boundaries:</p>
+<table>
+<thead>
+<tr>
+<th>Boundary</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NADA</code></td>
+<td>No CV boundary force.</td>
+</tr>
+<tr>
+<td><code>SOFTUPPER</code></td>
+<td>Harmonic upper wall using <code>max</code> and <code>boundk</code>.</td>
+</tr>
+<tr>
+<td><code>SOFTLOWER</code></td>
+<td>Harmonic lower wall using <code>min</code> and <code>boundk</code>.</td>
+</tr>
+<tr>
+<td><code>SOFT</code></td>
+<td>Both soft walls using <code>min</code>, <code>max</code>, and <code>boundk</code>.</td>
+</tr>
+<tr>
+<td><code>AMD</code></td>
+<td>Adds the CV value as a local bias and applies unit force to the CV.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="restraints">Restraints<a class="headerlink" href="#restraints" title="Permanent link">&para;</a></h2>
+<p>Configured with:</p>
+<div class="highlight"><pre><span></span><code><span class="k">set</span><span class="w"> </span>restr<span class="k">(</span><span class="nv">num</span><span class="k">)</span><span class="w"> </span><span class="mi">1</span>
+<span class="k">set</span><span class="w"> </span>restr<span class="k">(</span><span class="nv">1.cv</span><span class="k">)</span><span class="w"> </span><span class="mi">1</span>
+<span class="k">set</span><span class="w"> </span>restr<span class="k">(</span><span class="nv">1.k</span><span class="k">)</span><span class="w"> </span><span class="mi">1500</span>
+<span class="k">set</span><span class="w"> </span>restr<span class="k">(</span><span class="nv">1.type</span><span class="k">)</span><span class="w"> </span>tamd
+</code></pre></div>
+<p>A restraint is a linear combination of CVs. If <code>restr(i.cvc)</code> is omitted,
+equal weights are assigned across <code>restr(i.cv)</code>.</p>
+<p>Restraint potential functions:</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>HARMONIC</code></td>
+<td>Harmonic potential.</td>
+</tr>
+<tr>
+<td><code>HARMCUTO</code></td>
+<td>Harmonic potential with cutoff behavior.</td>
+</tr>
+</tbody>
+</table>
+<p>Restraint boundary functions:</p>
+<table>
+<thead>
+<tr>
+<th>Boundary</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NADA</code></td>
+<td>No restraint boundary.</td>
+</tr>
+<tr>
+<td><code>SOFTUPPER</code></td>
+<td>Harmonic upper wall.</td>
+</tr>
+<tr>
+<td><code>SOFTLOWER</code></td>
+<td>Harmonic lower wall.</td>
+</tr>
+<tr>
+<td><code>SOFT</code></td>
+<td>Both soft walls.</td>
+</tr>
+<tr>
+<td><code>PBC</code></td>
+<td>Periodic wrapping over configured <code>min</code>/<code>max</code>.</td>
+</tr>
+<tr>
+<td><code>PERIODIC</code></td>
+<td>Periodic wrapping over <code>[-pi, pi]</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Restraint evolution types:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Required parameters</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TAMD</code></td>
+<td><code>g</code>, <code>dt</code>, plus <code>temp</code> or <code>biasf</code></td>
+<td>Brownian evolution of the restraint target.</td>
+</tr>
+<tr>
+<td><code>SMD</code></td>
+<td><code>target</code>, <code>ini</code>, <code>end</code></td>
+<td>Constant-velocity steering.</td>
+</tr>
+<tr>
+<td><code>ADAM</code></td>
+<td><code>a</code>, <code>b1</code>, <code>b2</code>, <code>e</code>; optional <code>tmin</code>, <code>decay</code></td>
+<td>Adaptive target evolution with termination.</td>
+</tr>
+</tbody>
+</table>
+<p>Restraint output:</p>
+<div class="highlight"><pre><span></span><code><span class="k">set</span><span class="w"> </span>restr<span class="k">(</span><span class="nv">1.outfile</span><span class="k">)</span><span class="w"> </span><span class="s2">&quot;phi.r&quot;</span>
+<span class="k">set</span><span class="w"> </span>restr<span class="k">(</span><span class="nv">1.outfreq</span><span class="k">)</span><span class="w"> </span><span class="mi">100</span>
+</code></pre></div>
+<h2 id="otfpfes-reconstruction">OTFP/FES Reconstruction<a class="headerlink" href="#otfpfes-reconstruction" title="Permanent link">&para;</a></h2>
+<p>Configured by defining <code>FES(...)</code> before sourcing <code>cfacv.tcl</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">dm</span><span class="k">)</span><span class="w"> </span><span class="mi">2</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">min</span><span class="k">)</span><span class="w"> </span><span class="k">{</span><span class="nv">-3.141592653589793</span><span class="w"> </span><span class="o">-</span><span class="mf">3.141592653589793</span><span class="k">}</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">max</span><span class="k">)</span><span class="w"> </span><span class="k">{</span><span class="w"> </span><span class="nv">3.141592653589793</span><span class="w">  </span><span class="mf">3.141592653589793</span><span class="k">}</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">knots</span><span class="k">)</span><span class="w"> </span><span class="k">{</span><span class="nv">151</span><span class="w"> </span><span class="mi">151</span><span class="k">}</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">period</span><span class="k">)</span><span class="w"> </span><span class="k">{</span><span class="nv">1</span><span class="w"> </span><span class="mi">1</span><span class="k">}</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">start</span><span class="k">)</span><span class="w"> </span><span class="mi">0</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">solve.start</span><span class="k">)</span><span class="w"> </span><span class="mi">0</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">solve.freq</span><span class="k">)</span><span class="w"> </span><span class="mi">2500</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">outfile</span><span class="k">)</span><span class="w"> </span>job0
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">outfreq</span><span class="k">)</span><span class="w"> </span><span class="mi">2500</span>
+<span class="k">set</span><span class="w"> </span>FES<span class="k">(</span><span class="nv">outlvl</span><span class="k">)</span><span class="w"> </span><span class="mi">3</span>
+</code></pre></div>
+<p>Capabilities:</p>
+<ul>
+<li>One-dimensional and two-dimensional chapeau grids.</li>
+<li>Optional periodic grid dimensions.</li>
+<li>Accumulation of force statistics from TAMD restraints.</li>
+<li>Dense LAPACK solve path.</li>
+<li>Binary output via <code>*_chN.bsp</code>.</li>
+<li>Restart state via <code>*.chN</code>.</li>
+<li>Lambda export through <code>catbinsp</code>.</li>
+<li>Serialization helpers for replica-exchange communication.</li>
+</ul>
+<h2 id="restarts">Restarts<a class="headerlink" href="#restarts" title="Permanent link">&para;</a></h2>
+<p>Supported restart data:</p>
+<ul>
+<li>Restraint targets through <code>DataSpace_save_restraints</code> and
+  <code>DataSpace_load_restraints</code>.</li>
+<li>Chapeau state through <code>chapeau_savestate</code>, <code>chapeau_loadstate</code>, and
+  <code>chapeau_loadlambda</code>.</li>
+<li>Example restart scripts set <code>restart_otfp</code> or <code>restart_chapeau</code>, then source
+  the same workflow.</li>
+</ul>
+<h2 id="replica-workflows">Replica Workflows<a class="headerlink" href="#replica-workflows" title="Permanent link">&para;</a></h2>
+<p>The scripts under <code>scripts/RE*.namd</code> support NAMD replica workflows:</p>
+<ul>
+<li><code>REMD_NVT.namd</code> and <code>REMD_NPT.namd</code>: replica exchange molecular dynamics.</li>
+<li><code>REOTFP_NVT.namd</code> and <code>REOTFP_NPT.namd</code>: replica exchange with OTFP.</li>
+<li><code>REOFP_NPT.namd</code>: replica exchange using OTFP free-energy estimates.</li>
+</ul>
+<p>Replica OTFP features include:</p>
+<ul>
+<li><code>NUMREP</code> chapeau objects.</li>
+<li>Per-replica <code>chid</code> remapping on restraints.</li>
+<li>Chapeau serialization and aggregation across replicas.</li>
+<li>Restart script generation.</li>
+</ul>
+<h2 id="command-line-tools">Command-Line Tools<a class="headerlink" href="#command-line-tools" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>catbinsp</code></td>
+<td>Read binary chapeau output and print selected output levels.</td>
+</tr>
+<tr>
+<td><code>chapsim</code></td>
+<td>Symmetrize two-dimensional chapeau state.</td>
+</tr>
+<tr>
+<td><code>chapadd</code></td>
+<td>Add compatible chapeau states.</td>
+</tr>
+<tr>
+<td><code>chapcrop</code></td>
+<td>Crop or expand a chapeau grid.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="fast-test-coverage">Fast Test Coverage<a class="headerlink" href="#fast-test-coverage" title="Permanent link">&para;</a></h2>
+<p>The fast regression suite currently covers mock-driven examples:</p>
+<ul>
+<li><code>OTFP</code></li>
+<li><code>OTFP2D</code></li>
+<li><code>OTFP2D_periodic</code></li>
+<li><code>CVs</code></li>
+<li><code>adam</code></li>
+</ul>
+<p>Run it through Meson:</p>
+<div class="highlight"><pre><span></span><code>meson<span class="w"> </span><span class="nb">test</span><span class="w"> </span>-C<span class="w"> </span>build<span class="w"> </span>examples
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": [], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
