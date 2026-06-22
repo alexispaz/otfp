@@ -1,27 +1,39 @@
 site_name: OTFP
 site_description: On-the-fly free-energy parameterization tools for NAMD/TclForce workflows
 repo_url: https://github.com/alexispaz/otfp
+docs_dir: docs
 
 theme:
-  name: readthedocs
+  name: material
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path:
+        - .
 
 nav:
   - Home: index.md
+ 
   - User Guide:
       - Overview: user-guide.md
       - Build: build.md
       - Examples: examples.md
       - Tcl configuration reference: tcl-reference.md
       - Feature reference: features.md
+
   - Architecture:
       - Code design: architecture.md
+
   - Extending OTFP:
       - Overview: extending.md
       - GEMS integration: integration-gems.md
       - Testing: testing.md
       - Code audit: audit.md
-
-markdown_extensions:
-  - admonition
-  - toc:
-      permalink: true

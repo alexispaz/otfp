@@ -1,5 +1,7 @@
 This is a [fork](https://github.com/alexispaz/otfp) from the original OTFP code
-hosted in Cameron Abrams' [github](https://github.com/cameronabrams/otfp).
+hosted in [Cameron Abrams' GitHub
+repository](https://github.com/cameronabrams/otfp) but has significantly
+diverged from upstream and is independently maintained.
 
 # On the fly parameterization 
 
@@ -15,17 +17,12 @@ editing this repository, run:
 
     mkdocs serve
  
-# Build and documentation
-
 OTFP builds libraries and executables with Meson. The full build instructions,
 dependencies, debug builds, example test workflow, and MkDocs commands are in
-the [User Guide build page](https://alexispaz.github.io/otfp/build/).
+the [User Guide build page](https://alexispaz.github.io/otfp/build/). An
+example of a typical local build is:
 
-A typical local build installs into `usr/` inside the repository:
-
-    meson setup build --prefix="$PWD/usr"
-    meson compile -C build
-    meson install -C build
+    meson setup build --prefix="$PWD/usr"; meson install -C build
 
 # Citations
 
@@ -68,10 +65,9 @@ Computation, 6(2) (2018) 27.  https://doi.org/10.3390/computation6020027
 # License
 
 It maintains the same BSD-2-Clause license of the original code at
-[repo](https://github.com/cameronabrams/otfp).
-
-Original code was developed with support of the National Science Foundation
-through grant DMR-1207389.
+[repo](https://github.com/cameronabrams/otfp). Original code was developed by
+Cameron F. Abrams with support of the National Science Foundation through grant
+DMR-1207389.
  
 # Known issues
 
