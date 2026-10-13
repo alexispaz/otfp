@@ -24,7 +24,9 @@ lapack = dependency(lapack_name)
 # LAPACKE dependency only if provieder need it
 if lapacke_name == 'mkl_lapacke'
     add_project_arguments('-DUSE_MKL_LAPACKE', language: 'c')
-    lapacke = dependency('mkl_lapacke', required: true)
+    # MKL ships LAPACKE inside the libraries its mkl-*.pc files already link,
+    # and no separate mkl_lapacke pkg-config or cmake package (MKL 2026).
+    lapacke = blas
 else
     lapacke = dependency(lapacke_name, method: 'pkg-config', required: true)
 endif
