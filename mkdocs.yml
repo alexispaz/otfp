@@ -28,6 +28,7 @@ nav:
       - Examples: examples.md
       - Tcl configuration reference: tcl-reference.md
       - Feature reference: features.md
+      - Benchmarks: benchmarks.md
 
   - Architecture:
       - Code design: architecture.md

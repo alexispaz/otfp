@@ -145,3 +145,13 @@ meson compile -C build
   in the build logic.
 - Restart files serialize raw structs in places; be careful when changing
   struct layout or ownership fields.
+
+## Current State
+
+- The `refactor` branch described above has been merged into `master` and no
+  longer exists on the remote. Work on a topic branch off `master`; agents do
+  not push.
+- `master` holds the code; `gh-pages` holds only the MkDocs site.
+- What OTFP is and how NAMD drives it (TclForces, `calcforces` every step):
+  `docs/architecture.md`, `docs/features.md`, `README.md`.
+- Performance on NAMD 3.0.3: `docs/benchmarks.md`.
