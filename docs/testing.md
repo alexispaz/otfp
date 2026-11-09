@@ -47,6 +47,14 @@ This test exercises the same `otfp_engine` path from Fortran and verifies that
 opaque handles, C strings, contiguous arrays, and returned force pointers can be
 used from a Fortran caller.
 
+The geometry test checks that dihedral and angle CVs stay finite at the edges
+of their range (dihedrals near 0 and pi, angles near pi), where rounding can
+push the cosine just past +-1:
+
+```sh
+meson test -C build geometry
+```
+
 The script runs from `examples/` and checks selected output files against each
 example's `reference/` directory.
 

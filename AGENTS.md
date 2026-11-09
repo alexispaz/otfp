@@ -73,6 +73,7 @@ meson test -C build lifecycle
 meson test -C build embedding
 meson test -C build embedding-fortran
 meson test -C build restart
+meson test -C build geometry
 meson install -C build
 meson test -C build examples
 ```
@@ -118,6 +119,8 @@ meson compile -C build
   smoke test when a Fortran compiler is available.
 - `meson test -C build restart`: C restart round-trip smoke test for restraint
   target persistence.
+- `meson test -C build geometry`: dihedral and angle values stay finite at
+  0 and pi.
 - `meson test -C build examples`: mock-driven Tcl/NAMD example regression
   suite.
 

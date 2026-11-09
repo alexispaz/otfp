@@ -62,6 +62,9 @@ double my_getangle ( double p0[3], double p1[3], double p2[3], double g0[3], dou
 
   rdd=1.0/(d01*d12);
   ct=-dp*rdd;
+  // rounding can push ct just past +-1, where acos() returns NaN
+  if (ct>1.0) ct=1.0;
+  else if (ct<-1.0) ct=-1.0;
   ctrd1=ct/sd01;
   ctrd2=ct/sd12;
 
@@ -198,6 +201,12 @@ double my_getdihed ( double p1[3], double p2[3], double p3[3], double p4[3],
   // else phi=acos(cos_phi);
   // if (sin_phi<0) phi*=-1;
   //
+  // Rounding can push cos_phi just past +-1 when the torsion is within
+  // ~1e-8 rad of 0 or pi; acos() then returns NaN and the NaN force
+  // stops NAMD ("force not a vector"). Clamping touches only those
+  // values, unlike the 1e-6 snap above, which binned real angles.
+  if (cos_phi>1.0) cos_phi=1.0;
+  else if (cos_phi<-1.0) cos_phi=-1.0;
   phi=acos(cos_phi);
   if (sin_phi<0) phi*=-1;
   

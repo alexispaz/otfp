@@ -124,6 +124,16 @@ restart_test = executable(
 
 test('restart', restart_test)
 
+geometry_test = executable(
+  'test-geometry',
+  files('../tests/geometry.c'),
+  include_directories: include_directories('.'),
+  link_with: cfacv_lib,
+  dependencies: cfacv_dep,
+)
+
+test('geometry', geometry_test)
+
 if fortran_enabled
   embedding_fortran_test = executable(
     'test-embedding-fortran',
