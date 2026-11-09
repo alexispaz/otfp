@@ -76,7 +76,7 @@ source OTFP.namd
 ldbPeriod 100000
 
 # Restart restraints
-DataSpace_load_restraints $ds job0.rstr
+DataSpace_load_restraints $ds checkpoint.rstr
     
 # Restart chapeaus
 chapeau_loadstate $chape(0.address) job0.ch0

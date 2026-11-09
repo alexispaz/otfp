@@ -28,8 +28,15 @@ void DataSpace_load_restraints ( DataSpace * ds, char * filename ) {
   FILE * ofs;
 
   ofs=fopen(filename,"r");
+  if (!ofs) {
+    fprintf(stderr,"CFACV) ERROR cannot open restraint restart file %s\n",filename);
+    exit(-1);
+  }
 
-  fread(&i,sizeof(int),1,ofs);
+  if (fread(&i,sizeof(int),1,ofs)!=1) {
+    fprintf(stderr,"CFACV) ERROR restraint restart file %s is empty\n",filename);
+    exit(-1);
+  }
   fprintf(stdout,"CFACV) Recovering restraint state of step %i of some previous simulation\n",i);
   if ( i!=DataSpace_rstr_count(ds) ) {
     fprintf(stderr,"CFACV) ERROR restraint restart because holding object has not the proper size\n");
@@ -38,8 +45,11 @@ void DataSpace_load_restraints ( DataSpace * ds, char * filename ) {
 
   for (i=0;i<DataSpace_rstr_count(ds);i++) {
     r=DataSpace_rstr(ds,i);
-    fread(&(r->z),sizeof(double),1,ofs);
-    fread(&(r->val),sizeof(double),1,ofs);
+    if (fread(&(r->z),sizeof(double),1,ofs)!=1 ||
+        fread(&(r->val),sizeof(double),1,ofs)!=1) {
+      fprintf(stderr,"CFACV) ERROR restraint restart file %s is truncated\n",filename);
+      exit(-1);
+    }
     printf("OTFP: Recovering restraint %i, z=%.5f; val=%.5f \n",i,r->z,r->val);
   }
 
