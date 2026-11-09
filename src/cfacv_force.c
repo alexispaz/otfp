@@ -127,20 +127,25 @@ static void DataSpace_update_fes ( DataSpace * ds, int timestep, double bias ) {
 static int DataSpace_evolve_rstrs ( DataSpace * ds, int timestep ) {
   int i;
   int rabort=0;
+  int stopped=0;
   restraint * r;
 
+  // A finished restraint keeps reporting done on every later step; write
+  // the checkpoint only on the step it stops, not on each of those.
   for (i=0;i<DataSpace_rstr_count(ds);i++) {
     r=DataSpace_rstr(ds,i);
 
     if (restraint_evolve_for_timestep(r,timestep)) {
-      DataSpace_save_restraints(ds,DataSpace_rstr_checkpoint_file(ds));
-      restraint_stop_evolution(r);
+      if (restraint_is_evolving(r)) {
+        restraint_stop_evolution(r);
+        stopped++;
+      }
       rabort++;
     }
   }
 
   if(DataSpace_rstr_count(ds)>0) {
-    if (!(timestep % DataSpace_rstr_save_frequency(ds))) {
+    if (stopped || !(timestep % DataSpace_rstr_save_frequency(ds))) {
       DataSpace_save_restraints(ds,DataSpace_rstr_checkpoint_file(ds));
     }
   }

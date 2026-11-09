@@ -55,6 +55,14 @@ push the cosine just past +-1:
 meson test -C build geometry
 ```
 
+The Adam checkpoint test runs two Adam restraints that terminate at different
+steps and checks that the restraint checkpoint is written once when each one
+terminates, not on every step in between:
+
+```sh
+meson test -C build adam-checkpoint
+```
+
 The script runs from `examples/` and checks selected output files against each
 example's `reference/` directory.
 

@@ -232,6 +232,10 @@ void restraint_stop_evolution ( restraint * r ) {
   r->evolve=0;
 }
 
+int restraint_is_evolving ( restraint * r ) {
+  return r->evolve;
+}
+
 void restraint_report ( restraint * r, int index ) {
   int j;
 

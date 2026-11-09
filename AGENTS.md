@@ -74,6 +74,7 @@ meson test -C build embedding
 meson test -C build embedding-fortran
 meson test -C build restart
 meson test -C build geometry
+meson test -C build adam-checkpoint
 meson install -C build
 meson test -C build examples
 ```
@@ -121,6 +122,8 @@ meson compile -C build
   target persistence.
 - `meson test -C build geometry`: dihedral and angle values stay finite at
   0 and pi.
+- `meson test -C build adam-checkpoint`: a terminated Adam restraint writes
+  the restraint checkpoint once, not on every later step.
 - `meson test -C build examples`: mock-driven Tcl/NAMD example regression
   suite.
 

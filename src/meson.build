@@ -134,6 +134,16 @@ geometry_test = executable(
 
 test('geometry', geometry_test)
 
+adam_checkpoint_test = executable(
+  'test-adam-checkpoint',
+  files('../tests/adam_checkpoint.c'),
+  include_directories: include_directories('.'),
+  link_with: cfacv_lib,
+  dependencies: cfacv_dep,
+)
+
+test('adam-checkpoint', adam_checkpoint_test)
+
 if fortran_enabled
   embedding_fortran_test = executable(
     'test-embedding-fortran',
