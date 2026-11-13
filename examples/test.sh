@@ -112,7 +112,8 @@ run_test() {
   fi
 
   if [[ "$mode" == "lambda" ]]; then
-	  $catb -f job0_ch0.bsp -ol 3 2>/dev/null > "${files[0]}"
+	  # Decode the bsp of the same job and chapeau (jobN_chM.LAMBDA <- jobN_chM.bsp)
+	  $catb -f "${files[0]%.LAMBDA}.bsp" -ol 3 2>/dev/null > "${files[0]}"
 		check "tol_abs" "$tol" "${files[0]}"
   else
 		check "$mode" "$tol" "${files[@]}"
