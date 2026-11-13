@@ -89,6 +89,7 @@ check() {
   done
 
   [ $ec -eq 0 ] && echo -e "$line$pass" || echo -e "$line$fail"
+  return $ec
 }
 
 run_test() {
