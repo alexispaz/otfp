@@ -50,6 +50,7 @@ void DataSpace_load_restraints ( DataSpace * ds, char * filename ) {
       fprintf(stderr,"CFACV) ERROR restraint restart file %s is truncated\n",filename);
       exit(-1);
     }
+    r->restored=1;
     printf("OTFP: Recovering restraint %i, z=%.5f; val=%.5f \n",i,r->z,r->val);
   }
 

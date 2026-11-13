@@ -162,7 +162,12 @@ Capabilities:
 Supported restart data:
 
 - Restraint targets through `DataSpace_save_restraints` and
-  `DataSpace_load_restraints`.
+  `DataSpace_load_restraints`. The run writes them to `checkpoint.rstr`. A
+  target loaded this way is kept on the first step of the restarted run;
+  without a load, the first step starts each target at its CV value. Adam
+  moments and SMD start values are not saved: a restarted Adam restraint
+  begins its stages again from the loaded target, and SMD recomputes its
+  increment from the CV value.
 - Chapeau state through `chapeau_savestate`, `chapeau_loadstate`, and
   `chapeau_loadlambda`.
 - Example restart scripts set `restart_otfp` or `restart_chapeau`, then source

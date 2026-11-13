@@ -49,6 +49,7 @@ restraint * New_restraint (
   newr->adamOpt=NULL;
 
   newr->evolve=1;
+  newr->restored=0;
   newr->evolveFunc = NULL;
 
   newr->tamd_noise=0.0;
@@ -172,7 +173,9 @@ void restraint_add_cv_value ( restraint * r, int cv_index, double value ) {
 }
 
 void restraint_init_target_from_value ( restraint * r ) {
-  r->z=r->val;
+  // A target loaded from a restart file is kept; otherwise start at the CV.
+  if (!r->restored) r->z=r->val;
+  r->restored=0;
   if (r->smdOpt) smdOptInit(r->smdOpt,r->val);
 }
 

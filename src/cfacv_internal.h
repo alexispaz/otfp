@@ -58,6 +58,7 @@ struct restraint {
   double * cvc;
 
   int evolve;
+  int restored;
 
   tamdOptStruct * tamdOpt;
   double tamd_noise;
